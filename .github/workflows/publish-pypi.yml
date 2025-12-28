@@ -69,25 +69,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      # Check if current version is x.y.0 (deliberate release) - skip bump if so
-      - name: Check version and decide bump strategy
+      # Bump patch version on every push to main
+      - name: Bump patch version
         id: bump
         run: |
-          CURRENT_VER=$(poetry version -s)
-          CURRENT_PATCH=$(echo "$CURRENT_VER" | cut -d. -f3)
-
-          # If current version ends in .0, it's a deliberate release - don't auto-bump
-          if [ "$CURRENT_PATCH" = "0" ]; then
-            echo "Detected x.y.0 release ($CURRENT_VER) - skipping auto-bump"
-            echo "new_version=$CURRENT_VER" >> "$GITHUB_OUTPUT"
-            echo "is_minor_major=true" >> "$GITHUB_OUTPUT"
-          else
-            # Regular commit - bump patch version
-            poetry version patch
-            NEW_VER=$(poetry version -s)
-            echo "new_version=$NEW_VER" >> "$GITHUB_OUTPUT"
-            echo "is_minor_major=false" >> "$GITHUB_OUTPUT"
-          fi
+          poetry version patch
+          NEW_VER=$(poetry version -s)
+          echo "new_version=$NEW_VER" >> "$GITHUB_OUTPUT"
 
       - name: Commit version bump and create tag
         run: |
@@ -119,9 +107,8 @@ jobs:
         with:
           packages-dir: dist
 
-      # Create GitHub Release only for minor/major versions (x.y.0)
+      # Create GitHub Release for every version
       - name: Create GitHub Release
-        if: steps.bump.outputs.is_minor_major == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.bump.outputs.new_version }}
