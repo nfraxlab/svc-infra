@@ -69,15 +69,26 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      # Bump patch version on every push to main
-      - name: Bump patch version
+      # Only publish x.y.0 versions (deliberate releases) - skip if not a release version
+      - name: Check if this is a release version (x.y.0)
         id: bump
         run: |
-          poetry version patch
-          NEW_VER=$(poetry version -s)
-          echo "new_version=$NEW_VER" >> "$GITHUB_OUTPUT"
+          CURRENT_VER=$(poetry version -s)
+          CURRENT_PATCH=$(echo "$CURRENT_VER" | cut -d. -f3)
+
+          # Only x.y.0 versions are released
+          if [ "$CURRENT_PATCH" = "0" ]; then
+            echo "Detected release version ($CURRENT_VER) - proceeding with publish"
+            echo "new_version=$CURRENT_VER" >> "$GITHUB_OUTPUT"
+            echo "is_release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Version $CURRENT_VER is not a release version (patch != 0) - skipping publish"
+            echo "new_version=$CURRENT_VER" >> "$GITHUB_OUTPUT"
+            echo "is_release=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Commit version bump and create tag
+        if: steps.bump.outputs.is_release == 'true'
         run: |
           NEW_VER="${{ steps.bump.outputs.new_version }}"
           git add pyproject.toml poetry.lock || true
@@ -85,12 +96,15 @@ jobs:
           git tag "v${NEW_VER}" || echo "Tag exists; continuing"
 
       - name: Install git-cliff
+        if: steps.bump.outputs.is_release == 'true'
         run: pip install git-cliff
 
       - name: Update CHANGELOG.md
+        if: steps.bump.outputs.is_release == 'true'
         run: git-cliff --output CHANGELOG.md
 
       - name: Commit CHANGELOG and push
+        if: steps.bump.outputs.is_release == 'true'
         run: |
           git add CHANGELOG.md || true
           git commit --amend --no-edit || echo "No changes to amend"
@@ -99,29 +113,21 @@ jobs:
           git push --tags --force || true
 
       - name: Build distributions
+        if: steps.bump.outputs.is_release == 'true'
         run: poetry build
 
       # Publish to PyPI via Trusted Publisher / OIDC (no API token needed)
       - name: Publish to PyPI via OIDC
+        if: steps.bump.outputs.is_release == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist
+          skip-existing: true
+          attestations: false
 
-      # Check if this is a minor/major release (patch version is 0)
-      - name: Check if minor/major release
-        id: check_release
-        run: |
-          VERSION="${{ steps.bump.outputs.new_version }}"
-          PATCH=$(echo "$VERSION" | cut -d. -f3)
-          if [ "$PATCH" = "0" ]; then
-            echo "is_minor_major=true" >> $GITHUB_OUTPUT
-          else
-            echo "is_minor_major=false" >> $GITHUB_OUTPUT
-          fi
-
-      # Create GitHub Release only for minor/major versions (x.y.0)
+      # Create GitHub Release for x.y.0 versions
       - name: Create GitHub Release
-        if: steps.check_release.outputs.is_minor_major == 'true'
+        if: steps.bump.outputs.is_release == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.bump.outputs.new_version }}
