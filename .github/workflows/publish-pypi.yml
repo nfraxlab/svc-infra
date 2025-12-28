@@ -69,26 +69,27 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      # Only publish x.y.0 versions (deliberate releases) - skip if not a release version
-      - name: Check if this is a release version (x.y.0)
+      # Check if current version is x.y.0 (deliberate release) - skip bump if so
+      - name: Check version and decide bump strategy
         id: bump
         run: |
           CURRENT_VER=$(poetry version -s)
           CURRENT_PATCH=$(echo "$CURRENT_VER" | cut -d. -f3)
 
-          # Only x.y.0 versions are released
+          # If current version ends in .0, it's a deliberate release - don't auto-bump
           if [ "$CURRENT_PATCH" = "0" ]; then
-            echo "Detected release version ($CURRENT_VER) - proceeding with publish"
+            echo "Detected x.y.0 release ($CURRENT_VER) - skipping auto-bump"
             echo "new_version=$CURRENT_VER" >> "$GITHUB_OUTPUT"
-            echo "is_release=true" >> "$GITHUB_OUTPUT"
+            echo "is_minor_major=true" >> "$GITHUB_OUTPUT"
           else
-            echo "Version $CURRENT_VER is not a release version (patch != 0) - skipping publish"
-            echo "new_version=$CURRENT_VER" >> "$GITHUB_OUTPUT"
-            echo "is_release=false" >> "$GITHUB_OUTPUT"
+            # Regular commit - bump patch version
+            poetry version patch
+            NEW_VER=$(poetry version -s)
+            echo "new_version=$NEW_VER" >> "$GITHUB_OUTPUT"
+            echo "is_minor_major=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Commit version bump and create tag
-        if: steps.bump.outputs.is_release == 'true'
         run: |
           NEW_VER="${{ steps.bump.outputs.new_version }}"
           git add pyproject.toml poetry.lock || true
@@ -96,15 +97,12 @@ jobs:
           git tag "v${NEW_VER}" || echo "Tag exists; continuing"
 
       - name: Install git-cliff
-        if: steps.bump.outputs.is_release == 'true'
         run: pip install git-cliff
 
       - name: Update CHANGELOG.md
-        if: steps.bump.outputs.is_release == 'true'
         run: git-cliff --output CHANGELOG.md
 
       - name: Commit CHANGELOG and push
-        if: steps.bump.outputs.is_release == 'true'
         run: |
           git add CHANGELOG.md || true
           git commit --amend --no-edit || echo "No changes to amend"
@@ -113,21 +111,17 @@ jobs:
           git push --tags --force || true
 
       - name: Build distributions
-        if: steps.bump.outputs.is_release == 'true'
         run: poetry build
 
       # Publish to PyPI via Trusted Publisher / OIDC (no API token needed)
       - name: Publish to PyPI via OIDC
-        if: steps.bump.outputs.is_release == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist
-          skip-existing: true
-          attestations: false
 
-      # Create GitHub Release for x.y.0 versions
+      # Create GitHub Release only for minor/major versions (x.y.0)
       - name: Create GitHub Release
-        if: steps.bump.outputs.is_release == 'true'
+        if: steps.bump.outputs.is_minor_major == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.bump.outputs.new_version }}
