@@ -1,26 +1,24 @@
-name: Auto publish to PyPI on main
+name: Publish to PyPI
 
 on:
-  workflow_run:
-    workflows: ["CI"]
-    types: [completed]
-    branches: [main]
+  push:
+    tags:
+      - "v*"
 
 concurrency:
   group: publish-pypi
   cancel-in-progress: false
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
-  release:
-    # Only run if CI workflow succeeded
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.actor != 'github-actions[bot]' }}
+  publish:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write   # for committing/tagging version bumps
-      id-token: write   # REQUIRED for PyPI Trusted Publisher (OIDC)
 
     steps:
-      - name: Checkout
+      - name: Checkout at tag
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -30,99 +28,21 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Poetry 2.x
+      - name: Install Poetry
         run: |
           python -m pip install --upgrade pip pipx
           pipx install "poetry==2.0.1"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          poetry --version
 
-      - name: Repair or create lockfile
-        id: relock
-        run: |
-          set -euo pipefail
-          if [ -f poetry.lock ]; then
-            echo "Validating existing lockfile…"
-            if poetry lock --no-interaction; then
-              echo "lock_status=kept" >> $GITHUB_OUTPUT
-              exit 0
-            else
-              echo "Lockfile invalid. Removing and recreating…"
-              rm -f poetry.lock
-            fi
-          fi
-          poetry lock --no-interaction
-          echo "lock_status=recreated" >> $GITHUB_OUTPUT
-
-      - name: Commit regenerated lockfile (if changed)
-        if: steps.relock.outputs.lock_status == 'recreated'
-        run: |
-          git add poetry.lock
-          git commit -m "ci: regenerate poetry.lock" || true
-          git push || true
-
-      - name: Install deps (no dev)
+      - name: Install deps (main only)
         run: poetry install --no-root --only main --sync --no-interaction
-
-      - name: Configure git identity
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-      # Bump patch version on every push to main
-      - name: Bump patch version
-        id: bump
-        run: |
-          poetry version patch
-          NEW_VER=$(poetry version -s)
-          echo "new_version=$NEW_VER" >> "$GITHUB_OUTPUT"
-
-      - name: Commit version bump and create tag
-        run: |
-          NEW_VER="${{ steps.bump.outputs.new_version }}"
-          git add pyproject.toml poetry.lock || true
-          git commit -m "ci: release v${NEW_VER}" || echo "No changes to commit"
-          git tag "v${NEW_VER}" || echo "Tag exists; continuing"
-
-      - name: Install git-cliff
-        run: pip install git-cliff
-
-      - name: Update CHANGELOG.md
-        run: git-cliff --output CHANGELOG.md
-
-      - name: Commit CHANGELOG and push
-        run: |
-          git add CHANGELOG.md || true
-          git commit --amend --no-edit || echo "No changes to amend"
-          git tag -f "v${{ steps.bump.outputs.new_version }}" || true
-          git push --force-with-lease || true
-          git push --tags --force || true
 
       - name: Build distributions
         run: poetry build
 
-      # Publish to PyPI via Trusted Publisher / OIDC (no API token needed)
       - name: Publish to PyPI via OIDC
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist
-
-      # Create GitHub Release for every version
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.bump.outputs.new_version }}
-          name: v${{ steps.bump.outputs.new_version }}
-          body: |
-            ## Release v${{ steps.bump.outputs.new_version }}
-
-            See [CHANGELOG.md](https://github.com/nfraxlab/svc-infra/blob/main/CHANGELOG.md) for details.
-
-            ### Install
-            ```bash
-            pip install svc-infra==${{ steps.bump.outputs.new_version }}
-            ```
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          skip-existing: true
+          attestations: false

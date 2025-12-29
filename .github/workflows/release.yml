@@ -1,0 +1,53 @@
+name: Release (tag + GitHub Release)
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    # Skip if commit is from bot (prevents loops)
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (full history + tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry and semantic-release
+        run: |
+          python -m pip install --upgrade pip pipx
+          pipx install "poetry==2.0.1"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          poetry install --no-interaction --sync
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # python-semantic-release handles:
+      # - Version bump in pyproject.toml (based on commit messages)
+      # - Changelog update
+      # - Commit + tag (no force, no amend)
+      # - GitHub Release creation
+      - name: Semantic Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          poetry run semantic-release version --no-push
+          poetry run semantic-release publish

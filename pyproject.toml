@@ -129,6 +129,7 @@ moto = {extras = ["s3"], version = ">=5.0.0"}
 aiosqlite = ">=0.19.0"  # Required for acceptance tests using SQLite
 pre-commit = ">=3.0.0"
 bandit = ">=1.7.0"
+python-semantic-release = ">=9.0.0"
 # Documentation
 mkdocs = ">=1.6.0"
 mkdocs-material = ">=9.5.0"
@@ -236,6 +237,20 @@ omit = ["*/tests/*", "*/__pycache__/*"]
 exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "raise NotImplementedError"]
 fail_under = 70
 show_missing = true
+
+# Semantic Release configuration
+[tool.semantic_release]
+version_toml = ["pyproject.toml:tool.poetry.version"]
+branch = "main"
+tag_format = "v{version}"
+changelog_file = "CHANGELOG.md"
+upload_to_pypi = false
+upload_to_release = false
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = ["feat", "fix", "perf", "refactor", "docs", "chore", "test", "build", "ci"]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
