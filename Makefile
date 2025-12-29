@@ -1,6 +1,9 @@
 SHELL := /bin/bash
 RMI ?= all
 
+# Default for make pr sync flag
+sync ?= 0
+
 .PHONY: help accept compose_up wait seed down pytest_accept unit unitv test lint type typecheck format format-check check ci clean clean-pycache setup-template run-template
 
 help: ## Show available commands
@@ -194,9 +197,10 @@ ci: check test
 # --- Cleanup helpers ---
 clean:
 	@echo "[clean] Removing Python caches, build artifacts, and logs"
-	rm -rf **/__pycache__ __pycache__ .pytest_cache .mypy_cache .ruff_cache build dist *.egg-info *.log
+	@find . -type d -name '__pycache__' -prune -exec rm -rf {} +
+	rm -rf .pytest_cache .mypy_cache .ruff_cache build dist *.egg-info *.log
 	@echo "[clean] Cleaning examples directory"
-	@cd examples && rm -rf **/__pycache__ __pycache__ .pytest_cache .mypy_cache .ruff_cache build dist *.egg-info *.log 2>/dev/null || true
+	@cd examples && rm -rf .pytest_cache .mypy_cache .ruff_cache build dist *.egg-info *.log 2>/dev/null || true
 
 # Remove only Python __pycache__ directories (recursive)
 clean-pycache:
@@ -254,3 +258,87 @@ docs-serve: ## Serve documentation locally with live reload
 docs-build: ## Build documentation for production
 	@echo "[docs] Building documentation..."
 	poetry run mkdocs build
+
+# --- Git/PR Automation ---
+.PHONY: pr commit
+
+# Usage:
+#   make pr m="feat: add new feature"
+#   make pr m="fix: bug" sync=1   # optional: rebase feature branch on origin/main before pushing
+pr:
+ifndef m
+	$(error Usage: make pr m="feat: your commit message")
+endif
+	@set -euo pipefail; \
+	if [ -z "$(m)" ]; then echo "[pr] ERROR: Commit message cannot be empty."; exit 1; fi; \
+	gh auth status >/dev/null 2>&1 || { echo "[pr] ERROR: gh CLI not authenticated. Run 'gh auth login' first."; exit 1; }; \
+	git remote get-url origin >/dev/null 2>&1 || { echo "[pr] ERROR: remote 'origin' not found."; exit 1; }; \
+	CURRENT_BRANCH=$$(git branch --show-current || true); \
+	if [ -z "$$CURRENT_BRANCH" ]; then \
+		echo "[pr] ERROR: Detached HEAD state. Checkout a branch first."; \
+		exit 1; \
+	fi; \
+	SYNC_FLAG="$(sync)"; \
+	if [ "$$SYNC_FLAG" != "1" ]; then SYNC_FLAG="0"; fi; \
+	if [ "$$CURRENT_BRANCH" = "main" ]; then \
+		echo "[pr] On main - creating new PR for: $(m)"; \
+		TIMESTAMP=$$(date -u +%m%d%H%M); \
+		MSG_NO_PREFIX=$$(echo "$(m)" | sed -E 's/^[a-zA-Z]+(\([^)]+\))?!?:[ ]*//'); \
+		SLUG=$$(echo "$$MSG_NO_PREFIX" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$$//' | cut -c1-40); \
+		[ -z "$$SLUG" ] && SLUG="change"; \
+		BRANCH="$$SLUG-$$TIMESTAMP"; \
+		git fetch origin main >/dev/null; \
+		git pull --ff-only origin main || { echo "[pr] ERROR: main is not fast-forwardable. Resolve manually."; exit 1; }; \
+		git checkout -b "$$BRANCH"; \
+		git add -A; \
+		if git diff --cached --quiet; then \
+			echo "[pr] No changes to commit. Cleaning up branch."; \
+			git checkout main >/dev/null; \
+			git branch -D "$$BRANCH" >/dev/null; \
+			exit 0; \
+		fi; \
+		git commit -m "$(m)"; \
+		git push --set-upstream origin "$$BRANCH"; \
+		if gh pr view "$$BRANCH" >/dev/null 2>&1; then \
+			echo "[pr] PR already exists: $$(gh pr view "$$BRANCH" --json url -q .url)"; \
+		else \
+			gh pr create --title "$(m)" --body "$(m)" --base main --head "$$BRANCH"; \
+		fi; \
+		git checkout main >/dev/null; \
+		echo "[pr] Done!"; \
+	else \
+		echo "[pr] On branch $$CURRENT_BRANCH - updating/creating PR"; \
+		if [ "$$SYNC_FLAG" = "1" ]; then \
+			echo "[pr] Sync enabled - rebasing $$CURRENT_BRANCH on origin/main"; \
+			git fetch origin main >/dev/null; \
+			git rebase origin/main || { echo "[pr] ERROR: Rebase failed. Run 'git rebase --abort' and resolve manually."; exit 1; }; \
+		fi; \
+		git add -A; \
+		COMMITTED=0; \
+		if git diff --cached --quiet; then \
+			echo "[pr] No changes to commit"; \
+		else \
+			git commit -m "$(m)"; \
+			COMMITTED=1; \
+		fi; \
+		if [ "$$SYNC_FLAG" = "1" ]; then \
+			git push --force-with-lease origin "$$CURRENT_BRANCH"; \
+		elif [ "$$COMMITTED" = "1" ] || ! git rev-parse --verify origin/"$$CURRENT_BRANCH" >/dev/null 2>&1; then \
+			git push -u origin "$$CURRENT_BRANCH"; \
+		fi; \
+		if gh pr view "$$CURRENT_BRANCH" >/dev/null 2>&1; then \
+			echo "[pr] PR exists: $$(gh pr view "$$CURRENT_BRANCH" --json url -q .url)"; \
+		else \
+			gh pr create --title "$(m)" --body "$(m)" --base main --head "$$CURRENT_BRANCH"; \
+			echo "[pr] PR created."; \
+		fi; \
+	fi
+
+# Usage: make commit m="feat: add new feature"
+# Just commits with proper message (for when you want to batch commits before PR)
+commit:
+ifndef m
+	$(error Usage: make commit m="feat: your commit message")
+endif
+	git add -A
+	git commit -m "$(m)"
