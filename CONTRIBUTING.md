@@ -293,6 +293,86 @@ For significant deprecations, create a migration guide:
 3. Provide before/after code examples
 4. Link from the deprecation warning message
 
+## CI Pipeline & Production Readiness
+
+Every PR triggers our CI pipeline. Understanding the flow helps you debug failures faster.
+
+### Pipeline Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  PR opened / updated                                                │
+└──────────────────────────┬──────────────────────────────────────────┘
+                           │
+         ┌─────────────────┼─────────────────┐
+         ▼                 ▼                 ▼
+    ┌─────────┐      ┌───────────┐     ┌───────────────┐
+    │  lint   │      │ type-check│     │ security-scan │
+    │ (ruff)  │      │  (mypy)   │     │   (bandit)    │
+    └────┬────┘      └─────┬─────┘     └───────────────┘
+         │                 │
+         └────────┬────────┘
+                  ▼
+            ┌───────────┐
+            │   test    │  ← runs AFTER lint & type-check pass
+            │ (pytest)  │
+            └─────┬─────┘
+                  │
+                  ▼ (only PRs → main with code/packaging changes)
+    ┌──────────────────────────────┐
+    │   production-readiness       │
+    │   • Vulnerability scan       │
+    │   • Package build + verify   │
+    │   • Docs check               │
+    └──────────────────────────────┘
+```
+
+### Production Readiness Gate
+
+The `production-readiness` job runs `make report` with special CI flags:
+
+```bash
+# What CI runs (don't run this locally - it requires evidence variables)
+make report STRICT=1 REPORT_MODE=ci
+```
+
+**Key behaviors:**
+- `REPORT_MODE=ci` skips lint/mypy/pytest (already ran in earlier jobs)
+- `STRICT=1` enforces score ≥ 9/11 and requires pip-audit
+- CI mode requires `LINT_PASSED=1`, `TYPE_PASSED=1`, `TESTS_PASSED=1` environment variables (set by upstream jobs)
+
+### Local Testing
+
+Run the full report locally before pushing:
+
+```bash
+# Full local check (recommended before any PR)
+make report
+
+# With strict mode (same threshold as CI)
+make report STRICT=1
+
+# Custom coverage threshold
+make report COV_MIN=80
+```
+
+**Scoring (11 points total):**
+
+| Check | Points | Notes |
+|-------|--------|-------|
+| Linting (ruff) | 1 | Must pass |
+| Type checking (mypy) | 1 | Must pass |
+| Tests pass | 2 | All tests green |
+| Coverage ≥ threshold | 2 | Default: 60% |
+| No vulnerabilities | 2 | pip-audit clean |
+| Package builds | 2 | poetry build + twine check |
+| Documentation | 1 | README + docs/ |
+
+**STRICT mode fails if:**
+- Score < 9/11
+- pip-audit not installed
+- Any critical check fails (tests, vulnerabilities, build)
+
 ## Required Checks Before PR
 
 - [ ] No hardcoded secrets or default fallbacks

@@ -15,6 +15,28 @@ env:
   PYTHON_VERSION: "3.11"
 
 jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+      packaging: ${{ steps.filter.outputs.packaging }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            code:
+              - "src/**"
+              - "tests/**"
+            packaging:
+              - "pyproject.toml"
+              - "poetry.lock"
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
@@ -170,3 +192,46 @@ jobs:
           verbose: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  production-readiness:
+    name: Production Readiness Gate
+    runs-on: ubuntu-latest
+    needs: [changes, test]
+    if: |
+      github.event_name == 'pull_request' &&
+      github.base_ref == 'main' &&
+      (needs.changes.outputs.code == 'true' || needs.changes.outputs.packaging == 'true')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+
+      - name: Install project
+        run: poetry install --no-interaction
+
+      - name: Run production readiness report
+        env:
+          LINT_PASSED: "1"
+          TYPE_PASSED: "1"
+          TESTS_PASSED: "1"
+        run: make report STRICT=1 REPORT_MODE=ci
