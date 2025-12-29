@@ -39,42 +39,73 @@ mypy src
 
 ## Development Workflow
 
-### 1. Create a Branch
+### Quick Start (Recommended)
+
+Use `make pr` for the fastest workflow:
 
 ```bash
+# 1. Make your code changes
+# 2. Create a PR with one command:
+make pr m="feat: add your feature"
+
+# This automatically:
+# - Validates gh CLI + origin remote
+# - Fast-forwards main (no rebase on main)
+# - Creates branch: add-your-feature-12281430 (UTC timestamp)
+# - Commits and pushes
+# - Creates PR (or detects existing)
+# - Returns to main
+```
+
+**Context-aware behavior:**
+```bash
+# On main → creates new branch + PR
+make pr m="feat: add caching"
+
+# On feature branch → commits + pushes; creates PR if none exists
+make pr m="feat: add more logic"
+
+# On feature branch, sync with main first:
+make pr m="feat: stuff" sync=1  # Rebases on main, force-pushes safely
+```
+
+### Manual Workflow
+
+If you prefer manual git commands:
+
+```bash
+# 1. Create a branch
 git checkout -b feature/your-feature-name
-# or
-git checkout -b fix/your-bug-fix
+
+# 2. Make your changes
+# - Follow the existing code style
+# - Add type hints to all functions
+# - Write docstrings for public APIs
+# - Add tests for new functionality
+
+# 3. Run quality checks
+ruff format
+ruff check
+mypy src
+pytest -q
+
+# 4. Commit and push
+git add -A
+git commit -m "feat: your feature"
+git push origin feature/your-feature-name
+
+# 5. Open a PR on GitHub
 ```
 
-### 2. Make Your Changes
+### Batching Multiple Commits
 
-- Follow the existing code style
-- Add type hints to all functions
-- Write docstrings for public APIs
-- Add tests for new functionality
-
-### 3. Run Quality Checks
+For related changes, batch commits before creating a PR:
 
 ```bash
-# Format code
-ruff format
-
-# Check for issues
-ruff check
-
-# Run type checker
-mypy src
-
-# Run tests
-pytest -q
+make commit m="feat: add base class"
+make commit m="feat: add implementation"
+make pr m="feat: complete feature"
 ```
-
-### 4. Submit a Pull Request
-
-- Write a clear description of your changes
-- Reference any related issues
-- Ensure all checks pass
 
 ## Code Standards
 
