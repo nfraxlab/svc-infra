@@ -519,6 +519,23 @@ endif
 		echo "[pr] Done!"; \
 	else \
 		echo "[pr] On branch $$CURRENT_BRANCH - updating/creating PR"; \
+		PR_STATE=$$(gh pr view "$$CURRENT_BRANCH" --json state -q .state 2>/dev/null || echo "NONE"); \
+		if [ "$$PR_STATE" = "MERGED" ]; then \
+			echo "[pr] ERROR: PR for branch '$$CURRENT_BRANCH' was already MERGED."; \
+			echo "    Your commits won't reach main by pushing to this branch."; \
+			echo ""; \
+			echo "    Options:"; \
+			echo "    1. Switch to main and create a new PR:"; \
+			echo "       git checkout main && make pr m=\"$(m)\""; \
+			echo ""; \
+			echo "    2. Create a new branch from this one:"; \
+			echo "       git checkout -b new-branch-name && make pr m=\"$(m)\""; \
+			exit 1; \
+		fi; \
+		if [ "$$PR_STATE" = "CLOSED" ]; then \
+			echo "[pr] WARNING: PR for branch '$$CURRENT_BRANCH' was CLOSED (not merged)."; \
+			echo "    Will create a new PR after pushing."; \
+		fi; \
 		if [ "$$SYNC_FLAG" = "1" ]; then \
 			echo "[pr] Sync enabled - rebasing $$CURRENT_BRANCH on origin/main"; \
 			git fetch origin main >/dev/null; \
