@@ -43,11 +43,12 @@ jobs:
       # python-semantic-release handles:
       # - Version bump in pyproject.toml (based on commit messages)
       # - Changelog update
-      # - Commit + tag (no force, no amend)
+      # - Commit + tag + push
       # - GitHub Release creation
       - name: Semantic Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          poetry run semantic-release version --no-push
+          poetry run semantic-release version
+          git push origin main --tags
           poetry run semantic-release publish
