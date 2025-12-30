@@ -47,26 +47,65 @@ Use `make pr` for the fastest workflow:
 # 1. Make your code changes
 # 2. Create a PR with one command:
 make pr m="feat: add your feature"
-
-# This automatically:
-# - Validates gh CLI + origin remote
-# - Fast-forwards main (no rebase on main)
-# - Creates branch: add-your-feature-12281430 (UTC timestamp)
-# - Commits and pushes
-# - Creates PR (or detects existing)
-# - Returns to main
 ```
 
-**Context-aware behavior:**
+### Two-Mode Workflow
+
+**Mode A: Start a new PR** (on default branch OR with `new=1`)
 ```bash
-# On main → creates new branch + PR
-make pr m="feat: add caching"
+# On main → creates new branch + PR, stays on new branch
+make pr m="feat: add caching middleware"
 
-# On feature branch → commits + pushes; creates PR if none exists
-make pr m="feat: add more logic"
+# On feature branch → split commits into new PR
+make pr m="feat: split this work" new=1
+```
 
-# On feature branch, sync with main first:
-make pr m="feat: stuff" sync=1  # Rebases on main, force-pushes safely
+**Mode B: Update current PR** (on feature branch)
+```bash
+# Add more commits to existing PR
+make pr m="fix: address review feedback"
+
+# Sync with main before pushing (rebase + force-push)
+make pr m="fix: sync and update" sync=1
+```
+
+### All Options
+
+| Option | Example | Description |
+|--------|---------|-------------|
+| `m=` | `m="feat: add X"` | Commit message (required, conventional commits) |
+| `sync=1` | `sync=1` | Rebase on base branch before pushing |
+| `new=1` | `new=1` | Force create new PR from current HEAD |
+| `b=` | `b="my-branch"` | Use explicit branch name |
+| `draft=1` | `draft=1` | Create PR as draft |
+| `base=` | `base=develop` | Target different base branch |
+| `FORCE=1` | `FORCE=1` | Skip conventional commit validation |
+
+### Examples
+
+```bash
+# Basic: create PR from main
+make pr m="feat: add rate limiting"
+
+# Add commits to existing PR
+make pr m="fix: handle edge case"
+
+# Sync with main, then push
+make pr m="refactor: clean up" sync=1
+
+# Create draft PR
+make pr m="feat: work in progress" draft=1
+
+# Target a release branch
+make pr m="fix: hotfix" base=release-v1
+
+# Split work into new PR from feature branch
+make pr m="feat: extract this part" new=1
+
+# Batch commits before PR
+make commit m="feat: add base class"
+make commit m="feat: add implementation"
+make pr m="feat: complete caching support"
 ```
 
 ### Manual Workflow
