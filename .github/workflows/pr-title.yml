@@ -42,12 +42,19 @@ jobs:
               };
             }
 
-            // Priority: breaking > feat > fix > perf > others
+            // Priority ranking (lower = higher priority)
+            // Breaking changes preserve their type but get highest priority
             function rank(c) {
               if (c.breaking) return 0;
               if (c.type === "feat") return 1;
               if (c.type === "fix") return 2;
               if (c.type === "perf") return 3;
+              if (c.type === "refactor") return 4;
+              if (c.type === "docs") return 5;
+              if (c.type === "chore") return 6;
+              if (c.type === "test") return 7;
+              if (c.type === "ci") return 8;
+              if (c.type === "build") return 9;
               return 10;
             }
 
@@ -60,27 +67,23 @@ jobs:
               }
             }
 
-            // Determine expected prefix
-            const expectedPrefix =
-              best.breaking ? "feat!:" :
-              best.type === "feat" ? "feat:" :
-              best.type === "fix" ? "fix:" :
-              best.type === "perf" ? "perf:" :
-              null;
-
-            if (!expectedPrefix) {
-              core.info("No feat/fix/perf/breaking commits. Title not enforced.");
+            // Only enforce for release-triggering types
+            const releaseTypes = ["feat", "fix", "perf"];
+            if (!best.breaking && !releaseTypes.includes(best.type)) {
+              core.info(`No release-triggering commits (feat/fix/perf/breaking). Title not enforced.`);
               return;
             }
 
+            // Determine expected prefix (preserve type for breaking changes)
+            const expectedPrefix = best.breaking
+              ? `${best.type}!:`
+              : `${best.type}:`;
+
             // Check current title
             const titleClass = classify(title);
-            const currentPrefix =
-              titleClass.breaking ? "feat!:" :
-              titleClass.type === "feat" ? "feat:" :
-              titleClass.type === "fix" ? "fix:" :
-              titleClass.type === "perf" ? "perf:" :
-              null;
+            const currentPrefix = titleClass.type !== "other"
+              ? (titleClass.breaking ? `${titleClass.type}!:` : `${titleClass.type}:`)
+              : null;
 
             if (currentPrefix === expectedPrefix) {
               core.info(`✓ PR title prefix "${currentPrefix}" matches highest commit intent.`);
@@ -95,13 +98,17 @@ jobs:
               newTitle = `${expectedPrefix} ${title}`;
             }
 
-            // Try to update
+            // Try to update, then FAIL to force rerun
             try {
               await github.rest.pulls.update({
                 owner, repo, pull_number: prNumber,
                 title: newTitle
               });
-              core.warning(`Updated PR title to: "${newTitle}"`);
+              // Fail after update to prevent race-merge
+              core.setFailed(
+                `PR title was updated to: "${newTitle}"\n\n` +
+                `This check will pass on the next run. Please wait for checks to re-run before merging.`
+              );
             } catch (err) {
               core.setFailed(
                 `PR title does not match highest commit intent.\n` +
