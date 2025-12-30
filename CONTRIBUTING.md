@@ -272,6 +272,18 @@ updating docs                           ← Missing type prefix!
 bug fix                                 ← Missing type prefix!
 ```
 
+### PR Title Enforcement
+
+A GitHub Action automatically ensures your PR title reflects the highest-priority commit type:
+
+1. Scans all commits in the PR for conventional commit prefixes
+2. Auto-updates the PR title if needed (e.g., `docs:` → `feat:` if there's a `feat:` commit)
+3. Passes with a warning after update
+
+**Priority order:** `feat!` > `feat` > `fix` > `perf` > `refactor` > `docs` > `chore` > `test` > `ci` > `build`
+
+This ensures squash-merge commits trigger the correct semantic-release.
+
 ## Deprecation Guidelines
 
 When removing or changing public APIs, follow our [Deprecation Policy](DEPRECATION.md).
