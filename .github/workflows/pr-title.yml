@@ -1,0 +1,122 @@
+name: PR Title
+
+on:
+  pull_request:
+    types: [opened, synchronize, edited, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  enforce-title:
+    name: Enforce Release Intent
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check and update PR title
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+            const title = context.payload.pull_request.title || "";
+
+            // Fetch all commits in PR
+            const commits = await github.paginate(
+              github.rest.pulls.listCommits,
+              { owner, repo, pull_number: prNumber, per_page: 100 }
+            );
+
+            const messages = commits.map(c => c.commit.message.split('\n')[0]);
+
+            // Conventional commit regex
+            const re = /^(feat|fix|perf|docs|chore|refactor|test|ci|build)(\([^)]+\))?(!)?:\s+/;
+
+            function classify(msg) {
+              const m = msg.match(re);
+              if (!m) return { type: "other", breaking: false };
+              return {
+                type: m[1],
+                breaking: Boolean(m[3]) || msg.includes("BREAKING CHANGE")
+              };
+            }
+
+            // Priority ranking (lower = higher priority)
+            // Breaking changes preserve their type but get highest priority
+            function rank(c) {
+              if (c.breaking) return 0;
+              if (c.type === "feat") return 1;
+              if (c.type === "fix") return 2;
+              if (c.type === "perf") return 3;
+              if (c.type === "refactor") return 4;
+              if (c.type === "docs") return 5;
+              if (c.type === "chore") return 6;
+              if (c.type === "test") return 7;
+              if (c.type === "ci") return 8;
+              if (c.type === "build") return 9;
+              return 10;
+            }
+
+            // Find highest priority commit
+            let best = { type: "other", breaking: false, msg: "" };
+            for (const msg of messages) {
+              const c = classify(msg);
+              if (rank(c) < rank(best)) {
+                best = { ...c, msg };
+              }
+            }
+
+            // Only enforce for release-triggering types
+            const releaseTypes = ["feat", "fix", "perf"];
+            if (!best.breaking && !releaseTypes.includes(best.type)) {
+              core.info(`No release-triggering commits (feat/fix/perf/breaking). Title not enforced.`);
+              return;
+            }
+
+            // Determine expected prefix (preserve type for breaking changes)
+            // If breaking but type is "other" (e.g., BREAKING CHANGE in body only), default to feat!:
+            const breakingType = best.type === "other" ? "feat" : best.type;
+            const expectedPrefix = best.breaking
+              ? `${breakingType}!:`
+              : `${best.type}:`;
+
+            // Check current title
+            const titleClass = classify(title);
+            const currentPrefix = titleClass.type !== "other"
+              ? (titleClass.breaking ? `${titleClass.type}!:` : `${titleClass.type}:`)
+              : null;
+
+            if (currentPrefix === expectedPrefix) {
+              core.info(`✓ PR title prefix "${currentPrefix}" matches highest commit intent.`);
+              return;
+            }
+
+            // Build corrected title (strip existing prefix if present, avoid double spaces)
+            let newTitle = title;
+            if (title.match(re)) {
+              // Replace existing prefix, trim any extra whitespace
+              newTitle = title.replace(re, "").trim();
+            }
+            newTitle = `${expectedPrefix} ${newTitle}`;
+
+            // Try to update the title
+            try {
+              await github.rest.pulls.update({
+                owner, repo, pull_number: prNumber,
+                title: newTitle
+              });
+              // Pass - title is now correct, squash-merge will use updated title
+              core.warning(
+                `PR title was auto-updated to: "${newTitle}"\n` +
+                `The squash-merge commit will use this corrected title.`
+              );
+            } catch (err) {
+              core.setFailed(
+                `PR title does not match highest commit intent.\n` +
+                `Expected prefix: ${expectedPrefix}\n` +
+                `Current title: "${title}"\n` +
+                `Suggested title: "${newTitle}"\n\n` +
+                `Please edit the PR title manually.`
+              );
+            }

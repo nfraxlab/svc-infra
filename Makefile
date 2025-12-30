@@ -1,8 +1,12 @@
 SHELL := /bin/bash
 RMI ?= all
 
-# Default for make pr sync flag
-sync ?= 0
+# Defaults for make pr flags
+sync  ?= 0
+new   ?= 0
+draft ?= 0
+b     ?=
+base  ?=
 
 .PHONY: help accept compose_up wait seed down pytest_accept unit unitv test lint type typecheck format format-check check ci clean clean-pycache setup-template run-template
 
