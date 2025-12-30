@@ -247,13 +247,16 @@ report: ## Production readiness gate (CI-friendly with exit codes)
 	if [ "$(REPORT_MODE)" = "ci" ]; then \
 		echo "   ⏭️  SKIP (CI mode - already ran in CI)"; \
 		LINT_OK=1; SCORE=$$((SCORE + 1)); \
-	elif poetry run ruff check src tests >/dev/null 2>&1; then \
-		echo "   ✅ PASS (1 pt)"; \
-		LINT_OK=1; SCORE=$$((SCORE + 1)); \
 	else \
-		echo "   ❌ FAIL - linting errors found:"; \
-		poetry run ruff check src tests 2>&1 | head -20; \
-		LINT_OK=0; \
+		set +e; poetry run ruff check src tests >/dev/null 2>&1; LINT_EXIT=$$?; set -e; \
+		if [ "$$LINT_EXIT" -eq 0 ]; then \
+			echo "   ✅ PASS (1 pt)"; \
+			LINT_OK=1; SCORE=$$((SCORE + 1)); \
+		else \
+			echo "   ❌ FAIL - linting errors found:"; \
+			poetry run ruff check src tests 2>&1 | head -20; \
+			LINT_OK=0; \
+		fi; \
 	fi; \
 	echo ""; \
 	\
@@ -261,13 +264,16 @@ report: ## Production readiness gate (CI-friendly with exit codes)
 	if [ "$(REPORT_MODE)" = "ci" ]; then \
 		echo "   ⏭️  SKIP (CI mode - already ran in CI)"; \
 		TYPE_OK=1; SCORE=$$((SCORE + 1)); \
-	elif poetry run mypy src >/dev/null 2>&1; then \
-		echo "   ✅ PASS (1 pt)"; \
-		TYPE_OK=1; SCORE=$$((SCORE + 1)); \
 	else \
-		echo "   ❌ FAIL - type errors found:"; \
-		poetry run mypy src 2>&1 | head -20; \
-		TYPE_OK=0; \
+		set +e; poetry run mypy src >/dev/null 2>&1; MYPY_EXIT=$$?; set -e; \
+		if [ "$$MYPY_EXIT" -eq 0 ]; then \
+			echo "   ✅ PASS (1 pt)"; \
+			TYPE_OK=1; SCORE=$$((SCORE + 1)); \
+		else \
+			echo "   ❌ FAIL - type errors found:"; \
+			poetry run mypy src 2>&1 | head -20; \
+			TYPE_OK=0; \
+		fi; \
 	fi; \
 	echo ""; \
 	\

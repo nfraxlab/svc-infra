@@ -100,16 +100,16 @@ jobs:
             }
             newTitle = `${expectedPrefix} ${newTitle}`;
 
-            // Try to update, then FAIL to force rerun
+            // Try to update the title
             try {
               await github.rest.pulls.update({
                 owner, repo, pull_number: prNumber,
                 title: newTitle
               });
-              // Fail after update to prevent race-merge
-              core.setFailed(
-                `PR title was updated to: "${newTitle}"\n\n` +
-                `This check will pass on the next run. Please wait for checks to re-run before merging.`
+              // Pass - title is now correct, squash-merge will use updated title
+              core.warning(
+                `PR title was auto-updated to: "${newTitle}"\n` +
+                `The squash-merge commit will use this corrected title.`
               );
             } catch (err) {
               core.setFailed(
