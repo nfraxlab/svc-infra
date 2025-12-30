@@ -18,10 +18,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Use RELEASE_TOKEN (PAT with bypass branch protection) for pushing
+      # Falls back to GITHUB_TOKEN if RELEASE_TOKEN is not set
       - name: Checkout (full history + tags)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -45,9 +48,14 @@ jobs:
       # - Changelog update
       # - Commit + tag + push
       # - GitHub Release creation
+      #
+      # RELEASE_TOKEN must be a PAT (Fine-grained) with:
+      # - Repository access: This repository
+      # - Permissions: Contents (Read and write)
+      # - Settings: "Bypass branch protections" enabled
       - name: Semantic Release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           poetry run semantic-release version
           git push origin main --tags
