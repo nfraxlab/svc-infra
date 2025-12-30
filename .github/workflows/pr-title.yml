@@ -1,0 +1,113 @@
+name: PR Title
+
+on:
+  pull_request:
+    types: [opened, synchronize, edited, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  enforce-title:
+    name: Enforce Release Intent
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check and update PR title
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+            const title = context.payload.pull_request.title || "";
+
+            // Fetch all commits in PR
+            const commits = await github.paginate(
+              github.rest.pulls.listCommits,
+              { owner, repo, pull_number: prNumber, per_page: 100 }
+            );
+
+            const messages = commits.map(c => c.commit.message.split('\n')[0]);
+
+            // Conventional commit regex
+            const re = /^(feat|fix|perf|docs|chore|refactor|test|ci|build)(\([^)]+\))?(!)?:\s+/;
+
+            function classify(msg) {
+              const m = msg.match(re);
+              if (!m) return { type: "other", breaking: false };
+              return {
+                type: m[1],
+                breaking: Boolean(m[3]) || msg.includes("BREAKING CHANGE")
+              };
+            }
+
+            // Priority: breaking > feat > fix > perf > others
+            function rank(c) {
+              if (c.breaking) return 0;
+              if (c.type === "feat") return 1;
+              if (c.type === "fix") return 2;
+              if (c.type === "perf") return 3;
+              return 10;
+            }
+
+            // Find highest priority commit
+            let best = { type: "other", breaking: false, msg: "" };
+            for (const msg of messages) {
+              const c = classify(msg);
+              if (rank(c) < rank(best)) {
+                best = { ...c, msg };
+              }
+            }
+
+            // Determine expected prefix
+            const expectedPrefix =
+              best.breaking ? "feat!:" :
+              best.type === "feat" ? "feat:" :
+              best.type === "fix" ? "fix:" :
+              best.type === "perf" ? "perf:" :
+              null;
+
+            if (!expectedPrefix) {
+              core.info("No feat/fix/perf/breaking commits. Title not enforced.");
+              return;
+            }
+
+            // Check current title
+            const titleClass = classify(title);
+            const currentPrefix =
+              titleClass.breaking ? "feat!:" :
+              titleClass.type === "feat" ? "feat:" :
+              titleClass.type === "fix" ? "fix:" :
+              titleClass.type === "perf" ? "perf:" :
+              null;
+
+            if (currentPrefix === expectedPrefix) {
+              core.info(`✓ PR title prefix "${currentPrefix}" matches highest commit intent.`);
+              return;
+            }
+
+            // Build corrected title
+            let newTitle = title;
+            if (title.match(re)) {
+              newTitle = title.replace(re, `${expectedPrefix} `);
+            } else {
+              newTitle = `${expectedPrefix} ${title}`;
+            }
+
+            // Try to update
+            try {
+              await github.rest.pulls.update({
+                owner, repo, pull_number: prNumber,
+                title: newTitle
+              });
+              core.warning(`Updated PR title to: "${newTitle}"`);
+            } catch (err) {
+              core.setFailed(
+                `PR title does not match highest commit intent.\n` +
+                `Expected prefix: ${expectedPrefix}\n` +
+                `Current title: "${title}"\n` +
+                `Suggested title: "${newTitle}"\n\n` +
+                `Please edit the PR title manually.`
+              );
+            }
