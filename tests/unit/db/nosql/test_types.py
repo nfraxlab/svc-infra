@@ -5,11 +5,10 @@ from __future__ import annotations
 import pytest
 
 # Skip entire module if pymongo/bson is not installed
-pytest.importorskip("bson", reason="pymongo not installed")
+bson = pytest.importorskip("bson", reason="pymongo not installed")
+ObjectId = bson.ObjectId
 
-from bson import ObjectId
-
-from svc_infra.db.nosql.types import PyObjectId
+from svc_infra.db.nosql.types import PyObjectId  # noqa: E402
 
 
 class TestPyObjectIdInheritance:
