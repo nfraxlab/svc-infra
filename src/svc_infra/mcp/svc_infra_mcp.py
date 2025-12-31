@@ -16,7 +16,7 @@ async def svc_infra_cmd_help() -> dict[Any, Any]:
     """
     Get help text for svc-infra CLI.
     - Prepares project env without chdir (so we can 'cd' in the command itself).
-    - Tries poetry → console script → python -m svc_infra.cli_shim.
+    - Tries poetry -> console script -> python -m svc_infra.cli_shim.
     """
     return cast("dict[Any, Any]", await cli_cmd_help(CLI_PROG))
 

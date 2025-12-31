@@ -35,10 +35,10 @@ def easy_storage(
     Auto-Detection Order:
         1. Explicit backend parameter
         2. STORAGE_BACKEND environment variable
-        3. Railway volume (RAILWAY_VOLUME_MOUNT_PATH) → LocalBackend
-        4. S3 credentials (AWS_ACCESS_KEY_ID or STORAGE_S3_BUCKET) → S3Backend
-        5. GCS credentials (GOOGLE_APPLICATION_CREDENTIALS) → GCSBackend
-        6. Cloudinary credentials (CLOUDINARY_URL) → CloudinaryBackend
+        3. Railway volume (RAILWAY_VOLUME_MOUNT_PATH) -> LocalBackend
+        4. S3 credentials (AWS_ACCESS_KEY_ID or STORAGE_S3_BUCKET) -> S3Backend
+        5. GCS credentials (GOOGLE_APPLICATION_CREDENTIALS) -> GCSBackend
+        6. Cloudinary credentials (CLOUDINARY_URL) -> CloudinaryBackend
         7. Default: MemoryBackend (with warning)
 
     Examples:

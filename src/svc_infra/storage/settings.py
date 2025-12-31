@@ -133,11 +133,11 @@ class StorageSettings(BaseSettings):
 
         Detection order:
             1. Explicit STORAGE_BACKEND setting
-            2. Railway volume (RAILWAY_VOLUME_MOUNT_PATH) → local
-            3. S3 credentials (AWS_ACCESS_KEY_ID or STORAGE_S3_BUCKET) → s3
-            4. GCS credentials (GOOGLE_APPLICATION_CREDENTIALS or STORAGE_GCS_BUCKET) → gcs
-            5. Cloudinary credentials (CLOUDINARY_URL or STORAGE_CLOUDINARY_CLOUD_NAME) → cloudinary
-            6. Default → memory (with warning)
+            2. Railway volume (RAILWAY_VOLUME_MOUNT_PATH) -> local
+            3. S3 credentials (AWS_ACCESS_KEY_ID or STORAGE_S3_BUCKET) -> s3
+            4. GCS credentials (GOOGLE_APPLICATION_CREDENTIALS or STORAGE_GCS_BUCKET) -> gcs
+            5. Cloudinary credentials (CLOUDINARY_URL or STORAGE_CLOUDINARY_CLOUD_NAME) -> cloudinary
+            6. Default -> memory (with warning)
 
         Returns:
             Backend type string

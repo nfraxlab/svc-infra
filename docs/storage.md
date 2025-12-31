@@ -19,13 +19,13 @@ The storage system provides:
 
 All storage backends implement the `StorageBackend` protocol with these core operations:
 
-- `put(key, data, content_type, metadata)` → Store file and return URL
-- `get(key)` → Retrieve file content
-- `delete(key)` → Remove file
-- `exists(key)` → Check if file exists
-- `get_url(key, expires_in, download)` → Generate signed/public URL
-- `list_keys(prefix, limit)` → List stored files
-- `get_metadata(key)` → Get file metadata
+- `put(key, data, content_type, metadata)` -> Store file and return URL
+- `get(key)` -> Retrieve file content
+- `delete(key)` -> Remove file
+- `exists(key)` -> Check if file exists
+- `get_url(key, expires_in, download)` -> Generate signed/public URL
+- `list_keys(prefix, limit)` -> List stored files
+- `get_metadata(key)` -> Get file metadata
 
 This abstraction enables:
 - Switching storage providers without code changes
@@ -154,10 +154,10 @@ For image optimization and transformations:
 
 When `STORAGE_BACKEND` is not set, the system auto-detects the backend in this order:
 
-1. **Railway Volume**: If `RAILWAY_VOLUME_MOUNT_PATH` exists → `LocalBackend`
-2. **S3 Credentials**: If `AWS_ACCESS_KEY_ID` or `STORAGE_S3_BUCKET` exists → `S3Backend`
-3. **GCS Credentials**: If `GOOGLE_APPLICATION_CREDENTIALS` exists → `GCSBackend` (coming soon)
-4. **Cloudinary**: If `CLOUDINARY_URL` exists → `CloudinaryBackend` (coming soon)
+1. **Railway Volume**: If `RAILWAY_VOLUME_MOUNT_PATH` exists -> `LocalBackend`
+2. **S3 Credentials**: If `AWS_ACCESS_KEY_ID` or `STORAGE_S3_BUCKET` exists -> `S3Backend`
+3. **GCS Credentials**: If `GOOGLE_APPLICATION_CREDENTIALS` exists -> `GCSBackend` (coming soon)
+4. **Cloudinary**: If `CLOUDINARY_URL` exists -> `CloudinaryBackend` (coming soon)
 5. **Default**: `MemoryBackend` (with warning about data loss)
 
 **Production Recommendation**: Always set `STORAGE_BACKEND` explicitly to avoid unexpected behavior.
@@ -1269,16 +1269,16 @@ def recommend_storage_backend(
 
     # Add access pattern considerations
     if access_pattern == "hot" and monthly_egress_gb > 100:
-        # High egress → R2 wins
+        # High egress -> R2 wins
         return "Cloudflare R2"
     elif access_pattern == "cold":
-        # Archive → Wasabi or Glacier
+        # Archive -> Wasabi or Glacier
         return "Wasabi or S3 Glacier"
     elif monthly_storage_gb < 50 and monthly_egress_gb < 100:
-        # Small scale → DigitalOcean Spaces for simplicity
+        # Small scale -> DigitalOcean Spaces for simplicity
         return "DigitalOcean Spaces"
     else:
-        # General → pick cheapest
+        # General -> pick cheapest
         return min(costs, key=costs.get)
 ```
 

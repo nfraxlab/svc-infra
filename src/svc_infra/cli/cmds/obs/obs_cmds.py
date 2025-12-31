@@ -102,9 +102,9 @@ def _choose_port(preferred: int, limit: int = 15) -> int:
 def up():
     """
     Auto-detect mode:
-      - If GRAFANA_CLOUD_URL & GRAFANA_CLOUD_TOKEN → Cloud mode (push dashboards).
-        If remote_write creds present → also run local Agent to push metrics.
-      - Else → Local mode (Grafana + Prometheus).
+      - If GRAFANA_CLOUD_URL & GRAFANA_CLOUD_TOKEN -> Cloud mode (push dashboards).
+        If remote_write creds present -> also run local Agent to push metrics.
+      - Else -> Local mode (Grafana + Prometheus).
     """
     # NEW: load .env once, best-effort, without crashing if package missing
     if load_dotenv is not None:
@@ -162,8 +162,8 @@ def up():
         ["docker", "compose", "-f", str(root / "docker-compose.yml"), "up", "-d"],
         env=env,
     )
-    typer.echo(f"Local Grafana → http://localhost:{local_graf}  (admin/admin)")
-    typer.echo(f"Local Prometheus → http://localhost:{local_prom}")
+    typer.echo(f"Local Grafana -> http://localhost:{local_graf}  (admin/admin)")
+    typer.echo(f"Local Prometheus -> http://localhost:{local_prom}")
 
 
 def down():

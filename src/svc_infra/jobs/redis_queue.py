@@ -179,7 +179,7 @@ class RedisJobQueue(JobQueue):
         available_at = (
             datetime.fromisoformat(available_at_str) if available_at_str else datetime.now(UTC)
         )
-        # If exceeded max_attempts → DLQ and skip
+        # If exceeded max_attempts -> DLQ and skip
         if attempts > max_attempts:
             self._r.lrem(self._k("processing"), 1, job_id)
             self._r.zrem(self._k("processing_vt"), job_id)

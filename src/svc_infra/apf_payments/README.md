@@ -4,7 +4,7 @@ A unified payments abstraction for FastAPI services supporting multiple payment 
 
 **Key Features:**
 -  **Zero-boilerplate setup** – One function call creates a production-ready service
-- 🔌 **Multi-provider support** – Stripe, Aiydan, or custom adapters
+-  **Multi-provider support** – Stripe, Aiydan, or custom adapters
 - 🛡 **Built-in security** – Idempotency, rate limiting, webhook verification, auth guards
 -  **Observability included** – Prometheus metrics, OpenTelemetry tracing, structured logging
 -  **Auto-configuration** – Reads environment variables, sensible defaults
@@ -116,8 +116,8 @@ add_payments(app, prefix="/payments")
 All payments endpoints require a tenant identifier. The FastAPI router now
 derives it automatically from the authenticated principal:
 
-- API key principals → ``principal.api_key.tenant_id``
-- User principals → ``principal.user.tenant_id``
+- API key principals -> ``principal.api_key.tenant_id``
+- User principals -> ``principal.user.tenant_id``
 - Fallbacks: ``X-Tenant-Id`` request header or ``request.state.tenant_id``
 
 If you need custom mapping logic (for example, translating API keys to an
@@ -407,7 +407,7 @@ app = easy_service_app(
 )
 ```
 
-**Configuration Precedence** (strongest → weakest):
+**Configuration Precedence** (strongest -> weakest):
 1. Function arguments (`enable_logging`, `enable_observability`)
 2. `options=` parameter
 3. Environment variables (`ENABLE_LOGGING`, `ENABLE_OBS`, etc.)

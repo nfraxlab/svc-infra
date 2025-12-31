@@ -53,10 +53,10 @@ make pr m="feat: add your feature"
 
 **Mode A: Start a new PR** (on default branch OR with `new=1`)
 ```bash
-# On main → creates new branch + PR, stays on new branch
+# On main -> creates new branch + PR, stays on new branch
 make pr m="feat: add caching middleware"
 
-# On feature branch → split commits into new PR
+# On feature branch -> split commits into new PR
 make pr m="feat: split this work" new=1
 ```
 
@@ -267,9 +267,9 @@ test: add unit tests for webhook signing
 
 **Bad examples (will be grouped as "Other Changes"):**
 ```
-Refactor code for improved readability  ← Missing type prefix!
-updating docs                           ← Missing type prefix!
-bug fix                                 ← Missing type prefix!
+Refactor code for improved readability  <- Missing type prefix!
+updating docs                           <- Missing type prefix!
+bug fix                                 <- Missing type prefix!
 ```
 
 ### PR Title Enforcement
@@ -277,7 +277,7 @@ bug fix                                 ← Missing type prefix!
 A GitHub Action automatically ensures your PR title reflects the highest-priority commit type:
 
 1. Scans all commits in the PR for conventional commit prefixes
-2. Auto-updates the PR title if needed (e.g., `docs:` → `feat:` if there's a `feat:` commit)
+2. Auto-updates the PR title if needed (e.g., `docs:` -> `feat:` if there's a `feat:` commit)
 3. Passes with a warning after update
 
 **Priority order:** `feat!` > `feat` > `fix` > `perf` > `refactor` > `docs` > `chore` > `test` > `ci` > `build`
@@ -365,11 +365,11 @@ Every PR triggers our CI pipeline. Understanding the flow helps you debug failur
          └────────┬────────┘
                   ▼
             ┌───────────┐
-            │   test    │  ← runs AFTER lint & type-check pass
+            │   test    │  <- runs AFTER lint & type-check pass
             │ (pytest)  │
             └─────┬─────┘
                   │
-                  ▼ (only PRs → main with code/packaging changes)
+                  ▼ (only PRs -> main with code/packaging changes)
     ┌──────────────────────────────┐
     │   production-readiness       │
     │   • Vulnerability scan       │
@@ -389,7 +389,7 @@ make report STRICT=1 REPORT_MODE=ci
 
 **Key behaviors:**
 - `REPORT_MODE=ci` skips lint/mypy/pytest (already ran in earlier jobs)
-- `STRICT=1` enforces score ≥ 9/11 and requires pip-audit
+- `STRICT=1` enforces score >= 9/11 and requires pip-audit
 - CI mode requires `LINT_PASSED=1`, `TYPE_PASSED=1`, `TESTS_PASSED=1` environment variables (set by upstream jobs)
 
 ### Local Testing
@@ -414,7 +414,7 @@ make report COV_MIN=80
 | Linting (ruff) | 1 | Must pass |
 | Type checking (mypy) | 1 | Must pass |
 | Tests pass | 2 | All tests green |
-| Coverage ≥ threshold | 2 | Default: 60% |
+| Coverage >= threshold | 2 | Default: 60% |
 | No vulnerabilities | 2 | pip-audit clean |
 | Package builds | 2 | poetry build + twine check |
 | Documentation | 1 | README + docs/ |

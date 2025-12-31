@@ -259,7 +259,7 @@ poetry run python -m svc_infra.db scaffold-schemas \
 
 ### Conventions
 
-- `WidgetThing` → class `WidgetThing`, table `widget_things`, default filename `widget_thing.py`.
+- `WidgetThing` -> class `WidgetThing`, table `widget_things`, default filename `widget_thing.py`.
 - Models include: id, name, description, is_active, timestamps, extra JSON; optional tenant_id, optional soft delete (deleted_at).
 - Schemas include: Base/Create/Update/Read and timestamp mixin; optional tenant fields.
 - `__init__.py` is created to make packages importable and (when `--same-dir`) to re-export models and schemas.

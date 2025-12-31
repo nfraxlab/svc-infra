@@ -33,7 +33,7 @@ make run
 
 **Then customize:**
 - Update service name in `main.py` (ServiceInfo)
-- Update package names (`svc_infra_template` → `your_service`)
+- Update package names (`svc_infra_template` -> `your_service`)
 - Enable features you need (uncomment in main.py)
 - Add your own routes in `api/v1/routes.py`
 

@@ -11,7 +11,7 @@ Without proper timeouts:
 
 ```
 Client ──slow upload──────────────────────────> Server (resources consumed)
-         ← worker blocked indefinitely ────────────────────────────>
+         <- worker blocked indefinitely ────────────────────────────>
                                                 Other requests starve
 ```
 
@@ -92,7 +92,7 @@ app.add_middleware(BodyReadTimeoutMiddleware, timeout_seconds=15)
 
 1. Middleware greedily drains incoming request body
 2. Each chunk must arrive within the timeout
-3. If timeout expires between chunks → 408 Response
+3. If timeout expires between chunks -> 408 Response
 4. Body is buffered and replayed to the handler
 
 **Response on timeout:**
@@ -217,7 +217,7 @@ from svc_infra.api.fastapi.middleware.errors.handlers import register_error_hand
 
 register_error_handlers(app)
 
-# Now httpx.TimeoutException → 504 Gateway Timeout
+# Now httpx.TimeoutException -> 504 Gateway Timeout
 ```
 
 **Response:**

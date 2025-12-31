@@ -226,7 +226,7 @@ def easy_service_app(
         enable_observability: Override to enable/disable observability.
         **fastapi_kwargs: Additional kwargs passed to FastAPI constructor.
 
-    Precedence (strongest → weakest):
+    Precedence (strongest -> weakest):
         1) enable_logging / enable_observability args
         2) `options=` object (per-field)
         3) `EasyAppOptions.from_env()`
@@ -264,7 +264,7 @@ def easy_service_app(
                 dev=LogLevelOptions.DEBUG,
                 local=LogLevelOptions.DEBUG,
             ),
-            fmt=effective.logging.fmt,  # None → auto (json in prod, plain elsewhere)
+            fmt=effective.logging.fmt,  # None -> auto (json in prod, plain elsewhere)
         )
 
     # 4) App

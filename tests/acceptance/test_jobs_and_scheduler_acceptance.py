@@ -30,7 +30,7 @@ def test_a402_retry_and_backoff(client):
         json={"name": "a4.fail", "payload": {"y": 2}, "backoff_seconds": 1},
     )
     jid = r.json()["id"]
-    # First process → should fail and schedule retry in ~1s
+    # First process -> should fail and schedule retry in ~1s
     r = client.post("/jobs/process-one")
     assert r.status_code == 200 and r.json()["processed"] is True
     # Immediately processing again should find none due to backoff
@@ -38,7 +38,7 @@ def test_a402_retry_and_backoff(client):
     assert r.status_code == 200 and r.json()["processed"] is False
     # Force due time to now for determinism
     client.post("/jobs/make-due", json={"id": jid})
-    # Process again → should succeed on second attempt
+    # Process again -> should succeed on second attempt
     r = client.post("/jobs/process-one")
     assert r.status_code == 200 and r.json()["processed"] is True
     # Verify attempts recorded >= 2 for this job id

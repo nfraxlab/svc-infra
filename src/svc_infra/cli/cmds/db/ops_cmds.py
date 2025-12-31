@@ -83,7 +83,7 @@ def cmd_wait(
 
             if not quiet:
                 msg = result.message or "Connection failed"
-                typer.echo(f"  → {msg}")
+                typer.echo(f"  -> {msg}")
 
             remaining = deadline - time.monotonic()
             if remaining > 0:

@@ -120,9 +120,9 @@ def make_billing_job_handler(
 
     Supported jobs and their expected payloads:
     - billing.aggregate_daily {tenant_id, metric, day_start: ISO8601}
-      → emits topic 'billing.usage_aggregated'
+      -> emits topic 'billing.usage_aggregated'
     - billing.generate_monthly_invoice {tenant_id, period_start: ISO8601, period_end: ISO8601, currency}
-      → emits topic 'billing.invoice.created'
+      -> emits topic 'billing.invoice.created'
     """
 
     async def _maybe_commit(session: Any) -> None:

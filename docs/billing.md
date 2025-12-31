@@ -645,7 +645,7 @@ async def change_plan(
                 session,
                 subscription.tenant_id,
                 amount=int(adjustment * 100),  # Convert to cents
-                description=f"Plan change: {old_plan.name} → {new_plan.name}",
+                description=f"Plan change: {old_plan.name} -> {new_plan.name}",
             )
 
     subscription.plan_id = new_plan_id

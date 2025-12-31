@@ -11,17 +11,17 @@ network retries, client bugs, or infrastructure failures.
 Without idempotency protection:
 
 ```
-Client → POST /payments → Server (success, 200)
-       ← (network timeout, no response received)
-Client → POST /payments → Server (duplicate charge!)
+Client -> POST /payments -> Server (success, 200)
+       <- (network timeout, no response received)
+Client -> POST /payments -> Server (duplicate charge!)
 ```
 
 With idempotency:
 
 ```
-Client → POST /payments + Idempotency-Key: abc123 → Server (success, 200)
-       ← (network timeout, no response received)
-Client → POST /payments + Idempotency-Key: abc123 → Server (cached 200, no duplicate)
+Client -> POST /payments + Idempotency-Key: abc123 -> Server (success, 200)
+       <- (network timeout, no response received)
+Client -> POST /payments + Idempotency-Key: abc123 -> Server (cached 200, no duplicate)
 ```
 
 ---
@@ -75,8 +75,8 @@ app.add_middleware(
 │  5. Check store for existing entry:                                     │
 │     ┌────────────────────────────────────────────────────────────┐     │
 │     │ Entry exists and not expired?                               │     │
-│     │   ├─ Payload hash matches? → Return cached response         │     │
-│     │   └─ Payload hash differs? → Return 409 Conflict            │     │
+│     │   ├─ Payload hash matches? -> Return cached response         │     │
+│     │   └─ Payload hash differs? -> Return 409 Conflict            │     │
 │     │ Entry doesn't exist?                                        │     │
 │     │   └─ Claim key, execute request, cache response             │     │
 │     └────────────────────────────────────────────────────────────┘     │
@@ -338,9 +338,9 @@ idempotency_key = f"stripe_intent:{payment_intent_id}"
 
 ### Key Reuse Rules
 
-1. **Same key + same payload** → Returns cached response [OK]
-2. **Same key + different payload** → Returns 409 Conflict [X]
-3. **Different key + same payload** → Executes again (new operation) [!]
+1. **Same key + same payload** -> Returns cached response [OK]
+2. **Same key + different payload** -> Returns 409 Conflict [X]
+3. **Different key + same payload** -> Executes again (new operation) [!]
 
 ### TTL Considerations
 

@@ -242,7 +242,7 @@ if is_preview():
 **Resolution:**
 
 1. `RAILWAY_ENVIRONMENT` (Railway)
-2. `IS_PULL_REQUEST` → "preview" (Render)
+2. `IS_PULL_REQUEST` -> "preview" (Render)
 3. `APP_ENV`, `ENVIRONMENT`, `ENV` (generic)
 4. Default: "local"
 

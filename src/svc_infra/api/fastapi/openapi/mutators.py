@@ -934,7 +934,7 @@ def ensure_examples_for_json_mutator(example_by_type=None):
             item = sch.get("items") or {}
             ex = _infer_example(item)
             return [] if ex is None else [ex]
-        # for object/$ref/unknown → don’t auto-example
+        # for object/$ref/unknown -> don’t auto-example
         return None
 
     def m(schema: dict) -> dict:
@@ -987,7 +987,7 @@ def ensure_media_examples_mutator():
         if "$ref" in sch:
             return None
         t = sch.get("type")
-        # object-ish → skip (likely has required/properties)
+        # object-ish -> skip (likely has required/properties)
         if t == "object" or "properties" in sch or "required" in sch:
             return None
         if t == "array":
@@ -1240,7 +1240,7 @@ def scrub_invalid_object_examples_mutator():
         if not isinstance(sch, dict) or not isinstance(ex, dict):
             return False
         if "$ref" in sch:
-            return True  # can't validate here → drop
+            return True  # can't validate here -> drop
         if sch.get("type") == "object" or "properties" in sch or "required" in sch:
             req = set(sch.get("required") or [])
             return bool(req) and not req.issubset(ex.keys())

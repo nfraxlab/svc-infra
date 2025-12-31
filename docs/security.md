@@ -38,7 +38,7 @@ Example toggles (pseudo-config):
 
 Key API (from `svc_infra.security.lockout`):
 - `LockoutConfig(threshold=5, window_minutes=15, base_cooldown_seconds=30, max_cooldown_seconds=3600)`
-- `compute_lockout(fail_count, cfg)` → `LockoutStatus(locked, next_allowed_at, failure_count)`
+- `compute_lockout(fail_count, cfg)` -> `LockoutStatus(locked, next_allowed_at, failure_count)`
 - `record_attempt(session, user_id, ip_hash, success)`
 - `get_lockout_status(session, user_id, ip_hash, cfg)`
 

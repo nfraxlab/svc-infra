@@ -60,7 +60,7 @@ async def verify_mfa_for_user(
         await session.flush()  # persist mutation for MutableList
         return MFAResult(ok=True, method="recovery", attempts_left=None)
 
-    # C) Email OTP (requires pre_token → uid)
+    # C) Email OTP (requires pre_token -> uid)
     if proof.pre_token:
         try:
             pre = await get_mfa_pre_jwt_writer().read(proof.pre_token)

@@ -280,7 +280,7 @@ def test_impersonation_requires_permission():
     app = make_test_app()
     add_admin(app, impersonation_user_getter=lambda req, uid: User(id=uid))
 
-    # Without admin role → 403
+    # Without admin role -> 403
     client = TestClient(app)
     r = client.post("/admin/impersonate/start", json={"user_id": "u-2", "reason": "test"})
     assert r.status_code == 403

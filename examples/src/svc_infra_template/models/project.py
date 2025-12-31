@@ -106,7 +106,7 @@ def create_entity_service(
 ):
     """
     Build a generic entity Service that:
-      • Normalizes payload (metadata→extra, trims name)
+      • Normalizes payload (metadata->extra, trims name)
       • Enforces uniqueness via dedupe_sql_service (CI by default on 'name')
       • Returns 409 like: "Record with name='Foo' already exists."
       • Accepts extra pre-hooks for project-specific rules.

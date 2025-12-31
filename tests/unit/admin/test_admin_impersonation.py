@@ -37,13 +37,13 @@ def _make_app(with_admin: bool) -> FastAPI:
 
 
 def test_start_requires_permission_and_logs(caplog):
-    # Without admin → forbidden
+    # Without admin -> forbidden
     app = _make_app(with_admin=False)
     with TestClient(app) as c:
         r = c.post("/admin/impersonate/start", json={"user_id": "u-imp", "reason": "unit"})
         assert r.status_code == 403
 
-    # With admin → 204 and log emitted
+    # With admin -> 204 and log emitted
     app = _make_app(with_admin=True)
     with TestClient(app) as c:
         caplog.clear()

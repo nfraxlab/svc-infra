@@ -684,7 +684,7 @@ This project demonstrates a **flexible, team-friendly** approach to using svc-in
 ###  Why This Pattern?
 
 - **Pick What You Need**: Enable only the features your team requires (DB, auth, payments, etc.)
-- **Clear Extension Points**: Organized in 4 steps: Logging → Service → Features → Custom
+- **Clear Extension Points**: Organized in 4 steps: Logging -> Service -> Features -> Custom
 - **Team Autonomy**: Each team can customize service metadata, environment behavior, and feature set
 - **Production-Ready**: Explicit configuration makes behavior predictable and debuggable
 - **Gradual Adoption**: Start simple, add features as you grow

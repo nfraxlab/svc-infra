@@ -68,10 +68,10 @@ async def test_webhooks_e2e_publish_to_delivery_retry(monkeypatch):
     svc = WebhookService(outbox=outbox, subs=subs)
     queue = InMemoryJobQueue()
 
-    # Publish event → outbox
+    # Publish event -> outbox
     outbox_id = svc.publish("invoice.created", {"id": "inv_X", "version": 2})
 
-    # Outbox tick → enqueue job
+    # Outbox tick -> enqueue job
     tick = make_outbox_tick(outbox, queue)
     await tick()
 

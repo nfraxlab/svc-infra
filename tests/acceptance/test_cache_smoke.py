@@ -23,15 +23,15 @@ def test_cache_read_write_smoke_in_memory_backend():
     async def set_thing(*, id: int, v: int):
         return {"id": id, "v": v}
 
-    # First call → miss, compute
+    # First call -> miss, compute
     v1 = asyncio.get_event_loop().run_until_complete(get_thing(id=1))
     assert v1 == {"id": 1, "v": 1}
 
-    # Second call → hit (no new compute)
+    # Second call -> hit (no new compute)
     v2 = asyncio.get_event_loop().run_until_complete(get_thing(id=1))
     assert v2 == {"id": 1, "v": 1}
 
-    # Mutate → invalidates tag, next read recomputes
+    # Mutate -> invalidates tag, next read recomputes
     asyncio.get_event_loop().run_until_complete(set_thing(id=1, v=99))
     v3 = asyncio.get_event_loop().run_until_complete(get_thing(id=1))
     assert v3 == {"id": 1, "v": 2}

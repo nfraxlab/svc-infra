@@ -36,13 +36,13 @@ async def public_endpoint(tenant_id: str | None = Depends(OptionalTenantId)):
 The SDK resolves tenant ID through a configurable priority chain:
 
 ```
-1. Global Override Hook  →  set_tenant_resolver()
+1. Global Override Hook  ->  set_tenant_resolver()
          ↓
-2. Auth Identity         →  user.tenant_id or api_key.tenant_id
+2. Auth Identity         ->  user.tenant_id or api_key.tenant_id
          ↓
-3. HTTP Header          →  X-Tenant-Id
+3. HTTP Header          ->  X-Tenant-Id
          ↓
-4. Request State        →  request.state.tenant_id
+4. Request State        ->  request.state.tenant_id
 ```
 
 Each step is attempted in order. The first non-null value becomes the active tenant.
@@ -224,11 +224,11 @@ router = make_crud_router_tenant(
 )
 
 # All routes now require TenantId:
-# GET  /items       → lists only tenant's items
-# POST /items       → creates with tenant_id injected
-# GET  /items/{id}  → returns 404 if item belongs to different tenant
-# PUT  /items/{id}  → updates only if item belongs to tenant
-# DELETE /items/{id} → deletes only if item belongs to tenant
+# GET  /items       -> lists only tenant's items
+# POST /items       -> creates with tenant_id injected
+# GET  /items/{id}  -> returns 404 if item belongs to different tenant
+# PUT  /items/{id}  -> updates only if item belongs to tenant
+# DELETE /items/{id} -> deletes only if item belongs to tenant
 ```
 
 ### Manual Tenant Injection

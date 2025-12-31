@@ -156,7 +156,7 @@ def cmd_wait(
 
             if not quiet:
                 msg = result.message or "Unhealthy"
-                typer.echo(f"  → {msg}")
+                typer.echo(f"  -> {msg}")
 
             remaining = deadline - time.monotonic()
             if remaining > 0:

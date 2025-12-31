@@ -618,7 +618,7 @@ async def create_widget(payload: dict, tenant_id: _TenantId):  # type: ignore[na
     if quota <= 0:
         quota = 2
     if len(items) >= quota:
-        # Quota exceeded → 429 with Retry-After to mirror RL semantics
+        # Quota exceeded -> 429 with Retry-After to mirror RL semantics
         from fastapi import Response
 
         r = Response(status_code=429)
@@ -881,7 +881,7 @@ app.include_router(_sec)
 app.include_router(build_session_router(), prefix="/users")
 
 # ---------------- Acceptance-only minimal auth flow (A1-01) -----------------
-# This block implements a tiny in-memory register → verify → login → /auth/me
+# This block implements a tiny in-memory register -> verify -> login -> /auth/me
 # flow so we can acceptance-test auth without a backing SQL user model.
 
 _auth_router = APIRouter(prefix="/auth", tags=["acceptance-auth"])
@@ -1154,7 +1154,7 @@ async def _accept_login(request: Request):
         # Record failure
         u_list.append(now)
         i_list.append(now)
-        # keep lists ordered oldest→newest; already true via append
+        # keep lists ordered oldest->newest; already true via append
         # If this failure reaches/exceeds threshold, trigger lockout immediately
         if len(u_list) >= _LockCfg.threshold or len(i_list) >= _LockCfg.threshold:
             exponent = max(len(u_list), len(i_list)) - _LockCfg.threshold
@@ -1288,7 +1288,7 @@ async def _accept_apikey_revoke(key_id: str, request: Request):
     try:
         kid = uuid.UUID(key_id)
     except Exception:
-        # treat as not found → 204
+        # treat as not found -> 204
         return
     row = _keys_by_id.get(kid)
     if not row:

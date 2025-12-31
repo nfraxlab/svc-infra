@@ -171,12 +171,12 @@ When using the scaffolding scripts:
 
 ## Edge Cases Handled
 
-- [OK] Both model and schema exist → Skip
-- [OK] Only model exists → Skip (partial existence)
-- [OK] Only schema exists → Skip (partial existence)
-- [OK] Neither exists → Scaffold normally
-- [OK] --overwrite flag → Bypass all checks
-- [OK] Multiple models → Independent checking
+- [OK] Both model and schema exist -> Skip
+- [OK] Only model exists -> Skip (partial existence)
+- [OK] Only schema exists -> Skip (partial existence)
+- [OK] Neither exists -> Scaffold normally
+- [OK] --overwrite flag -> Bypass all checks
+- [OK] Multiple models -> Independent checking
 
 ## Files Modified
 

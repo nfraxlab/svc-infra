@@ -47,8 +47,8 @@ from svc_infra_template.settings import settings
 #   - Defaults to 'local' if neither is set
 #
 # Log format is auto-selected:
-#   - prod/test → JSON format (structured, machine-readable)
-#   - dev/local → Plain format (human-readable, colorized)
+#   - prod/test -> JSON format (structured, machine-readable)
+#   - dev/local -> Plain format (human-readable, colorized)
 #
 # You can override via env vars: LOG_LEVEL, LOG_FORMAT
 

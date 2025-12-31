@@ -52,7 +52,7 @@ We aim for a 90-day disclosure timeline, but may request extensions for complex 
 
 ## Security Update Process
 
-1. Security fixes are released as patch versions (e.g., 0.1.x → 0.1.x+1)
+1. Security fixes are released as patch versions (e.g., 0.1.x -> 0.1.x+1)
 2. All security releases include a GitHub Security Advisory
 3. Users are notified via:
    - GitHub Security Advisories

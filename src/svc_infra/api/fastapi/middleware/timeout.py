@@ -136,7 +136,7 @@ class BodyReadTimeoutMiddleware:
                     break
                 # Ignore other message types and continue
         except TimeoutError:
-            # Timed out while waiting for the next body chunk → return 408
+            # Timed out while waiting for the next body chunk -> return 408
             request = Request(scope, receive=receive)
             trace_id = None
             for h in ("x-request-id", "x-correlation-id", "x-trace-id"):

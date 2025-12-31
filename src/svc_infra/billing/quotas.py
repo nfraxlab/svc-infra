@@ -38,7 +38,7 @@ def require_quota(metric: str, *, window: str = "day", soft: bool = True):
     async def _dep(tenant_id: TenantId, session: SqlSessionDep) -> None:
         sub = await _current_subscription(session, tenant_id)
         if sub is None:
-            # no subscription → allow (unlimited) by default
+            # no subscription -> allow (unlimited) by default
             return
         ent = (
             (
@@ -54,7 +54,7 @@ def require_quota(metric: str, *, window: str = "day", soft: bool = True):
             .first()
         )
         if ent is None:
-            # no entitlement → unlimited
+            # no entitlement -> unlimited
             return
         # compute current window start
         now = datetime.now(tz=UTC)

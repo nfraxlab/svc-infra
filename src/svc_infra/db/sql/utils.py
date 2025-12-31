@@ -130,7 +130,7 @@ def _normalize_database_url(url: str) -> str:
     Normalize database URL for SQLAlchemy compatibility.
 
     Handles:
-      - postgres:// → postgresql:// (Heroku/Railway legacy format)
+      - postgres:// -> postgresql:// (Heroku/Railway legacy format)
       - Strips whitespace
 
     Args:
@@ -312,7 +312,7 @@ def _is_mod_available(name: str) -> bool:
 def _coerce_sync_driver(u: URL) -> URL:
     """
     If URL has no explicit sync driver, pick one that’s available.
-    Postgres preference: psycopg (v3) → psycopg2
+    Postgres preference: psycopg (v3) -> psycopg2
     Optional override: DB_FORCE_DRIVER=psycopg|psycopg2
     """
     dn = (u.drivername or "").lower()
@@ -353,7 +353,7 @@ def _coerce_pg_maintenance_driver(u: URL) -> URL:
     Ensure the maintenance connection for Postgres uses a sync driver that is installed,
     because ensure_database_exists() often needs a *sync* connection for CREATE DATABASE.
     """
-    # If async → leave to async branch; this is for sync path only.
+    # If async -> leave to async branch; this is for sync path only.
     if "+" in (u.drivername or ""):
         # If explicit async driver was given, leave it (caller decides).
         return u

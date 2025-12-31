@@ -44,8 +44,8 @@ def cmd_scaffold(
 ):
     """
     Scaffold starter models/schemas for either:
-    - kind=auth   → app/auth/models.py + schemas.py
-    - kind=entity → app/models/<file>.py + app/schemas/<file>.py
+    - kind=auth   -> app/auth/models.py + schemas.py
+    - kind=entity -> app/models/<file>.py + app/schemas/<file>.py
     """
     res = scaffold_core(
         models_dir=models_dir,
@@ -84,8 +84,8 @@ def cmd_scaffold_models(
 ):
     """
     Scaffold starter SQLAlchemy models for either:
-    - kind=auth   → app/auth/models.py
-    - kind=entity → app/models/<file>.py
+    - kind=auth   -> app/auth/models.py
+    - kind=entity -> app/models/<file>.py
     """
     res = scaffold_models_core(
         dest_dir=dest_dir,
@@ -119,8 +119,8 @@ def cmd_scaffold_schemas(
 ):
     """
     Scaffold starter Pydantic schemas for either:
-    - kind=auth   → app/auth/schemas.py
-    - kind=entity → app/schemas/<file>.py
+    - kind=auth   -> app/auth/schemas.py
+    - kind=entity -> app/schemas/<file>.py
     """
     res = scaffold_schemas_core(
         dest_dir=dest_dir,

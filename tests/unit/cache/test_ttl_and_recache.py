@@ -6,11 +6,11 @@ from svc_infra.cache.ttl import TTL_DEFAULT, TTL_LONG, TTL_SHORT, get_ttl, valid
 
 
 def test_validate_ttl_uses_defaults_for_none_and_negative(monkeypatch):
-    # None → default
+    # None -> default
     assert validate_ttl(None) == TTL_DEFAULT
-    # negative → default
+    # negative -> default
     assert validate_ttl(-5) == TTL_DEFAULT
-    # valid → as-is
+    # valid -> as-is
     assert validate_ttl(60) == 60
 
 
@@ -20,7 +20,7 @@ def test_get_ttl_map_values(monkeypatch):
     assert get_ttl("long") == TTL_LONG
     # case-insensitive
     assert get_ttl("ShOrT") == TTL_SHORT
-    # invalid → None
+    # invalid -> None
     assert get_ttl("nope") is None
 
 

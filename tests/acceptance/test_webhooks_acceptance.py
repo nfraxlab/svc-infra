@@ -64,7 +64,7 @@ def test_a501_signature_and_delivery_with_retry(client):
     # Immediate second process should find nothing due to backoff
     assert _process_one(client) is False
 
-    # Force the job to be due again (acceptance helper) and process → should succeed now
+    # Force the job to be due again (acceptance helper) and process -> should succeed now
     client.post("/jobs/make-due", json={})
     assert _process_one(client) is True
 

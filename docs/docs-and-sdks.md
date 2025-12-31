@@ -312,7 +312,7 @@ svc-infra sdk postman openapi.json \
 
 **Import into Postman:**
 1. Open Postman
-2. File → Import → Upload Files
+2. File -> Import -> Upload Files
 3. Select `postman_collection.json`
 4. All endpoints are ready with examples
 

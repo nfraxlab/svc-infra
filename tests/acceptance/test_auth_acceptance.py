@@ -20,7 +20,7 @@ def local_client(_acceptance_app_ready):
 
 class TestSecurityAcceptance:
     def test_rbac_denied(self, local_client: TestClient):
-        # Default principal has no roles → missing user.write permission
+        # Default principal has no roles -> missing user.write permission
         r = local_client.get("/secure/admin-only")
         assert r.status_code == 403
         assert "missing_permissions" in r.json().get("detail", "")
@@ -50,12 +50,12 @@ class TestSecurityAcceptance:
         # user.id is 'u-1' set by acceptance principal; ABAC should pass when owner_id matches
         r_ok = local_client.get("/secure/owned/u-1")
         assert r_ok.status_code == 200
-        # different owner → forbidden
+        # different owner -> forbidden
         r_no = local_client.get("/secure/owned/u-2")
         assert r_no.status_code == 403
 
     def test_sessions_list_requires_permission(self, local_client: TestClient):
-        # No admin role → listing sessions should be forbidden (security.session.list)
+        # No admin role -> listing sessions should be forbidden (security.session.list)
         r = local_client.get("/users/sessions/me")
         assert r.status_code == 403
         assert "missing_permissions" in r.json().get("detail", "")

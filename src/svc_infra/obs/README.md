@@ -2,9 +2,9 @@
 
 This guide shows you how to turn on metrics + dashboards in three easy modes:
 
-1. Local app → local Grafana + Prometheus (fully offline)
-2. Local app → Grafana Cloud (via local Grafana Agent)
-3. Deployed app → Grafana Cloud (Railway example)
+1. Local app -> local Grafana + Prometheus (fully offline)
+2. Local app -> Grafana Cloud (via local Grafana Agent)
+3. Deployed app -> Grafana Cloud (Railway example)
 
 It's "one button": run `svc-infra obs-up` and you're good. The CLI will read your `.env` automatically and do the right thing.
 
@@ -51,7 +51,7 @@ Exposed metrics include:
 
 ---
 
-## 1) Local → Local (Grafana + Prometheus on your laptop)
+## 1) Local -> Local (Grafana + Prometheus on your laptop)
 
 Use this when you don't want Cloud during dev.
 
@@ -79,7 +79,7 @@ The CLI provisions a Prometheus datasource and copies our default "Service Obser
 
 ---
 
-## 2) Local → Grafana Cloud (push from a local Agent)
+## 2) Local -> Grafana Cloud (push from a local Agent)
 
 Use this when you want Cloud dashboards while developing locally.
 
@@ -130,7 +130,7 @@ The CLI writes `.obs/agent.yaml` and `.obs/docker-compose.cloud.yml` for you and
 
 ---
 
-## 3) Deployed app → Grafana Cloud (Railway example)
+## 3) Deployed app -> Grafana Cloud (Railway example)
 
 Use this when your app is deployed and you want Cloud dashboards + metrics.
 
@@ -139,7 +139,7 @@ We ship a ready-made Railway sidecar:
 - Template files live under: `obs/templates/sidecars/railway/`
   (You'll see a Dockerfile and agent.yaml that match the working config.)
 
-**Railway variables to set (Project Settings → Variables):**
+**Railway variables to set (Project Settings -> Variables):**
 
 ```bash
 APP_HOST=<your-app>.up.railway.app
@@ -183,7 +183,7 @@ You can also wire this into CI if you prefer.
 ## Commands recap
 
 ```bash
-# Start local stack or local→cloud agent depending on your .env
+# Start local stack or local->cloud agent depending on your .env
 svc-infra obs-up
 
 # Stop whatever was started
@@ -217,13 +217,13 @@ svc-infra obs-scaffold --target railway
 
 ## Minimal checklists
 
-### Local → Local
+### Local -> Local
 
 - App running on http://localhost:8000
 - `svc-infra obs-up`
 - Grafana at http://localhost:3000
 
-### Local → Cloud
+### Local -> Cloud
 
 - `.env` has `GRAFANA_CLOUD_URL` + `GRAFANA_CLOUD_TOKEN`
 - `.env` has `GRAFANA_CLOUD_PROM_URL`, `GRAFANA_CLOUD_PROM_USERNAME`, `GRAFANA_CLOUD_RW_TOKEN`
@@ -231,7 +231,7 @@ svc-infra obs-scaffold --target railway
 - `svc-infra obs-up`
 - Check Cloud dashboard folder "Service Infrastructure"
 
-### Railway (Deployed) → Cloud
+### Railway (Deployed) -> Cloud
 
 - Set Railway variables (`APP_HOST`, `METRICS_PATH`, `SCRAPE_INTERVAL`, PROM URL, USERNAME, RW_TOKEN)
 - Deploy agent sidecar from `obs/templates/sidecars/railway/`
@@ -241,7 +241,7 @@ svc-infra obs-scaffold --target railway
 
 ## .env examples
 
-### Local → Cloud
+### Local -> Cloud
 
 ```bash
 GRAFANA_CLOUD_URL=https://your-stack.grafana.net
@@ -255,7 +255,7 @@ SVC_INFRA_METRICS_URL=http://host.docker.internal:8000/metrics
 SCRAPE_INTERVAL=15s
 ```
 
-### Local → Local (no Cloud keys)
+### Local -> Local (no Cloud keys)
 
 ```bash
 # leave Cloud values unset

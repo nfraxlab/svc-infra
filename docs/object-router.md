@@ -99,12 +99,12 @@ Methods are automatically mapped to HTTP verbs based on their name prefix:
 
 | Prefix Pattern | HTTP Verb | Example |
 |----------------|-----------|---------|
-| `get_*`, `list_*`, `read_*`, `fetch_*` | GET | `get_user()` → `GET /user` |
-| `create_*`, `add_*`, `insert_*` | POST | `create_user()` → `POST /user` |
-| `update_*`, `modify_*`, `edit_*` | PUT | `update_user()` → `PUT /user` |
-| `patch_*` | PATCH | `patch_user()` → `PATCH /user` |
-| `delete_*`, `remove_*`, `destroy_*` | DELETE | `delete_user()` → `DELETE /user` |
-| (no prefix match) | POST | `process()` → `POST /process` |
+| `get_*`, `list_*`, `read_*`, `fetch_*` | GET | `get_user()` -> `GET /user` |
+| `create_*`, `add_*`, `insert_*` | POST | `create_user()` -> `POST /user` |
+| `update_*`, `modify_*`, `edit_*` | PUT | `update_user()` -> `PUT /user` |
+| `patch_*` | PATCH | `patch_user()` -> `PATCH /user` |
+| `delete_*`, `remove_*`, `destroy_*` | DELETE | `delete_user()` -> `DELETE /user` |
+| (no prefix match) | POST | `process()` -> `POST /process` |
 
 Override automatic inference with the `methods` parameter:
 ```python
@@ -131,7 +131,7 @@ Method names are converted to URL paths:
 
 **Path Generation Rules**:
 1. Strip verb prefix (`get_`, `create_`, etc.)
-2. Convert to kebab-case (`process_payment` → `process-payment`)
+2. Convert to kebab-case (`process_payment` -> `process-payment`)
 3. Prepend the router prefix
 
 ---

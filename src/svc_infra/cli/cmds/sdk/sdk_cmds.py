@@ -43,7 +43,7 @@ def sdk_ts(
         _echo(cmd)
         return
     subprocess.check_call(cmd)
-    typer.secho(f"TS SDK generated → {outdir}", fg=typer.colors.GREEN)
+    typer.secho(f"TS SDK generated -> {outdir}", fg=typer.colors.GREEN)
 
 
 @app.command("py")
@@ -72,7 +72,7 @@ def sdk_py(
         _echo(cmd)
         return
     subprocess.check_call(cmd)
-    typer.secho(f"Python SDK generated → {outdir}", fg=typer.colors.GREEN)
+    typer.secho(f"Python SDK generated -> {outdir}", fg=typer.colors.GREEN)
 
 
 @app.command("postman")
@@ -95,7 +95,7 @@ def sdk_postman(
         _echo(cmd)
         return
     subprocess.check_call(cmd)
-    typer.secho(f"Postman collection generated → {out}", fg=typer.colors.GREEN)
+    typer.secho(f"Postman collection generated -> {out}", fg=typer.colors.GREEN)
 
 
 def register(root: typer.Typer):

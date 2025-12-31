@@ -402,8 +402,8 @@ Railway auto-sets `RAILWAY_ENVIRONMENT_NAME`:
 
 ```bash
 # Railway environment mapping
-RAILWAY_ENVIRONMENT_NAME=production  → APP_ENV=prod
-RAILWAY_ENVIRONMENT_NAME=staging     → APP_ENV=test
+RAILWAY_ENVIRONMENT_NAME=production  -> APP_ENV=prod
+RAILWAY_ENVIRONMENT_NAME=staging     -> APP_ENV=test
 ```
 
 **Railway variables:**
@@ -517,8 +517,8 @@ svc-infra validates critical settings on startup:
 
 ```bash
 # Boolean values
-ENABLE_LOGGING=true    # true, 1, yes, y → True
-ENABLE_LOGGING=false   # false, 0, no, n → False
+ENABLE_LOGGING=true    # true, 1, yes, y -> True
+ENABLE_LOGGING=false   # false, 0, no, n -> False
 
 # Integer values
 SQL_POOL_SIZE=20       # Parsed as int

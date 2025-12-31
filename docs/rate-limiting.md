@@ -58,7 +58,7 @@ The default algorithm uses fixed time windows:
 Window 1 (0-60s)     Window 2 (60-120s)
 ├──────────────────┼──────────────────┤
 │ Request 1-120    │ Counter resets   │
-│ 121st → 429      │ Request 1-120 OK │
+│ 121st -> 429      │ Request 1-120 OK │
 └──────────────────┴──────────────────┘
 ```
 
@@ -201,8 +201,8 @@ app.add_middleware(
 ```
 
 This creates separate rate limit buckets per tenant:
-- `api-key-123:tenant:tenant_abc` → 1000 req/min
-- `api-key-123:tenant:tenant_xyz` → 1000 req/min
+- `api-key-123:tenant:tenant_abc` -> 1000 req/min
+- `api-key-123:tenant:tenant_xyz` -> 1000 req/min
 
 ### Dynamic Limits by Plan
 

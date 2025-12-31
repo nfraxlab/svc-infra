@@ -110,7 +110,7 @@ The following deprecated features were removed in v1.0.0:
 |---------|-------------------|-------------|
 | `BillingService` (sync) | v0.x | `AsyncBillingService` |
 
-### Migration: BillingService → AsyncBillingService
+### Migration: BillingService -> AsyncBillingService
 
 **Before (removed):**
 ```python
