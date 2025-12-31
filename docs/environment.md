@@ -376,14 +376,14 @@ spec:
 from svc_infra.app.env import require_secret, MissingSecretError
 import os
 
-# ✅ Safe: Fails in production if not set
+# [OK] Safe: Fails in production if not set
 secret = require_secret(
     os.getenv("SESSION_SECRET"),
     "SESSION_SECRET",
     dev_default="dev-only-secret-not-for-production",
 )
 
-# ❌ NEVER do this: Silent fallback in production
+# [X] NEVER do this: Silent fallback in production
 secret = os.getenv("SESSION_SECRET") or "default"  # SECURITY RISK!
 ```
 

@@ -1,6 +1,6 @@
 # Generic Document Management
 
-**Status**: ✅ Stable (v1)  
+**Status**: [OK] Stable (v1)  
 **Module**: `svc_infra.documents`
 
 Generic document storage and metadata management that works with any storage backend (S3, local, memory). Domain-agnostic design allows extension for specific use cases (financial documents, medical records, legal contracts, etc.).
@@ -75,11 +75,11 @@ For domain-specific features, see [Extension Pattern](#extension-pattern) below.
 
 | Component | Purpose | Status |
 |-----------|---------|--------|
-| `models.py` | Document metadata schema | ✅ Stable |
-| `storage.py` | CRUD operations | ✅ Stable (in-memory metadata) |
-| `add.py` | FastAPI integration | ✅ Stable (protected routes) |
-| `ease.py` | DocumentManager helper | ✅ Stable |
-| Metadata DB | SQL persistence | 🚧 Coming soon |
+| `models.py` | Document metadata schema | [OK] Stable |
+| `storage.py` | CRUD operations | [OK] Stable (in-memory metadata) |
+| `add.py` | FastAPI integration | [OK] Stable (protected routes) |
+| `ease.py` | DocumentManager helper | [OK] Stable |
+| Metadata DB | SQL persistence |  Coming soon |
 
 ---
 
@@ -653,10 +653,10 @@ TypeError: object bytes can't be used in 'await' expression
 **Solution**: Ensure all document operations use `await`:
 
 ```python
-# ❌ Wrong
+# [X] Wrong
 doc = manager.upload(user_id, file, filename)
 
-# ✅ Correct
+# [OK] Correct
 doc = await manager.upload(user_id, file, filename)
 ```
 

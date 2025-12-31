@@ -347,9 +347,9 @@ openapi_path = Path("openapi.json")
 if openapi_path.exists():
     try:
         check_openapi_problem_schema(path=openapi_path)
-        print("✓ OpenAPI Problem schema valid")
+        print("[OK] OpenAPI Problem schema valid")
     except ValueError as e:
-        print(f"✗ OpenAPI validation failed: {e}")
+        print(f"[X] OpenAPI validation failed: {e}")
         sys.exit(1)
 ```
 

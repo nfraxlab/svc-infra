@@ -3,13 +3,13 @@
 A unified payments abstraction for FastAPI services supporting multiple payment providers (Stripe, Aiydan, etc.) with consistent APIs for intents, subscriptions, invoices, disputes, and more.
 
 **Key Features:**
-- 🚀 **Zero-boilerplate setup** – One function call creates a production-ready service
+-  **Zero-boilerplate setup** – One function call creates a production-ready service
 - 🔌 **Multi-provider support** – Stripe, Aiydan, or custom adapters
-- 🛡️ **Built-in security** – Idempotency, rate limiting, webhook verification, auth guards
-- 📊 **Observability included** – Prometheus metrics, OpenTelemetry tracing, structured logging
-- 🔄 **Auto-configuration** – Reads environment variables, sensible defaults
-- 📝 **Complete API** – 40+ endpoints for payments, subscriptions, invoices, disputes, refunds
-- 🧪 **Test-friendly** – Mock adapters, comprehensive test coverage
+- 🛡 **Built-in security** – Idempotency, rate limiting, webhook verification, auth guards
+-  **Observability included** – Prometheus metrics, OpenTelemetry tracing, structured logging
+-  **Auto-configuration** – Reads environment variables, sensible defaults
+-  **Complete API** – 40+ endpoints for payments, subscriptions, invoices, disputes, refunds
+-  **Test-friendly** – Mock adapters, comprehensive test coverage
 
 ---
 
@@ -146,7 +146,7 @@ The `easy_service_app` reads these env vars automatically:
 - `LOG_FORMAT` – json or plain
 - `CORS_ALLOW_ORIGINS` – Comma-separated CORS origins
 
-No boilerplate needed! 🎉
+No boilerplate needed!
 
 ---
 
@@ -729,4 +729,4 @@ svc-infra db upgrade head
 
 ---
 
-**Happy payments building!** 🎉
+**Happy payments building!**

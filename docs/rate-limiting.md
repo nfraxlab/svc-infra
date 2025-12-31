@@ -179,10 +179,10 @@ app.add_middleware(
 
 | Feature | InMemory | Redis |
 |---------|----------|-------|
-| Multi-instance | ❌ | ✅ |
-| Persistence | ❌ | ✅ |
+| Multi-instance | [X] | [OK] |
+| Persistence | [X] | [OK] |
 | Latency | ~0ms | ~1-5ms |
-| Production ready | ❌ | ✅ |
+| Production ready | [X] | [OK] |
 | Setup complexity | None | Low |
 
 ---
@@ -236,13 +236,13 @@ app.add_middleware(
 **Never enable `allow_untrusted_tenant_header=True` unless you have a trusted proxy.**
 
 ```python
-# ❌ DANGEROUS: Attackers can spoof X-Tenant-Id to evade limits
+# [X] DANGEROUS: Attackers can spoof X-Tenant-Id to evade limits
 app.add_middleware(
     SimpleRateLimitMiddleware,
     allow_untrusted_tenant_header=True,  # DON'T DO THIS
 )
 
-# ✅ SAFE: Tenant ID resolved from authenticated session only
+# [OK] SAFE: Tenant ID resolved from authenticated session only
 app.add_middleware(
     SimpleRateLimitMiddleware,
     scope_by_tenant=True,  # Uses resolve_tenant_id() from auth

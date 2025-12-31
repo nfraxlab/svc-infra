@@ -73,10 +73,10 @@ def cmd_check(
         latency = result["latency_ms"]
 
         if status == "healthy":
-            typer.secho(f"✓ {url}", fg=typer.colors.GREEN)
+            typer.secho(f"[OK] {url}", fg=typer.colors.GREEN)
             typer.echo(f"  Status: {status} ({latency:.1f}ms)")
         else:
-            typer.secho(f"✗ {url}", fg=typer.colors.RED)
+            typer.secho(f"[X] {url}", fg=typer.colors.RED)
             typer.echo(f"  Status: {status}")
             if result.get("message"):
                 typer.echo(f"  Message: {result['message']}")
@@ -149,7 +149,7 @@ def cmd_wait(
             if result.status == "healthy":
                 if not quiet:
                     typer.secho(
-                        f"✓ Healthy ({result.latency_ms:.1f}ms)",
+                        f"[OK] Healthy ({result.latency_ms:.1f}ms)",
                         fg=typer.colors.GREEN,
                     )
                 return True

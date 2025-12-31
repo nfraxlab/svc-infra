@@ -76,7 +76,7 @@ def cmd_wait(
             if result.status == "healthy":
                 if not quiet:
                     typer.secho(
-                        f"✓ Database ready ({result.latency_ms:.1f}ms)",
+                        f"[OK] Database ready ({result.latency_ms:.1f}ms)",
                         fg=typer.colors.GREEN,
                     )
                 return True

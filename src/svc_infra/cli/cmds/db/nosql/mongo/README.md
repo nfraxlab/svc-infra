@@ -1,6 +1,6 @@
 # MongoDB Commands
 
-## 📦 Mongo Scaffold Commands
+##  Mongo Scaffold Commands
 
 ### 1. `mongo-scaffold`
 Generate both document + CRUD schemas.
@@ -71,7 +71,7 @@ svc-infra mongo-ping
 
 ---
 
-## ✅ Summary
+## [OK] Summary
 
 In total you have **7 CLI commands**:
 

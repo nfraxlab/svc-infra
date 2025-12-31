@@ -153,11 +153,11 @@ make pr m="feat: complete feature"
 All functions must have complete type hints:
 
 ```python
-# ✅ Good
+# [OK] Good
 def process_request(data: dict[str, Any], timeout: float = 30.0) -> Response:
     ...
 
-# ❌ Bad
+# [X] Bad
 def process_request(data, timeout=30.0):
     ...
 ```
@@ -189,14 +189,14 @@ def calculate_hash(data: bytes, algorithm: str = "sha256") -> str:
 - Never silently swallow exceptions
 
 ```python
-# ✅ Good
+# [OK] Good
 try:
     result = risky_operation()
 except SpecificError as e:
     logger.error(f"Operation failed: {e}")
     raise
 
-# ❌ Bad
+# [X] Bad
 try:
     result = risky_operation()
 except Exception:

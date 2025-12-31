@@ -2,25 +2,25 @@
 Main FastAPI application using svc-infra utilities - COMPLETE SHOWCASE.
 
 This example demonstrates ALL svc-infra features with real implementations:
-✅ Flexible logging setup (environment-aware)
-✅ Service metadata & versioned APIs
-✅ Database with SQLAlchemy + Alembic
-✅ Redis caching with lifecycle management
-✅ Observability (Prometheus metrics + tracing)
-✅ Rate limiting & idempotency
-✅ Payments integration (Stripe/Adyen/Fake)
-✅ Webhooks (outbound events)
-✅ Billing & subscriptions (usage-based, quotas)
-✅ Authentication (users, OAuth, MFA, API keys)
-✅ Multi-tenancy (header/subdomain/path resolution)
-✅ Data lifecycle & GDPR compliance
-✅ Admin operations & impersonation
-✅ Background jobs & scheduling
-✅ Security headers & CORS
-✅ Timeouts & resource limits
-✅ Request size limiting
-✅ Graceful shutdown
-✅ Custom middleware & extensions
+[OK] Flexible logging setup (environment-aware)
+[OK] Service metadata & versioned APIs
+[OK] Database with SQLAlchemy + Alembic
+[OK] Redis caching with lifecycle management
+[OK] Observability (Prometheus metrics + tracing)
+[OK] Rate limiting & idempotency
+[OK] Payments integration (Stripe/Adyen/Fake)
+[OK] Webhooks (outbound events)
+[OK] Billing & subscriptions (usage-based, quotas)
+[OK] Authentication (users, OAuth, MFA, API keys)
+[OK] Multi-tenancy (header/subdomain/path resolution)
+[OK] Data lifecycle & GDPR compliance
+[OK] Admin operations & impersonation
+[OK] Background jobs & scheduling
+[OK] Security headers & CORS
+[OK] Timeouts & resource limits
+[OK] Request size limiting
+[OK] Graceful shutdown
+[OK] Custom middleware & extensions
 
 The setup is organized in clear steps for easy learning and customization.
 Each feature can be enabled/disabled via environment variables (.env file).
@@ -140,14 +140,14 @@ async def startup_event():
       - Background workers
       - External service clients
     """
-    print("🚀 Starting svc-infra-template...")
+    print(" Starting svc-infra-template...")
 
     # Database initialization
     if settings.database_configured:
         from svc_infra_template.db import get_engine
 
         get_engine()
-        print(f"✅ Database connected: {settings.sql_url.split('@')[-1]}")
+        print(f"[OK] Database connected: {settings.sql_url.split('@')[-1]}")
 
         # Cache initialization (using add_cache for lifecycle management)
     if settings.cache_configured:
@@ -161,14 +161,14 @@ async def startup_event():
             version="v1",
             expose_state=True,  # Exposes at app.state.cache
         )
-        print(f"✅ Cache connected: {settings.redis_url}")
+        print(f"[OK] Cache connected: {settings.redis_url}")
 
     # Background jobs initialization (if enabled)
     if settings.jobs_enabled and settings.jobs_redis_url:
         # Note: In production, run worker separately: python -m svc_infra.jobs worker
-        print("✅ Background jobs configured")
+        print("[OK] Background jobs configured")
 
-    print("🎉 Application startup complete!\n")
+    print(" Application startup complete!\n")
 
 
 @app.on_event("shutdown")
@@ -189,9 +189,9 @@ async def shutdown_event():
 
         engine = get_engine()
         await engine.dispose()
-        print("✅ Database connections closed")
+        print("[OK] Database connections closed")
 
-    print("👋 Shutdown complete")
+    print(" Shutdown complete")
 
 
 # ============================================================================
@@ -230,7 +230,7 @@ if settings.database_configured:
         async with engine.begin() as conn:
             # Create all tables defined in Base.metadata
             await conn.run_sync(Base.metadata.create_all)
-        print("✅ Database tables created")
+        print("[OK] Database tables created")
 
     # Register startup function
     app.add_event_handler("startup", _create_db_tables)
@@ -291,7 +291,7 @@ if settings.metrics_enabled:
     #
     # Or connect to Grafana Cloud (set GRAFANA_CLOUD_* env vars)
 
-    print("✅ Observability feature enabled")
+    print("[OK] Observability feature enabled")
 
 # --- 4.3 Security Headers & CORS ---
 if settings.security_enabled:
@@ -318,7 +318,7 @@ if settings.security_enabled:
         session_cookie_https_only=pick(prod=True, test=False, dev=False, local=False),
     )
 
-    print("✅ Security headers & CORS enabled")
+    print("[OK] Security headers & CORS enabled")
 
 # --- 4.4 Timeouts & Resource Limits ---
 if settings.timeout_handler_seconds or settings.timeout_body_read_seconds:
@@ -333,7 +333,7 @@ if settings.timeout_handler_seconds or settings.timeout_body_read_seconds:
             HandlerTimeoutMiddleware,
             timeout_seconds=settings.timeout_handler_seconds,
         )
-        print(f"✅ Handler timeout enabled ({settings.timeout_handler_seconds}s)")
+        print(f"[OK] Handler timeout enabled ({settings.timeout_handler_seconds}s)")
 
     # Add body read timeout middleware (protects against slow clients)
     if settings.timeout_body_read_seconds:
@@ -341,7 +341,7 @@ if settings.timeout_handler_seconds or settings.timeout_body_read_seconds:
             BodyReadTimeoutMiddleware,
             timeout_seconds=settings.timeout_body_read_seconds,
         )
-        print(f"✅ Body read timeout enabled ({settings.timeout_body_read_seconds}s)")
+        print(f"[OK] Body read timeout enabled ({settings.timeout_body_read_seconds}s)")
 
 # --- 4.5 Request Size Limiting ---
 if settings.request_max_size_mb:
@@ -353,7 +353,7 @@ if settings.request_max_size_mb:
         max_size_mb=settings.request_max_size_mb,
     )
 
-    print(f"✅ Request size limit enabled ({settings.request_max_size_mb}MB)")
+    print(f"[OK] Request size limit enabled ({settings.request_max_size_mb}MB)")
 
 # --- 4.6 Graceful Shutdown ---
 if settings.graceful_shutdown_enabled:
@@ -362,7 +362,7 @@ if settings.graceful_shutdown_enabled:
     # Track in-flight requests for graceful shutdown
     app.add_middleware(InflightTrackerMiddleware)
 
-    print("✅ Graceful shutdown tracking enabled")
+    print("[OK] Graceful shutdown tracking enabled")
 
 # --- 4.7 Rate Limiting ---
 if settings.rate_limit_enabled:
@@ -379,7 +379,7 @@ if settings.rate_limit_enabled:
         window=60,  # 60 seconds window
     )
 
-    print("✅ Rate limiting feature enabled")
+    print("[OK] Rate limiting feature enabled")
 
 # --- 4.8 Idempotency ---
 if settings.idempotency_enabled and settings.cache_configured:
@@ -394,7 +394,7 @@ if settings.idempotency_enabled and settings.cache_configured:
         ttl_seconds=settings.idempotency_ttl_seconds,
     )
 
-    print("✅ Idempotency feature enabled")
+    print("[OK] Idempotency feature enabled")
 
 # --- 4.9 Storage (File Upload/Download with S3/Local/Memory Backends) ---
 # Add storage capabilities for handling file uploads and downloads.
@@ -433,7 +433,7 @@ if settings.storage_enabled:
         file_route_prefix="/storage/files",
     )
 
-    print("✅ Storage feature enabled")
+    print("[OK] Storage feature enabled")
 
 # --- 4.10 Payments (Stripe, Adyen, or Fake for Testing) ---
 # Note: Payments require database setup first
@@ -459,7 +459,7 @@ if settings.database_configured and settings.payment_provider:
 
     if adapter:
         add_payments(app, adapter=adapter)
-        print(f"✅ Payments feature enabled (provider: {settings.payment_provider})")
+        print(f"[OK] Payments feature enabled (provider: {settings.payment_provider})")
 
 # --- 4.10 Webhooks (Outbound Events) ---
 if settings.webhooks_enabled and settings.database_configured:
@@ -477,7 +477,7 @@ if settings.webhooks_enabled and settings.database_configured:
     #   DELETE /webhooks/subscriptions/{id}     - Delete subscription
     #   GET    /webhooks/deliveries             - List delivery attempts
 
-    print("✅ Webhooks feature enabled")
+    print("[OK] Webhooks feature enabled")
 
 # --- 4.11 Billing & Subscriptions ---
 if settings.billing_enabled and settings.database_configured:
@@ -513,7 +513,7 @@ if settings.billing_enabled and settings.database_configured:
     #
     # See: src/svc_infra/billing/ for full API
 
-    print("✅ Billing & quota enforcement enabled")
+    print("[OK] Billing & quota enforcement enabled")
 
 # --- 4.12 Authentication (Users, Sessions, OAuth) ---
 # The add_auth_users() function wires up user authentication with your User model.
@@ -553,11 +553,11 @@ if settings.auth_enabled and settings.database_configured:
         enable_api_keys=True,  # Service-to-service auth
         post_login_redirect="/",
     )
-    print("✅ Authentication enabled with User model")
+    print("[OK] Authentication enabled with User model")
 elif settings.auth_enabled:
-    print("⚠️  Authentication requires database configuration (SQL_URL)")
+    print("[!]  Authentication requires database configuration (SQL_URL)")
 else:
-    print("ℹ️  Authentication disabled (set AUTH_ENABLED=true to enable)")
+    print("[i]  Authentication disabled (set AUTH_ENABLED=true to enable)")
 
 # --- 4.13 Multi-Tenancy ---
 if settings.tenancy_enabled and settings.database_configured:
@@ -580,7 +580,7 @@ if settings.tenancy_enabled and settings.database_configured:
     #
     # See: src/svc_infra/docs/tenancy.md
 
-    print("✅ Multi-tenancy enabled")
+    print("[OK] Multi-tenancy enabled")
 
 # --- 4.14 Data Lifecycle & Compliance (GDPR) ---
 if settings.database_configured and settings.gdpr_enabled:
@@ -607,7 +607,7 @@ if settings.database_configured and settings.gdpr_enabled:
     #
     # See: src/svc_infra/docs/data-lifecycle.md
 
-    print("✅ Data lifecycle & GDPR compliance enabled")
+    print("[OK] Data lifecycle & GDPR compliance enabled")
 
 # --- 4.15 Admin & Impersonation ---
 if settings.admin_enabled:
@@ -635,7 +635,7 @@ if settings.admin_enabled:
     #
     # See: src/svc_infra/docs/admin.md
 
-    print("✅ Admin & impersonation enabled")
+    print("[OK] Admin & impersonation enabled")
 
 # --- 4.16 Background Jobs & Scheduling ---
 if settings.jobs_enabled:
@@ -671,7 +671,7 @@ if settings.jobs_enabled:
     #     task_args={},
     # )
 
-    print("✅ Background jobs & scheduling enabled")
+    print("[OK] Background jobs & scheduling enabled")
 
 # --- 4.17 Operations & Health Checks ---
 
@@ -682,7 +682,7 @@ add_probes(app, prefix="/_ops")
 if settings.maintenance_mode:
     add_maintenance_mode(app)
 
-print("✅ Operations features enabled")
+print("[OK] Operations features enabled")
 
 # --- 4.18 Documentation Enhancements ---
 if settings.docs_enabled:
@@ -695,7 +695,7 @@ if settings.docs_enabled:
     #   - Scoped docs per API version
     #   - Interactive API explorer
 
-    print("✅ Documentation enhancements enabled")
+    print("[OK] Documentation enhancements enabled")
 
 # ============================================================================
 # STEP 6: Custom Extensions (Team-Specific)
@@ -751,7 +751,7 @@ if settings.sentry_dsn:
         traces_sample_rate=0.1 if settings.is_production else 1.0,
     )
 
-    print("✅ Sentry error tracking enabled")
+    print("[OK] Sentry error tracking enabled")
 
 # =============================================================================
 # That's it! Your service is fully configured with ALL svc-infra features.

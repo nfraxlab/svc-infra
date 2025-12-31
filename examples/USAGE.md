@@ -2,7 +2,7 @@
 
 This example demonstrates how to build a production-ready service using svc-infra.
 
-## 🎯 Purpose
+##  Purpose
 
 This is a **learning template** that shows:
 - How to structure a service using svc-infra
@@ -10,9 +10,9 @@ This is a **learning template** that shows:
 - How to enable features (DB, auth, payments, observability)
 - How to extend with custom logic
 
-## 📦 Two Ways to Use This Example
+##  Two Ways to Use This Example
 
-### 1️⃣ As a Template (Copy to Your Workspace)
+### 1. As a Template (Copy to Your Workspace)
 
 **Best for:** Starting a new project
 
@@ -37,7 +37,7 @@ make run
 - Enable features you need (uncomment in main.py)
 - Add your own routes in `api/v1/routes.py`
 
-### 2️⃣ Run Directly (Inside svc-infra Repo)
+### 2. Run Directly (Inside svc-infra Repo)
 
 **Best for:** Learning and experimenting
 
@@ -59,7 +59,7 @@ make run
 - Changes to svc-infra immediately available
 - Good for testing svc-infra features
 
-## 🔧 Configuration
+##  Configuration
 
 ### When Used as Standalone
 
@@ -87,7 +87,7 @@ svc-infra = { path = "../../", develop = true }  # Use local dev version
 4. **Add routes** - Extend `api/v1/routes.py` with your own endpoints
 5. **Customize** - Adapt to your team's needs
 
-## 🛠️ Available Commands
+## 🛠 Available Commands
 
 ```bash
 make help     # Show all commands
@@ -97,7 +97,7 @@ make clean    # Clean cache files
 make update   # Update dependencies
 ```
 
-## 🌐 Endpoints
+##  Endpoints
 
 Once running, visit:
 - **API Docs**: http://localhost:8000/docs
@@ -105,7 +105,7 @@ Once running, visit:
 - **Health**: http://localhost:8000/ping
 - **v1 Routes**: http://localhost:8000/v1/ping, /v1/status
 
-## 💡 Next Steps
+##  Next Steps
 
 After understanding this example:
 1. Copy it to your workspace

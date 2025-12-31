@@ -2,7 +2,7 @@
 
 This guide explains how to use the scaffolding scripts to generate SQLAlchemy models and Pydantic schemas for your svc-infra-template project.
 
-## 🎯 Key Concept: Learning by Doing
+##  Key Concept: Learning by Doing
 
 The scaffolding scripts (`scaffold_models.py` and `quick_setup.py`) are **educational reference implementations**. They demonstrate how to:
 
@@ -12,7 +12,7 @@ The scaffolding scripts (`scaffold_models.py` and `quick_setup.py`) are **educat
 
 You can use these scripts as-is, or **copy the CLI commands** they show and run them manually. They're designed to teach you the CLI while being immediately useful.
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Automated Setup (Easiest)
 
@@ -21,13 +21,13 @@ poetry run python scripts/quick_setup.py
 ```
 
 This single command:
-1. ✅ Generates User, Project, and Task models + schemas
-2. ✅ Initializes Alembic
-3. ✅ Creates migration
-4. ✅ Applies migration to database
-5. ✅ Shows next steps
+1. [OK] Generates User, Project, and Task models + schemas
+2. [OK] Initializes Alembic
+3. [OK] Creates migration
+4. [OK] Applies migration to database
+5. [OK] Shows next steps
 
-**✨ Safe by default:** Won't overwrite existing models unless you use `--overwrite`
+** Safe by default:** Won't overwrite existing models unless you use `--overwrite`
 
 ### Manual Scaffolding
 
@@ -47,9 +47,9 @@ poetry run python scripts/scaffold_models.py --entities-only
 poetry run python scripts/scaffold_models.py --overwrite
 ```
 
-**🛡️ Duplicate Prevention:** Scripts automatically detect existing models and skip them to prevent accidental overwrites. Use `--overwrite` flag only if you're certain you want to replace existing code.
+**🛡 Duplicate Prevention:** Scripts automatically detect existing models and skip them to prevent accidental overwrites. Use `--overwrite` flag only if you're certain you want to replace existing code.
 
-## 📁 What Gets Generated
+##  What Gets Generated
 
 ### User Model (Authentication)
 
@@ -119,7 +119,7 @@ class Project(ModelBase):
 - Audit fields (created_at, updated_at)
 - No soft delete (tasks are hard-deleted)
 
-## 🔧 Command Reference
+##  Command Reference
 
 ### quick_setup.py
 
@@ -152,7 +152,7 @@ poetry run python scaffold_models.py
 --overwrite         # Overwrite existing files
 ```
 
-## 🎯 Workflows
+##  Workflows
 
 ### Workflow 1: New Project Setup
 
@@ -221,7 +221,7 @@ poetry run python -m svc_infra.db revision -m "add product model" --project-root
 poetry run python -m svc_infra.db upgrade head --project-root .
 ```
 
-## 🔍 Actual CLI Commands Used
+##  Actual CLI Commands Used
 
 The scaffold scripts call these **actual CLI commands** (you can run these manually too):
 
@@ -258,7 +258,7 @@ svc-infra sql history --project-root .
 
 **The scripts just automate calling these commands** - you can copy/paste them and run manually if you prefer!
 
-## 💡 Tips
+##  Tips
 
 ### Customizing Generated Models
 
@@ -331,7 +331,7 @@ poetry run python -m svc_infra.cli sql scaffold \
   ...
 ```
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### "Module not found" error
 
@@ -380,6 +380,6 @@ touch src/svc_infra_template/schemas/__init__.py
 - [main.py](src/svc_infra_template/main.py) - See auth integration example (commented)
 - [.env.example](.env.example) - All configuration options
 
-## 🤝 Contributing
+##  Contributing
 
 Found an issue with the scaffold scripts? Please open an issue or PR in the svc-infra repository.

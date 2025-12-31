@@ -213,13 +213,13 @@ report: ## Production readiness gate (CI-friendly with exit codes)
 	@set -euo pipefail; \
 	echo ""; \
 	echo "╔══════════════════════════════════════════════════════════════════════════════╗"; \
-	echo "║                    🚀 PRODUCTION READINESS GATE                              ║"; \
+	echo "║                     PRODUCTION READINESS GATE                              ║"; \
 	echo "║                           svc-infra                                          ║"; \
 	echo "╚══════════════════════════════════════════════════════════════════════════════╝"; \
 	echo ""; \
 	if [ "$(REPORT_MODE)" = "ci" ]; then \
 		if [ "$${CI:-}" != "true" ]; then \
-			echo "❌ ERROR: REPORT_MODE=ci requires CI=true environment variable"; \
+			echo "[X] ERROR: REPORT_MODE=ci requires CI=true environment variable"; \
 			echo "   This mode should only be used in GitHub Actions, not locally."; \
 			echo "   Run 'make report' instead for full local checks."; \
 			exit 1; \
@@ -229,153 +229,153 @@ report: ## Production readiness gate (CI-friendly with exit codes)
 		: "$${TESTS_PASSED:?REPORT_MODE=ci requires TESTS_PASSED=1 from upstream job}"; \
 	fi; \
 	VERSION=$$(poetry version -s 2>/dev/null || echo "unknown"); \
-	echo "📦 Package Version: $$VERSION"; \
-	echo "📋 Coverage Minimum: $(COV_MIN)%"; \
-	if [ "$(STRICT)" = "1" ]; then echo "🔒 Strict Mode: ON (fails if score < 9/11)"; fi; \
-	if [ "$(REPORT_MODE)" = "ci" ]; then echo "⚡ CI Mode: ON (skipping lint/mypy/pytest)"; fi; \
+	echo " Package Version: $$VERSION"; \
+	echo " Coverage Minimum: $(COV_MIN)%"; \
+	if [ "$(STRICT)" = "1" ]; then echo " Strict Mode: ON (fails if score < 9/11)"; fi; \
+	if [ "$(REPORT_MODE)" = "ci" ]; then echo " CI Mode: ON (skipping lint/mypy/pytest)"; fi; \
 	echo ""; \
 	\
 	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"; \
-	echo "🔍 RUNNING ALL CHECKS..."; \
+	echo " RUNNING ALL CHECKS..."; \
 	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"; \
 	echo ""; \
 	\
 	SCORE=0; \
 	CRITICAL_FAIL=0; \
 	\
-	echo "① Linting (ruff)..."; \
+	echo "1. Linting (ruff)..."; \
 	if [ "$(REPORT_MODE)" = "ci" ]; then \
-		echo "   ⏭️  SKIP (CI mode - already ran in CI)"; \
+		echo "   ⏭  SKIP (CI mode - already ran in CI)"; \
 		LINT_OK=1; SCORE=$$((SCORE + 1)); \
 	else \
 		set +e; poetry run ruff check src tests >/dev/null 2>&1; LINT_EXIT=$$?; set -e; \
 		if [ "$$LINT_EXIT" -eq 0 ]; then \
-			echo "   ✅ PASS (1 pt)"; \
+			echo "   [OK] PASS (1 pt)"; \
 			LINT_OK=1; SCORE=$$((SCORE + 1)); \
 		else \
-			echo "   ❌ FAIL - linting errors found:"; \
+			echo "   [X] FAIL - linting errors found:"; \
 			poetry run ruff check src tests 2>&1 | head -20; \
 			LINT_OK=0; \
 		fi; \
 	fi; \
 	echo ""; \
 	\
-	echo "② Type checking (mypy)..."; \
+	echo "2. Type checking (mypy)..."; \
 	if [ "$(REPORT_MODE)" = "ci" ]; then \
-		echo "   ⏭️  SKIP (CI mode - already ran in CI)"; \
+		echo "   ⏭  SKIP (CI mode - already ran in CI)"; \
 		TYPE_OK=1; SCORE=$$((SCORE + 1)); \
 	else \
 		set +e; poetry run mypy src >/dev/null 2>&1; MYPY_EXIT=$$?; set -e; \
 		if [ "$$MYPY_EXIT" -eq 0 ]; then \
-			echo "   ✅ PASS (1 pt)"; \
+			echo "   [OK] PASS (1 pt)"; \
 			TYPE_OK=1; SCORE=$$((SCORE + 1)); \
 		else \
-			echo "   ❌ FAIL - type errors found:"; \
+			echo "   [X] FAIL - type errors found:"; \
 			poetry run mypy src 2>&1 | head -20; \
 			TYPE_OK=0; \
 		fi; \
 	fi; \
 	echo ""; \
 	\
-	echo "③ Tests + Coverage (min $(COV_MIN)%)..."; \
+	echo "3. Tests + Coverage (min $(COV_MIN)%)..."; \
 	if [ "$(REPORT_MODE)" = "ci" ]; then \
-		echo "   ⏭️  SKIP (CI mode - already ran in CI)"; \
+		echo "   ⏭  SKIP (CI mode - already ran in CI)"; \
 		TEST_OK=1; COV_OK=1; SCORE=$$((SCORE + 4)); \
 	else \
 		set +e; COV_OUTPUT=$$(poetry run pytest --cov=src --cov-report=term-missing -q tests/unit 2>&1); TEST_EXIT=$$?; set -e; \
 		COV_PCT=$$(echo "$$COV_OUTPUT" | awk '/^TOTAL/ {for(i=1;i<=NF;i++) if($$i ~ /%$$/) {gsub(/%/,"",$$i); print $$i; exit}}'); \
 		if [ -z "$$COV_PCT" ]; then \
 			if echo "$$COV_OUTPUT" | grep -qE "unrecognized arguments: --cov|pytest_cov|No module named.*pytest_cov"; then \
-				echo "   ❌ FAIL - pytest-cov not installed (poetry add --group dev pytest-cov)"; \
+				echo "   [X] FAIL - pytest-cov not installed (poetry add --group dev pytest-cov)"; \
 			else \
-				echo "   ❌ FAIL - tests failed or no coverage data"; \
+				echo "   [X] FAIL - tests failed or no coverage data"; \
 				echo "$$COV_OUTPUT" | tail -10; \
 			fi; \
 			TEST_OK=0; COV_OK=0; CRITICAL_FAIL=1; \
 		elif [ "$$TEST_EXIT" -ne 0 ]; then \
-			echo "   ❌ FAIL - tests failed"; \
+			echo "   [X] FAIL - tests failed"; \
 			echo "$$COV_OUTPUT" | tail -10; \
 			TEST_OK=0; COV_OK=0; CRITICAL_FAIL=1; \
 		elif [ "$$COV_PCT" -lt $(COV_MIN) ]; then \
-			echo "   ❌ FAIL - tests passed but $${COV_PCT}% coverage below $(COV_MIN)%"; \
+			echo "   [X] FAIL - tests passed but $${COV_PCT}% coverage below $(COV_MIN)%"; \
 			TEST_OK=1; COV_OK=0; SCORE=$$((SCORE + 2)); CRITICAL_FAIL=1; \
 		else \
-			echo "   ✅ PASS - $${COV_PCT}% coverage (4 pts: 2 tests + 2 coverage)"; \
+			echo "   [OK] PASS - $${COV_PCT}% coverage (4 pts: 2 tests + 2 coverage)"; \
 			TEST_OK=1; COV_OK=1; SCORE=$$((SCORE + 4)); \
 		fi; \
 	fi; \
 	echo ""; \
 	\
-	echo "④ Security: Vulnerability scan (pip-audit)..."; \
+	echo "4. Security: Vulnerability scan (pip-audit)..."; \
 	if poetry run pip-audit --version >/dev/null 2>&1; then \
 		set +e; poetry run pip-audit >/dev/null 2>&1; AUDIT_EXIT=$$?; set -e; \
 		if [ "$$AUDIT_EXIT" -eq 0 ]; then \
-			echo "   ✅ PASS - no known vulnerabilities (2 pts)"; \
+			echo "   [OK] PASS - no known vulnerabilities (2 pts)"; \
 			VULN_OK=1; SCORE=$$((SCORE + 2)); \
 		else \
-			echo "   ❌ FAIL - vulnerabilities found"; \
+			echo "   [X] FAIL - vulnerabilities found"; \
 			poetry run pip-audit 2>&1 | head -15; \
 			VULN_OK=0; CRITICAL_FAIL=1; \
 		fi; \
 	else \
 		if [ "$(STRICT)" = "1" ]; then \
-			echo "   ❌ FAIL - pip-audit required in STRICT mode (poetry add --group dev pip-audit)"; \
+			echo "   [X] FAIL - pip-audit required in STRICT mode (poetry add --group dev pip-audit)"; \
 			VULN_OK=0; CRITICAL_FAIL=1; \
 		else \
-			echo "   ⚠️  SKIP - pip-audit not installed (0 pts)"; \
+			echo "   [!]  SKIP - pip-audit not installed (0 pts)"; \
 			VULN_OK=0; \
 		fi; \
 	fi; \
 	echo ""; \
 	\
-	echo "⑤ Package build + verification..."; \
+	echo "5. Package build + verification..."; \
 	rm -rf dist/; \
 	if poetry build -q 2>/dev/null; then \
 		if poetry run twine --version >/dev/null 2>&1 && poetry run twine check dist/* >/dev/null 2>&1; then \
-			echo "   ✅ PASS - package builds and passes twine check (2 pts)"; \
+			echo "   [OK] PASS - package builds and passes twine check (2 pts)"; \
 			BUILD_OK=1; SCORE=$$((SCORE + 2)); \
 		elif poetry run python -m zipfile -t dist/*.whl >/dev/null 2>&1; then \
-			echo "   ✅ PASS - package builds, wheel is valid (2 pts)"; \
+			echo "   [OK] PASS - package builds, wheel is valid (2 pts)"; \
 			BUILD_OK=1; SCORE=$$((SCORE + 2)); \
 		else \
-			echo "   ✅ PASS - package builds (2 pts)"; \
+			echo "   [OK] PASS - package builds (2 pts)"; \
 			BUILD_OK=1; SCORE=$$((SCORE + 2)); \
 		fi; \
 	else \
-		echo "   ❌ FAIL - package build failed"; \
+		echo "   [X] FAIL - package build failed"; \
 		BUILD_OK=0; CRITICAL_FAIL=1; \
 	fi; \
 	echo ""; \
 	\
-	echo "⑥ Documentation..."; \
+	echo "6. Documentation..."; \
 	DOC_SCORE=0; \
 	[ -f README.md ] && DOC_SCORE=$$((DOC_SCORE + 1)); \
 	[ -f CHANGELOG.md ] && DOC_SCORE=$$((DOC_SCORE + 1)); \
 	[ -d docs ] && DOC_SCORE=$$((DOC_SCORE + 1)); \
 	if [ "$$DOC_SCORE" -ge 2 ]; then \
-		echo "   ✅ PASS - core docs present (1 pt)"; \
+		echo "   [OK] PASS - core docs present (1 pt)"; \
 		DOCS_OK=1; SCORE=$$((SCORE + 1)); \
 	else \
-		echo "   ❌ FAIL - missing README.md, CHANGELOG.md, or docs/"; \
+		echo "   [X] FAIL - missing README.md, CHANGELOG.md, or docs/"; \
 		DOCS_OK=0; \
 	fi; \
 	echo ""; \
 	\
 	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"; \
-	echo "📋 RESULTS"; \
+	echo " RESULTS"; \
 	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"; \
 	echo ""; \
 	echo "  Component          Weight    Status"; \
 	echo "  ─────────────────────────────────────"; \
-	[ "$$LINT_OK" = "1" ] && echo "  Linting            1 pt      ✅" || echo "  Linting            1 pt      ❌"; \
-	[ "$$TYPE_OK" = "1" ] && echo "  Type checking      1 pt      ✅" || echo "  Type checking      1 pt      ❌"; \
-	[ "$$TEST_OK" = "1" ] && echo "  Tests pass         2 pts     ✅" || echo "  Tests pass         2 pts     ❌ CRITICAL"; \
-	[ "$$COV_OK" = "1" ] && echo "  Coverage ≥$(COV_MIN)%     2 pts     ✅" || echo "  Coverage ≥$(COV_MIN)%     2 pts     ❌ CRITICAL"; \
-	if [ "$$VULN_OK" = "1" ]; then echo "  No vulnerabilities 2 pts     ✅"; \
-	elif [ "$(STRICT)" = "1" ]; then echo "  No vulnerabilities 2 pts     ❌ CRITICAL"; \
-	else echo "  No vulnerabilities 2 pts     ⚠️  SKIP"; fi; \
-	[ "$$BUILD_OK" = "1" ] && echo "  Package builds     2 pts     ✅" || echo "  Package builds     2 pts     ❌ CRITICAL"; \
-	[ "$$DOCS_OK" = "1" ] && echo "  Documentation      1 pt      ✅" || echo "  Documentation      1 pt      ❌"; \
+	[ "$$LINT_OK" = "1" ] && echo "  Linting            1 pt      [OK]" || echo "  Linting            1 pt      [X]"; \
+	[ "$$TYPE_OK" = "1" ] && echo "  Type checking      1 pt      [OK]" || echo "  Type checking      1 pt      [X]"; \
+	[ "$$TEST_OK" = "1" ] && echo "  Tests pass         2 pts     [OK]" || echo "  Tests pass         2 pts     [X] CRITICAL"; \
+	[ "$$COV_OK" = "1" ] && echo "  Coverage ≥$(COV_MIN)%     2 pts     [OK]" || echo "  Coverage ≥$(COV_MIN)%     2 pts     [X] CRITICAL"; \
+	if [ "$$VULN_OK" = "1" ]; then echo "  No vulnerabilities 2 pts     [OK]"; \
+	elif [ "$(STRICT)" = "1" ]; then echo "  No vulnerabilities 2 pts     [X] CRITICAL"; \
+	else echo "  No vulnerabilities 2 pts     [!]  SKIP"; fi; \
+	[ "$$BUILD_OK" = "1" ] && echo "  Package builds     2 pts     [OK]" || echo "  Package builds     2 pts     [X] CRITICAL"; \
+	[ "$$DOCS_OK" = "1" ] && echo "  Documentation      1 pt      [OK]" || echo "  Documentation      1 pt      [X]"; \
 	echo "  ─────────────────────────────────────"; \
 	echo "  TOTAL              11 pts    $$SCORE"; \
 	echo ""; \
@@ -384,7 +384,7 @@ report: ## Production readiness gate (CI-friendly with exit codes)
 	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"; \
 	if [ "$$CRITICAL_FAIL" = "1" ]; then \
 		echo ""; \
-		echo "  ❌ NOT READY FOR PRODUCTION ($$PERCENT% - $$SCORE/11 pts)"; \
+		echo "  [X] NOT READY FOR PRODUCTION ($$PERCENT% - $$SCORE/11 pts)"; \
 		echo ""; \
 		echo "  Critical failures detected. Fix before release:"; \
 		[ "$$TEST_OK" = "0" ] && echo "    • Tests must pass"; \
@@ -396,18 +396,18 @@ report: ## Production readiness gate (CI-friendly with exit codes)
 		exit 1; \
 	elif [ "$(STRICT)" = "1" ] && [ "$$SCORE" -lt 9 ]; then \
 		echo ""; \
-		echo "  ❌ STRICT MODE: Score $$SCORE/11 is below 9/11 threshold"; \
+		echo "  [X] STRICT MODE: Score $$SCORE/11 is below 9/11 threshold"; \
 		echo ""; \
 		echo "╚══════════════════════════════════════════════════════════════════════════════╝"; \
 		exit 1; \
 	elif [ "$$SCORE" -ge 9 ]; then \
 		echo ""; \
-		echo "  ✅ READY FOR PRODUCTION ($$PERCENT% - $$SCORE/11 pts)"; \
+		echo "  [OK] READY FOR PRODUCTION ($$PERCENT% - $$SCORE/11 pts)"; \
 		echo ""; \
 		echo "╚══════════════════════════════════════════════════════════════════════════════╝"; \
 	else \
 		echo ""; \
-		echo "  ⚠️  NEEDS WORK ($$PERCENT% - $$SCORE/11 pts)"; \
+		echo "  [!]  NEEDS WORK ($$PERCENT% - $$SCORE/11 pts)"; \
 		echo ""; \
 		echo "  No critical failures, but score below 9/11."; \
 		echo "  Use STRICT=1 to enforce in CI."; \
@@ -441,7 +441,7 @@ run-template:
 	@echo "[template] Checking if setup has been run..."
 	@if [ ! -d "examples/migrations" ]; then \
 		echo ""; \
-		echo "⚠️  Template not set up yet!"; \
+		echo "[!]  Template not set up yet!"; \
 		echo "   Run 'make setup-template' first to scaffold models and initialize the database."; \
 		echo ""; \
 		exit 1; \

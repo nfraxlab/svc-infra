@@ -200,12 +200,12 @@ store = RedisIdempotencyStore(redis, prefix="myapp:idmp")
 
 | Feature | InMemory | Redis |
 |---------|----------|-------|
-| Persistence | ❌ | ✅ |
-| Multi-instance | ❌ | ✅ |
+| Persistence | [X] | [OK] |
+| Multi-instance | [X] | [OK] |
 | Setup complexity | None | Low |
 | Latency | ~0ms | ~1-5ms |
 | Memory usage | In-process | External |
-| Production ready | ❌ | ✅ |
+| Production ready | [X] | [OK] |
 
 ### Custom Store Implementation
 
@@ -338,9 +338,9 @@ idempotency_key = f"stripe_intent:{payment_intent_id}"
 
 ### Key Reuse Rules
 
-1. **Same key + same payload** → Returns cached response ✅
-2. **Same key + different payload** → Returns 409 Conflict ❌
-3. **Different key + same payload** → Executes again (new operation) ⚠️
+1. **Same key + same payload** → Returns cached response [OK]
+2. **Same key + different payload** → Returns 409 Conflict [X]
+3. **Different key + same payload** → Executes again (new operation) [!]
 
 ### TTL Considerations
 

@@ -611,11 +611,11 @@ class Order(BaseModel):
 
 
 class OrderService:
-    # ❌ Dict in, dict out - poor OpenAPI schema
+    # [X] Dict in, dict out - poor OpenAPI schema
     def create_order_bad(self, data: dict) -> dict:
         ...
 
-    # ✅ Pydantic models - great OpenAPI schema
+    # [OK] Pydantic models - great OpenAPI schema
     def create_order(self, items: list[str], quantity: int) -> Order:
         ...
 ```
@@ -624,23 +624,23 @@ class OrderService:
 
 ```python
 class Service:
-    # ✅ GET - reading data
+    # [OK] GET - reading data
     def get_user(self, user_id: str): ...
     def list_orders(self): ...
     def fetch_metrics(self): ...
 
-    # ✅ POST - creating resources
+    # [OK] POST - creating resources
     def create_order(self, items: list[str]): ...
     def add_item(self, item: str): ...
 
-    # ✅ PUT - full updates
+    # [OK] PUT - full updates
     def update_user(self, user_id: str, name: str): ...
 
-    # ✅ DELETE - removing resources
+    # [OK] DELETE - removing resources
     def delete_order(self, order_id: str): ...
     def remove_item(self, item_id: str): ...
 
-    # ✅ POST - actions (default)
+    # [OK] POST - actions (default)
     def process_payment(self): ...
     def send_notification(self): ...
 ```

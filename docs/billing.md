@@ -41,7 +41,7 @@ async with async_session_maker() as session:
 │   UsageEvent    │     │  UsageAggregate  │     │     Invoice     │
 ├─────────────────┤     ├──────────────────┤     ├─────────────────┤
 │ id              │     │ id               │     │ id              │
-│ tenant_id       │────▶│ tenant_id        │────▶│ tenant_id       │
+│ tenant_id       │────>│ tenant_id        │────>│ tenant_id       │
 │ metric          │     │ metric           │     │ period_start    │
 │ amount          │     │ period_start     │     │ period_end      │
 │ at_ts           │     │ granularity      │     │ status          │
@@ -69,9 +69,9 @@ async with async_session_maker() as session:
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
 │      Plan       │     │ PlanEntitlement  │     │  Subscription   │
 ├─────────────────┤     ├──────────────────┤     ├─────────────────┤
-│ id              │────▶│ id               │     │ id              │
+│ id              │────>│ id               │     │ id              │
 │ name            │     │ plan_id          │     │ tenant_id       │
-│ description     │     │ metric           │     │ plan_id         │──▶ Plan
+│ description     │     │ metric           │     │ plan_id         │──> Plan
 │ interval        │     │ included_amount  │     │ status          │
 │ currency        │     │ overage_unit_price│    │ current_period_s│
 │ base_price      │     └──────────────────┘     │ current_period_e│
@@ -82,7 +82,7 @@ async with async_session_maker() as session:
 │      Price      │
 ├─────────────────┤
 │ id              │
-│ plan_id         │──▶ Plan
+│ plan_id         │──> Plan
 │ metric          │
 │ unit_amount     │
 │ currency        │

@@ -933,7 +933,7 @@ class NotionLoader(BaseLoader):
             elif block_type == "quote":
                 lines.append(f"> {text}")
             elif block_type == "callout":
-                emoji = block_content.get("icon", {}).get("emoji", "💡")
+                emoji = block_content.get("icon", {}).get("emoji", "")
                 lines.append(f"{emoji} {text}")
             elif block_type == "divider":
                 lines.append("---")

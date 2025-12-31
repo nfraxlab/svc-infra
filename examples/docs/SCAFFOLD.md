@@ -5,14 +5,14 @@ The svc-infra CLI provides powerful scaffolding commands to automatically genera
 ## Overview
 
 The scaffold commands generate production-ready code with:
-- ✅ ModelBase inheritance (proper for migrations)
-- ✅ UUID primary keys with GUID type
-- ✅ Timestamps (created_at, updated_at with server defaults)
-- ✅ Optional tenant isolation (multi-tenancy)
-- ✅ Optional soft delete support
-- ✅ Unique constraint handling with case-insensitive indexes
-- ✅ Service factory with deduplication logic
-- ✅ Pydantic schemas (Create, Read, Update) with proper validation
+- [OK] ModelBase inheritance (proper for migrations)
+- [OK] UUID primary keys with GUID type
+- [OK] Timestamps (created_at, updated_at with server defaults)
+- [OK] Optional tenant isolation (multi-tenancy)
+- [OK] Optional soft delete support
+- [OK] Unique constraint handling with case-insensitive indexes
+- [OK] Service factory with deduplication logic
+- [OK] Pydantic schemas (Create, Read, Update) with proper validation
 
 ## Commands
 

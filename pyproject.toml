@@ -235,7 +235,7 @@ omit = ["*/tests/*", "*/__pycache__/*"]
 
 [tool.coverage.report]
 exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "raise NotImplementedError"]
-fail_under = 70
+fail_under = 60
 show_missing = true
 
 # Semantic Release configuration

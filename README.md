@@ -30,34 +30,34 @@ Every FastAPI project needs the same things: authentication, database setup, bac
 from svc_infra.api.fastapi.ease import easy_service_app
 
 app = easy_service_app(name="MyAPI", release="1.0.0")
-# ✅ Health checks, CORS, security headers, structured logging
-# ✅ Prometheus metrics, OpenTelemetry tracing
-# ✅ Request IDs, idempotency middleware
+# [OK] Health checks, CORS, security headers, structured logging
+# [OK] Prometheus metrics, OpenTelemetry tracing
+# [OK] Request IDs, idempotency middleware
 # That's it. Ship it.
 ```
 
-## ⚡ Quick Install
+##  Quick Install
 
 ```bash
 pip install svc-infra
 ```
 
-## 🎯 What's Included
+##  What's Included
 
 | Feature | What You Get | One-liner |
 |---------|-------------|-----------|
-| **🔐 Auth** | JWT, sessions, OAuth/OIDC, MFA, API keys | `add_auth_users(app)` |
-| **💳 Billing** | Usage tracking, subscriptions, invoices, Stripe sync | `add_billing(app)` |
-| **📦 Database** | PostgreSQL + MongoDB, migrations, inbox/outbox | `add_sql_db(app)` |
-| **⚡ Jobs** | Background tasks, scheduling, retries, DLQ | `easy_jobs()` |
-| **🔗 Webhooks** | Subscriptions, HMAC signing, delivery retries | `add_webhooks(app)` |
-| **💾 Cache** | Redis/memory, decorators, namespacing | `init_cache()` |
-| **📊 Observability** | Prometheus, Grafana dashboards, OTEL | Built-in |
-| **📁 Storage** | S3, local, memory backends | `add_storage(app)` |
-| **🏢 Multi-tenancy** | Tenant isolation, scoped queries | Built-in |
+| ** Auth** | JWT, sessions, OAuth/OIDC, MFA, API keys | `add_auth_users(app)` |
+| ** Billing** | Usage tracking, subscriptions, invoices, Stripe sync | `add_billing(app)` |
+| ** Database** | PostgreSQL + MongoDB, migrations, inbox/outbox | `add_sql_db(app)` |
+| ** Jobs** | Background tasks, scheduling, retries, DLQ | `easy_jobs()` |
+| ** Webhooks** | Subscriptions, HMAC signing, delivery retries | `add_webhooks(app)` |
+| ** Cache** | Redis/memory, decorators, namespacing | `init_cache()` |
+| ** Observability** | Prometheus, Grafana dashboards, OTEL | Built-in |
+| ** Storage** | S3, local, memory backends | `add_storage(app)` |
+| ** Multi-tenancy** | Tenant isolation, scoped queries | Built-in |
 | **🚦 Rate Limiting** | Per-user, per-endpoint, headers | Built-in |
 
-## 🚀 30-Second Example
+##  30-Second Example
 
 Build a complete SaaS backend:
 
@@ -94,7 +94,7 @@ async def stripe_webhook(payload=Depends(require_signature(lambda: ["whsec_..."]
 
 ## 📚 Feature Highlights
 
-### 🔐 Authentication & Security
+###  Authentication & Security
 
 Full auth system with zero boilerplate:
 
@@ -110,7 +110,7 @@ async def get_profile(user=Depends(current_active_user)):
 
 **Includes:** JWT tokens, session cookies, OAuth/OIDC (Google, GitHub, etc.), MFA/TOTP, password policies, account lockout, key rotation.
 
-### 💳 Usage-Based Billing
+###  Usage-Based Billing
 
 Track usage and generate invoices:
 
@@ -131,7 +131,7 @@ invoice = billing.generate_monthly_invoice(
 
 **Includes:** Usage events, aggregation, plans & entitlements, subscriptions, invoices, Stripe sync hooks.
 
-### ⚡ Background Jobs
+###  Background Jobs
 
 Redis-backed job queue with retries:
 
@@ -154,7 +154,7 @@ svc-infra jobs run
 
 **Includes:** Visibility timeout, exponential backoff, dead letter queue, interval scheduler, CLI worker.
 
-### 🔗 Webhooks
+###  Webhooks
 
 Send and receive webhooks with proper security:
 
@@ -174,7 +174,7 @@ async def receive(payload=Depends(require_signature(lambda: ["secret1", "secret2
 
 **Includes:** Subscription store, HMAC-SHA256 signing, delivery retries, idempotent processing.
 
-### 📊 Observability
+###  Observability
 
 Production monitoring out of the box:
 
@@ -192,7 +192,7 @@ svc-infra obs dashboard --service myapi --output ./dashboards/
 
 **Includes:** Prometheus metrics, Grafana dashboard generator, OTEL integration, SLO helpers.
 
-## ⚙️ Configuration
+## ⚙ Configuration
 
 Everything is configurable via environment variables:
 
@@ -252,7 +252,7 @@ make run-template      # Starts at http://localhost:8001
 
 Visit http://localhost:8001/docs to explore the API.
 
-## 🤝 Related Packages
+##  Related Packages
 
 svc-infra is part of the **nfrax** infrastructure suite:
 
@@ -270,8 +270,8 @@ MIT License - use it for anything.
 
 <div align="center">
 
-**Built with ❤️ by [nfraxlab](https://github.com/nfraxlab)**
+**Built with ❤ by [nfraxlab](https://github.com/nfraxlab)**
 
-[⭐ Star us on GitHub](https://github.com/nfraxlab/svc-infra) · [📦 View on PyPI](https://pypi.org/project/svc-infra/)
+[ Star us on GitHub](https://github.com/nfraxlab/svc-infra) · [ View on PyPI](https://pypi.org/project/svc-infra/)
 
 </div>

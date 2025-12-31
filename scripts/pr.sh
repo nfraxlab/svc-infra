@@ -240,14 +240,14 @@ if [ "$CURRENT_BRANCH" = "$REPO_DEFAULT_BRANCH" ] || [ "$NEW_FLAG" = "1" ]; then
     fi
 
     echo ""
-    echo "[pr] ✅ PR created: $(gh pr view --head "$BRANCH" --json url -q .url 2>/dev/null || true)"
+    echo "[pr] [OK] PR created: $(gh pr view --head "$BRANCH" --json url -q .url 2>/dev/null || true)"
     echo "[pr] You are now on branch: $BRANCH"
     echo ""
     echo "[pr] Next steps:"
     echo "    • Add more commits: make pr m=\"fix: another change\""
     echo "    • Return to $REPO_DEFAULT_BRANCH: git checkout $REPO_DEFAULT_BRANCH"
     echo ""
-    echo "[pr] ⚠️  If creating another PR immediately, wait for this one to merge"
+    echo "[pr] [!]  If creating another PR immediately, wait for this one to merge"
     echo "    or the new PR may conflict with this one."
 
 else
@@ -355,7 +355,7 @@ else
     # Create or update PR
     if gh pr view --head "$CURRENT_BRANCH" >/dev/null 2>&1; then
         echo ""
-        echo "[pr] ✅ PR updated: $(gh pr view --head "$CURRENT_BRANCH" --json url -q .url)"
+        echo "[pr] [OK] PR updated: $(gh pr view --head "$CURRENT_BRANCH" --json url -q .url)"
     else
         PR_CREATE_ARGS=(--title "$MSG" --body "$MSG" --base "$BASE_BRANCH" --head "$CURRENT_BRANCH")
         if [ "$DRAFT_FLAG" = "1" ]; then
@@ -364,7 +364,7 @@ else
         fi
         gh pr create "${PR_CREATE_ARGS[@]}"
         echo ""
-        echo "[pr] ✅ PR created: $(gh pr view --head "$CURRENT_BRANCH" --json url -q .url 2>/dev/null || true)"
+        echo "[pr] [OK] PR created: $(gh pr view --head "$CURRENT_BRANCH" --json url -q .url 2>/dev/null || true)"
     fi
     echo "[pr] You are on branch: $CURRENT_BRANCH"
 fi

@@ -122,19 +122,19 @@ add_data_lifecycle(
 ### Fixture Best Practices
 
 ```python
-# ✅ Good: Idempotent fixtures using merge/upsert
+# [OK] Good: Idempotent fixtures using merge/upsert
 async def load_settings(session):
     for setting in DEFAULT_SETTINGS:
         await session.merge(Setting(**setting))
     await session.commit()
 
-# ✅ Good: Check before insert
+# [OK] Good: Check before insert
 async def load_admin(session):
     if not await session.get(User, "admin"):
         session.add(User(id="admin", ...))
         await session.commit()
 
-# ❌ Bad: Will fail on duplicate
+# [X] Bad: Will fail on duplicate
 async def load_data(session):
     session.add(Category(id="electronics", ...))  # Fails if exists!
     await session.commit()
@@ -625,7 +625,7 @@ def log_data_lifecycle_event(event: str, context: dict):
 ### Erasure Performance
 
 ```python
-# ✅ Good: Batch delete with limit
+# [OK] Good: Batch delete with limit
 async def erase_in_batches(session, user_id: str, batch_size: int = 1000):
     total = 0
     while True:
@@ -641,7 +641,7 @@ async def erase_in_batches(session, user_id: str, batch_size: int = 1000):
         await session.commit()  # Commit each batch
     return total
 
-# ❌ Bad: Single large delete (can lock tables)
+# [X] Bad: Single large delete (can lock tables)
 async def erase_all_at_once(session, user_id: str):
     stmt = delete(Comment).where(Comment.author_id == user_id)
     result = await session.execute(stmt)  # May timeout!

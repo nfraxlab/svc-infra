@@ -31,7 +31,7 @@ Server starts at **http://localhost:8001**
 - OpenAPI docs: http://localhost:8001/docs
 - Health check: http://localhost:8001/v1/status
 
-## 📝 Key Configuration
+##  Key Configuration
 
 ```bash
 # In .env file:
@@ -42,7 +42,7 @@ SQL_URL=sqlite+aiosqlite:////tmp/svc_infra_template.db  # Database URL
 METRICS_ENABLED=true       # Enable Prometheus metrics
 ```
 
-## �️ Database Setup
+## � Database Setup
 
 ### Quick Start (Development)
 
@@ -76,7 +76,7 @@ poetry install
 
 **See [Database Guide](docs/DATABASE.md)** for complete database documentation.
 
-## 🚀 Testing Features
+##  Testing Features
 
 ### Auto-Generated CRUD
 
@@ -148,7 +148,7 @@ curl http://localhost:8001/v1/stats/summary
 curl http://localhost:8001/metrics
 ```
 
-## 🔑 Key Files
+##  Key Files
 
 - **`main.py`** - **START HERE** - Complete feature showcase with inline docs
 - **`settings.py`** - Type-safe configuration with Pydantic
@@ -158,7 +158,7 @@ curl http://localhost:8001/metrics
 - **`.env.example`** - All available configuration options
 - **`create_tables.py`** - Simple table creation script
 
-## 💡 What's Different
+##  What's Different
 
 This template uses `setup_service_api` (not `easy_service_app`) to showcase:
 - **Explicit setup** - Full control over initialization order
@@ -174,7 +174,7 @@ Read `main.py` for detailed inline documentation!
 - **[CLI Reference](docs/CLI.md)** - Complete svc-infra CLI documentation
 - **[Usage Guide](USAGE.md)** - Detailed feature usage examples
 
-## 🛠️ Development Commands
+## 🛠 Development Commands
 
 ```bash
 # Run server

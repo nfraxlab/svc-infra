@@ -1,4 +1,4 @@
-# 🛡️ Duplicate Prevention Feature
+# 🛡 Duplicate Prevention Feature
 
 ## Overview
 
@@ -6,36 +6,36 @@ The scaffolding scripts now **prevent accidental overwrites** of existing models
 
 ## Visual Comparison
 
-### ❌ Before (Dangerous)
+### [X] Before (Dangerous)
 
 ```bash
 $ python scripts/scaffold_models.py
-✅ User model scaffolded successfully
+[OK] User model scaffolded successfully
 
 # Run again by mistake...
 $ python scripts/scaffold_models.py
-✅ User model scaffolded successfully  # 💀 YOUR CODE WAS OVERWRITTEN!
+[OK] User model scaffolded successfully  # 💀 YOUR CODE WAS OVERWRITTEN!
 ```
 
-### ✅ After (Safe)
+### [OK] After (Safe)
 
 ```bash
 $ python scripts/scaffold_models.py
-✅ User model scaffolded successfully
+[OK] User model scaffolded successfully
 
 # Run again by mistake...
 $ python scripts/scaffold_models.py
 
-⚠️  User model already exists:
-  📁 /path/to/models/user.py
-  📁 /path/to/schemas/user.py
+[!]  User model already exists:
+   /path/to/models/user.py
+   /path/to/schemas/user.py
 
 Skipping to prevent overwriting existing code.
 Use --overwrite flag if you want to replace existing files.
 
-📊 Scaffolding Summary
-⚠️  Skipped (already exist): User, Project, Task
-  💡 Tip: Use --overwrite to replace existing files
+ Scaffolding Summary
+[!]  Skipped (already exist): User, Project, Task
+   Tip: Use --overwrite to replace existing files
 ```
 
 ## Implementation Details
@@ -84,9 +84,9 @@ Each function:
 ```bash
 $ python scripts/scaffold_models.py
 
-⚠️  User model already exists:
-  📁 /path/to/models/user.py
-  📁 /path/to/schemas/user.py
+[!]  User model already exists:
+   /path/to/models/user.py
+   /path/to/schemas/user.py
 
 Skipping to prevent overwriting existing code.
 Use --overwrite flag if you want to replace existing files.
@@ -98,7 +98,7 @@ $ python scripts/scaffold_models.py --overwrite
 
 Running: Generate User model for authentication
   $ poetry run svc-infra sql scaffold --kind auth ...
-✅ User model scaffolded successfully
+[OK] User model scaffolded successfully
 ```
 
 ### Summary Output
@@ -106,13 +106,13 @@ Running: Generate User model for authentication
 The main() function now provides a comprehensive summary:
 
 ```
-📊 Scaffolding Summary
+ Scaffolding Summary
 ══════════════════════════════════════════════════════════════════════
 
-✅ Successfully scaffolded: Project, Task
-⚠️  Skipped (already exist): User
+[OK] Successfully scaffolded: Project, Task
+[!]  Skipped (already exist): User
 
-  💡 Tip: Use --overwrite to replace existing files
+   Tip: Use --overwrite to replace existing files
 ```
 
 ## Safety Features
@@ -128,9 +128,9 @@ The main() function now provides a comprehensive summary:
 ### Automated Tests
 
 Run `scripts/test_duplicate_prevention.py` to verify:
-- ✅ Detects existing models correctly
-- ✅ Identifies missing models correctly
-- ✅ Handles partial existence (model XOR schema)
+- [OK] Detects existing models correctly
+- [OK] Identifies missing models correctly
+- [OK] Handles partial existence (model XOR schema)
 
 ### Manual Testing
 
@@ -153,7 +153,7 @@ All documentation has been updated to reflect duplicate prevention:
 
 1. **README.md**: Added "Safe by default" note
 2. **SCAFFOLDING.md**:
-   - Added 🛡️ Duplicate Prevention section
+   - Added 🛡 Duplicate Prevention section
    - Updated all command examples
    - Added warnings about --overwrite
 3. **scaffold_models.py docstring**: Added DUPLICATE PREVENTION section
@@ -163,20 +163,20 @@ All documentation has been updated to reflect duplicate prevention:
 
 When using the scaffolding scripts:
 
-1. ✅ **First run**: Use without flags (safe mode)
-2. ✅ **Review code**: Inspect generated files before customizing
-3. ✅ **Version control**: Commit before using --overwrite
-4. ✅ **Targeted scaffolding**: Use --user-only or --entities-only
-5. ✅ **Read summary**: Check what was created/skipped
+1. [OK] **First run**: Use without flags (safe mode)
+2. [OK] **Review code**: Inspect generated files before customizing
+3. [OK] **Version control**: Commit before using --overwrite
+4. [OK] **Targeted scaffolding**: Use --user-only or --entities-only
+5. [OK] **Read summary**: Check what was created/skipped
 
 ## Edge Cases Handled
 
-- ✅ Both model and schema exist → Skip
-- ✅ Only model exists → Skip (partial existence)
-- ✅ Only schema exists → Skip (partial existence)
-- ✅ Neither exists → Scaffold normally
-- ✅ --overwrite flag → Bypass all checks
-- ✅ Multiple models → Independent checking
+- [OK] Both model and schema exist → Skip
+- [OK] Only model exists → Skip (partial existence)
+- [OK] Only schema exists → Skip (partial existence)
+- [OK] Neither exists → Scaffold normally
+- [OK] --overwrite flag → Bypass all checks
+- [OK] Multiple models → Independent checking
 
 ## Files Modified
 

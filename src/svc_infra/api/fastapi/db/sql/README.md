@@ -114,4 +114,4 @@ include_resources(app, [
 
 ---
 
-⚡ **With just a model and a Resource definition, you get a full CRUD API for free.**
+ **With just a model and a Resource definition, you get a full CRUD API for free.**

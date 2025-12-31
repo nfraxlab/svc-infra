@@ -632,13 +632,13 @@ CLOUDINARY_URL=cloudinary://...
 
 ### Never Expose Raw File Paths
 
-❌ **Bad**:
+[X] **Bad**:
 ```python
 # Don't return raw storage keys or file paths
 return {"path": "/data/uploads/secret-document.pdf"}
 ```
 
-✅ **Good**:
+[OK] **Good**:
 ```python
 # Return signed URLs with expiration
 url = await storage.get_url(key, expires_in=3600)

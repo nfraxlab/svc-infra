@@ -1,4 +1,4 @@
-# SVC Infra Cache 🚀
+# SVC Infra Cache
 
 **One-button caching for your async Python applications.**
 
@@ -25,7 +25,7 @@ init_cache(
 
 ### 2. Choose Your Style
 
-## 🎯 **Option A: Resource Pattern (Recommended)**
+##  **Option A: Resource Pattern (Recommended)**
 
 Perfect for entity-based operations (users, products, orders, etc.)
 
@@ -57,7 +57,7 @@ async def delete_user_profile(*, user_id: int):
 
 **That's it!** Cache invalidation happens automatically. No boilerplate needed.
 
-## 🔧 **Option B: Manual Decorators (More Control)**
+##  **Option B: Manual Decorators (More Control)**
 
 For custom cache keys and tags:
 
@@ -118,17 +118,17 @@ user = resource("user", "user_id")
 
 @user.cache_read(suffix="profile", ttl=TTL_LONG)
 async def get_user_profile(*, user_id: int):
-    print(f"🔥 Cache MISS - fetching user {user_id} from DB")
+    print(f" Cache MISS - fetching user {user_id} from DB")
     return await fetch_user(user_id)
 
 @user.cache_write()
 async def update_user_profile(*, user_id: int, data: dict):
-    print(f"💾 Updating user {user_id} and invalidating cache")
+    print(f" Updating user {user_id} and invalidating cache")
     return await save_user(user_id, data)
 
 @user.cache_write()
 async def delete_user_profile(*, user_id: int):
-    print(f"🗑️ Deleting user {user_id} and invalidating cache")
+    print(f"🗑 Deleting user {user_id} and invalidating cache")
     return await delete_user_from_db(user_id)
 
 # 4. Demo
@@ -137,22 +137,22 @@ async def main():
 
     # First call - cache miss, hits DB
     p1 = await get_user_profile(user_id=uid)
-    print("✅ Fetched profile:", p1)
+    print("[OK] Fetched profile:", p1)
 
     # Second call - cache hit, no DB call
     p1_cached = await get_user_profile(user_id=uid)
-    print("⚡ Cached profile:", p1_cached)
+    print(" Cached profile:", p1_cached)
 
     # Update - invalidates cache
     p2 = await update_user_profile(user_id=uid, data={"name": "New Name"})
-    print("✅ Updated profile:", p2)
+    print("[OK] Updated profile:", p2)
 
     # Third call - cache was invalidated, hits DB again
     p3 = await get_user_profile(user_id=uid)
-    print("✅ Fresh profile:", p3)
+    print("[OK] Fresh profile:", p3)
 
     assert p3["name"] == "New Name"
-    print("🎉 Success! Cache invalidation worked perfectly.")
+    print(" Success! Cache invalidation worked perfectly.")
 
 if __name__ == "__main__":
     asyncio.run(main())
@@ -180,14 +180,14 @@ def _ensure_user(uid: int):
 async def fetch_user_from_database(user_id: int):
     _ensure_user(user_id)
     await asyncio.sleep(0.02)
-    print(f"🔥 DB FETCH - user {user_id}")
+    print(f" DB FETCH - user {user_id}")
     return dict(_USERS[user_id])
 
 async def save_user_to_database(user_id: int, data: dict):
     _ensure_user(user_id)
     await asyncio.sleep(0.02)
     _USERS[user_id].update(data)
-    print(f"💾 DB SAVE - user {user_id}")
+    print(f" DB SAVE - user {user_id}")
     return dict(_USERS[user_id])
 
 # 3. Cached read with tags
@@ -211,19 +211,19 @@ async def main():
     uid = 123
 
     p1 = await get_user_profile(user_id=uid)    # cold -> DB
-    print("✅ Fetched profile:", p1)
+    print("[OK] Fetched profile:", p1)
 
     p1_again = await get_user_profile(user_id=uid)  # warm -> cache
-    print("⚡ Cached profile:", p1_again)
+    print(" Cached profile:", p1_again)
 
     p2 = await update_user_profile(user_id=uid, data={"name": "New Name"})
-    print("✅ Updated profile:", p2)
+    print("[OK] Updated profile:", p2)
 
     p3 = await get_user_profile(user_id=uid)    # invalidated -> cold -> DB
-    print("✅ Fresh profile:", p3)
+    print("[OK] Fresh profile:", p3)
 
     assert p3["name"] == "New Name"
-    print("🎉 Cache invalidation worked!")
+    print(" Cache invalidation worked!")
 
 if __name__ == "__main__":
     asyncio.run(main())
@@ -245,7 +245,7 @@ async def get_data(id: str):
     return await fetch_data(id)
 ```
 
-## 🔄 Advanced: Recaching
+##  Advanced: Recaching
 
 Automatically warm the cache after invalidation:
 
@@ -264,7 +264,7 @@ async def update_user_profile(*, user_id: int, data: dict):
     return result
 ```
 
-## 🏷️ Cache Tags
+## 🏷 Cache Tags
 
 Use tags to invalidate related cache entries:
 
@@ -283,7 +283,7 @@ async def delete_user(*, user_id: int):
     await remove_user_from_db(user_id)
 ```
 
-## 🔧 Configuration
+##  Configuration
 
 ### Environment Variables
 
@@ -359,7 +359,7 @@ async def generate_report(*, report_id: int, cache_enabled: bool = True):
     return await expensive_report_generation(report_id)
 ```
 
-## 🧪 Testing
+##  Testing
 
 ```python
 # Disable caching in tests
@@ -370,7 +370,7 @@ os.environ["CACHE_TTL_DEFAULT"] = "0"  # No caching
 init_cache(prefix="test", version="v1")
 ```
 
-## 🐛 Debugging
+##  Debugging
 
 ```python
 import logging
@@ -384,7 +384,7 @@ cache = instance()
 keys = await cache.get_many("user:*")  # Get all user cache keys
 ```
 
-## 🎯 Best Practices
+##  Best Practices
 
 1. **Use resource pattern** for entity-based caching
 2. **Use keyword-only arguments** (`*, user_id`) for cache key stability  
@@ -393,15 +393,15 @@ keys = await cache.get_many("user:*")  # Get all user cache keys
 5. **Use recaching** for critical hot paths
 6. **Namespace by environment** (`prod`, `staging`, `dev`)
 
-## 🚀 Production Checklist
+##  Production Checklist
 
-- ✅ Redis connection pooling configured
-- ✅ Cache TTLs appropriate for your data
-- ✅ Monitoring cache hit rates
-- ✅ Graceful fallback when cache is down
-- ✅ Cache keys namespaced by environment
-- ✅ Invalidation patterns tested
+- [OK] Redis connection pooling configured
+- [OK] Cache TTLs appropriate for your data
+- [OK] Monitoring cache hit rates
+- [OK] Graceful fallback when cache is down
+- [OK] Cache keys namespaced by environment
+- [OK] Invalidation patterns tested
 
 ---
 
-**Need help?** Check the source code in `svc_infra/cache/` or ask the team! 🙋‍♂️
+**Need help?** Check the source code in `svc_infra/cache/` or ask the team! 🙋♂

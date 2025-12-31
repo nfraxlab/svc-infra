@@ -38,7 +38,7 @@ class TestHealthCheck:
             result = runner.invoke(cli_app, ["health", "check", "http://localhost:8000/health"])
 
         assert result.exit_code == 0
-        assert "✓" in result.stdout
+        assert "[OK]" in result.stdout
         assert "healthy" in result.stdout
         assert "15.5ms" in result.stdout
 
@@ -56,7 +56,7 @@ class TestHealthCheck:
             result = runner.invoke(cli_app, ["health", "check", "http://localhost:8000/health"])
 
         assert result.exit_code == 1
-        assert "✗" in result.stdout
+        assert "[X]" in result.stdout
         assert "unhealthy" in result.stdout
         assert "Connection refused" in result.stdout
 

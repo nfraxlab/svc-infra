@@ -2,7 +2,7 @@
 
 This guide covers the security primitives built into svc-infra and how to wire them:
 
-> ℹ️ Environment variables for the auth/security helpers are catalogued in [Environment Reference](environment.md).
+> [i] Environment variables for the auth/security helpers are catalogued in [Environment Reference](environment.md).
 
 - Password policy and breach checking
 - Account lockout (exponential backoff)
@@ -319,14 +319,14 @@ def validate_session(token: str, request: Request) -> bool:
 
 **Defenses**:
 ```python
-# ❌ VULNERABLE: String concatenation
+# [X] VULNERABLE: String concatenation
 query = f"SELECT * FROM users WHERE email = '{user_input}'"
 
-# ✅ SAFE: Parameterized query (SQLAlchemy)
+# [OK] SAFE: Parameterized query (SQLAlchemy)
 stmt = select(User).where(User.email == user_input)
 result = await session.execute(stmt)
 
-# ✅ SAFE: Using text() with parameters
+# [OK] SAFE: Using text() with parameters
 from sqlalchemy import text
 stmt = text("SELECT * FROM users WHERE email = :email")
 result = await session.execute(stmt, {"email": user_input})
