@@ -183,7 +183,7 @@ class TestIssueSessionAndRefresh:
     @pytest.mark.asyncio
     async def test_issue_with_default_ttl(self) -> None:
         db = FakeDB()
-        raw, rt = await issue_session_and_refresh(db, user_id=uuid.uuid4())
+        _raw, rt = await issue_session_and_refresh(db, user_id=uuid.uuid4())
         # Token should expire in about DEFAULT_REFRESH_TTL_MINUTES
         expected_expiry = datetime.now(UTC) + timedelta(minutes=DEFAULT_REFRESH_TTL_MINUTES)
         assert rt.expires_at is not None
@@ -195,7 +195,7 @@ class TestRotateSessionRefresh:
     @pytest.mark.asyncio
     async def test_rotate_already_revoked_raises(self) -> None:
         db = FakeDB()
-        raw, rt = await issue_session_and_refresh(db, user_id=uuid.uuid4())
+        _raw, rt = await issue_session_and_refresh(db, user_id=uuid.uuid4())
         # Manually mark as revoked
         rt.revoked_at = datetime.now(UTC)
 
@@ -205,7 +205,7 @@ class TestRotateSessionRefresh:
     @pytest.mark.asyncio
     async def test_rotate_expired_raises(self) -> None:
         db = FakeDB()
-        raw, rt = await issue_session_and_refresh(db, user_id=uuid.uuid4())
+        _raw, rt = await issue_session_and_refresh(db, user_id=uuid.uuid4())
         # Set expires_at to past
         rt.expires_at = datetime.now(UTC) - timedelta(hours=1)
 
@@ -215,9 +215,9 @@ class TestRotateSessionRefresh:
     @pytest.mark.asyncio
     async def test_rotate_with_custom_ttl(self) -> None:
         db = FakeDB()
-        raw, rt = await issue_session_and_refresh(db, user_id=uuid.uuid4())
+        _raw, rt = await issue_session_and_refresh(db, user_id=uuid.uuid4())
 
-        new_raw, new_rt = await rotate_session_refresh(db, current=rt, ttl_minutes=60)
+        _new_raw, new_rt = await rotate_session_refresh(db, current=rt, ttl_minutes=60)
 
         expected_expiry = datetime.now(UTC) + timedelta(minutes=60)
         assert new_rt.expires_at is not None
@@ -226,12 +226,12 @@ class TestRotateSessionRefresh:
     @pytest.mark.asyncio
     async def test_rotate_with_none_expires_at(self) -> None:
         db = FakeDB()
-        raw, rt = await issue_session_and_refresh(db, user_id=uuid.uuid4())
+        _raw, rt = await issue_session_and_refresh(db, user_id=uuid.uuid4())
         # Set expires_at to None (edge case)
         rt.expires_at = None
 
         # Should work - token without expiry can still be rotated
-        new_raw, new_rt = await rotate_session_refresh(db, current=rt)
+        new_raw, _new_rt = await rotate_session_refresh(db, current=rt)
 
         assert new_raw is not None
         assert rt.revoked_at is not None

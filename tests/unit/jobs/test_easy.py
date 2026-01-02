@@ -61,18 +61,18 @@ class TestEasyJobs:
     def test_memory_driver_returns_inmemory_queue(self) -> None:
         """Memory driver should return InMemoryJobQueue."""
         with patch.dict(os.environ, {"JOBS_DRIVER": "memory"}):
-            queue, scheduler = easy_jobs(driver="memory")
+            queue, _scheduler = easy_jobs(driver="memory")
             assert isinstance(queue, InMemoryJobQueue)
 
     def test_returns_inmemory_scheduler(self) -> None:
         """Should always return InMemoryScheduler."""
         with patch.dict(os.environ, {"JOBS_DRIVER": "memory"}):
-            queue, scheduler = easy_jobs()
+            _queue, scheduler = easy_jobs()
             assert isinstance(scheduler, InMemoryScheduler)
 
     def test_driver_argument(self) -> None:
         """Should accept driver argument."""
-        queue, scheduler = easy_jobs(driver="memory")
+        queue, _scheduler = easy_jobs(driver="memory")
         assert isinstance(queue, InMemoryJobQueue)
 
     def test_default_to_memory_without_env(self) -> None:
@@ -82,7 +82,7 @@ class TestEasyJobs:
             env_copy = dict(os.environ)
             env_copy.pop("JOBS_DRIVER", None)
             with patch.dict(os.environ, env_copy, clear=True):
-                queue, scheduler = easy_jobs()
+                queue, _scheduler = easy_jobs()
                 assert isinstance(queue, InMemoryJobQueue)
 
     def test_redis_driver_uses_redis_url(self) -> None:
@@ -93,7 +93,7 @@ class TestEasyJobs:
                 mock_client = MagicMock()
                 mock_redis.from_url.return_value = mock_client
 
-                queue, scheduler = easy_jobs(driver="redis")
+                _queue, _scheduler = easy_jobs(driver="redis")
 
                 mock_redis.from_url.assert_called_once_with("redis://test:6379/1")
 
@@ -106,7 +106,7 @@ class TestEasyJobs:
                 mock_client = MagicMock()
                 mock_redis.from_url.return_value = mock_client
 
-                queue, scheduler = easy_jobs(driver="redis")
+                _queue, _scheduler = easy_jobs(driver="redis")
 
                 mock_redis.from_url.assert_called_once_with("redis://localhost:6379/0")
 

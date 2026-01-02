@@ -250,7 +250,7 @@ class TestBuildGetterKwargs:
             return f"{name}:{id}"
 
         plan = RecachePlan(getter=getter, include=["id"])
-        fn, kwargs = build_getter_kwargs(plan, (), {"id": 1, "name": "test", "extra": "ignored"})
+        _fn, kwargs = build_getter_kwargs(plan, (), {"id": 1, "name": "test", "extra": "ignored"})
         assert kwargs == {"id": 1}
 
     def test_recache_plan_with_rename(self) -> None:
@@ -260,7 +260,7 @@ class TestBuildGetterKwargs:
             return f"target:{target_id}"
 
         plan = RecachePlan(getter=getter, rename={"user_id": "target_id"})
-        fn, kwargs = build_getter_kwargs(plan, (), {"user_id": 999})
+        _fn, kwargs = build_getter_kwargs(plan, (), {"user_id": 999})
         assert kwargs == {"target_id": 999}
 
     def test_recache_plan_with_extra(self) -> None:
@@ -270,7 +270,7 @@ class TestBuildGetterKwargs:
             return f"id:{id}:limit:{limit}"
 
         plan = RecachePlan(getter=getter, extra={"limit": 50})
-        fn, kwargs = build_getter_kwargs(plan, (), {"id": 5})
+        _fn, kwargs = build_getter_kwargs(plan, (), {"id": 5})
         assert kwargs == {"id": 5, "limit": 50}
 
     def test_recache_plan_filters_invalid_params(self) -> None:
@@ -280,7 +280,7 @@ class TestBuildGetterKwargs:
             return str(a)
 
         plan = RecachePlan(getter=getter)
-        fn, kwargs = build_getter_kwargs(plan, (), {"a": 1, "b": 2, "c": 3})
+        _fn, kwargs = build_getter_kwargs(plan, (), {"a": 1, "b": 2, "c": 3})
         assert kwargs == {"a": 1}
 
     def test_legacy_tuple_with_dict_mapping(self) -> None:
@@ -318,7 +318,7 @@ class TestBuildGetterKwargs:
             return None
 
         spec = (getter, mapper)
-        fn, kwargs = build_getter_kwargs(spec, (), {"id": 5})
+        _fn, kwargs = build_getter_kwargs(spec, (), {"id": 5})
         # Should fall back to direct parameter matching
         assert kwargs == {"id": 5}
 
@@ -333,7 +333,7 @@ class TestBuildGetterKwargs:
 
         spec = (getter, mapper)
         # Should not raise, just log warning
-        fn, kwargs = build_getter_kwargs(spec, (), {"id": 5})
+        _fn, kwargs = build_getter_kwargs(spec, (), {"id": 5})
         assert kwargs == {"id": 5}
 
     def test_legacy_tuple_dict_with_callable_value(self) -> None:
@@ -346,7 +346,7 @@ class TestBuildGetterKwargs:
             return kwargs.get("a", 0) + kwargs.get("b", 0)
 
         spec = (getter, {"result": compute})
-        fn, kwargs = build_getter_kwargs(spec, (), {"a": 3, "b": 4})
+        _fn, kwargs = build_getter_kwargs(spec, (), {"a": 3, "b": 4})
         assert kwargs == {"result": 7}
 
     def test_legacy_tuple_dict_callable_raises(self) -> None:
@@ -359,7 +359,7 @@ class TestBuildGetterKwargs:
             raise RuntimeError("failed")
 
         spec = (getter, {"value": bad_compute})
-        fn, kwargs = build_getter_kwargs(spec, (), {})
+        _fn, kwargs = build_getter_kwargs(spec, (), {})
         # Should not include the failed mapping
         assert "value" not in kwargs
 

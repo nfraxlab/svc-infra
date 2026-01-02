@@ -186,7 +186,7 @@ class TestExtractUserInfoOIDC:
         )
         token = {"id_token": "jwt-token", "access_token": "access"}
 
-        email, name, user_id, verified, claims = await _extract_user_info_oidc(
+        email, name, user_id, verified, _claims = await _extract_user_info_oidc(
             request, client, token, nonce="nonce123"
         )
 
@@ -209,7 +209,7 @@ class TestExtractUserInfoOIDC:
         )
         token = {"access_token": "access"}  # No id_token
 
-        email, name, user_id, verified, claims = await _extract_user_info_oidc(
+        email, _name, _user_id, _verified, _claims = await _extract_user_info_oidc(
             request, client, token, nonce=None
         )
 
@@ -262,7 +262,7 @@ class TestExtractUserInfoGitHub:
 
         token = {"access_token": "gh-token"}
 
-        email, name, user_id, verified, claims = await _extract_user_info_github(client, token)
+        email, name, user_id, verified, _claims = await _extract_user_info_github(client, token)
 
         assert email == "test@example.com"
         assert name == "Test User"
@@ -322,7 +322,7 @@ class TestExtractUserInfoLinkedIn:
 
         token = {"access_token": "li-token"}
 
-        email, name, user_id, verified, claims = await _extract_user_info_linkedin(client, token)
+        email, name, user_id, _verified, _claims = await _extract_user_info_linkedin(client, token)
 
         assert email == "linkedin@example.com"
         assert name == "Test User"
