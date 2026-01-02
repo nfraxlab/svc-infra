@@ -1,0 +1,29 @@
+# GitHub repository settings
+# Managed by probot/settings - https://github.com/probot/settings
+# Install the app: https://github.com/apps/settings
+
+repository:
+  name: svc-infra
+  description: Production-ready backend infrastructure SDK for Python
+  default_branch: main
+  allow_squash_merge: true
+  allow_merge_commit: false
+  allow_rebase_merge: false
+  delete_branch_on_merge: true
+
+branches:
+  - name: main
+    protection:
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+        dismiss_stale_reviews: true
+        require_code_owner_reviews: false
+        require_last_push_approval: true
+      required_status_checks:
+        strict: true
+        contexts:
+          - "test"
+          - "lint"
+      enforce_admins: false
+      required_linear_history: false
+      restrictions: null

@@ -1,24 +1,24 @@
-<div align="center">
-
 # svc-infra
 
-[![v1.0.0](https://img.shields.io/badge/version-1.0.0-green.svg)](CHANGELOG.md)
-[![CI](https://github.com/nfraxlab/svc-infra/actions/workflows/ci.yml/badge.svg)](https://github.com/nfraxlab/svc-infra/actions/workflows/ci.yml)
+**Production-ready FastAPI infrastructure in one import.**
+
 [![PyPI](https://img.shields.io/pypi/v/svc-infra.svg)](https://pypi.org/project/svc-infra/)
+[![CI](https://github.com/nfraxlab/svc-infra/actions/workflows/ci.yml/badge.svg)](https://github.com/nfraxlab/svc-infra/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/pypi/pyversions/svc-infra.svg)](https://pypi.org/project/svc-infra/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Downloads](https://img.shields.io/pypi/dm/svc-infra.svg)](https://pypi.org/project/svc-infra/)
-[![codecov](https://codecov.io/gh/nfraxlab/svc-infra/branch/main/graph/badge.svg)](https://codecov.io/gh/nfraxlab/svc-infra)
 
-### Production-ready FastAPI infrastructure in one import
+## Overview
 
-**Stop rebuilding auth, billing, webhooks, and background jobs for every project.**
+Stop rebuilding auth, billing, webhooks, and background jobs for every project.
 
-[Documentation](docs/) · [Examples](examples/) · [PyPI](https://pypi.org/project/svc-infra/) · [Changelog](CHANGELOG.md)
+### Key Features
 
-</div>
-
----
+- **Auth** - JWT, sessions, OAuth/OIDC, MFA, API keys
+- **Billing** - Usage tracking, subscriptions, invoices, Stripe sync
+- **Database** - PostgreSQL + MongoDB, migrations, inbox/outbox
+- **Jobs** - Background tasks, scheduling, retries, DLQ
+- **Webhooks** - Subscriptions, HMAC signing, delivery retries
+- **Observability** - Prometheus, Grafana dashboards, OTEL
 
 ## Why svc-infra?
 
