@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.1.1 (2026-01-02)
+
+### Bug Fixes
+
+- Align README hero section with robo-infra style
+  ([#77](https://github.com/nfraxlab/svc-infra/pull/77),
+  [`a9c50f3`](https://github.com/nfraxlab/svc-infra/commit/a9c50f3ed47cc628f8105befedb22b4565dea5d6))
+
+
 ## v1.1.0 (2025-12-30)
 
 ### Bug Fixes
