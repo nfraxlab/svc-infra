@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.1.3 (2026-01-03)
+
+### Bug Fixes
+
+- Remove all emojis from documentation and code files
+  ([#79](https://github.com/nfraxlab/svc-infra/pull/79),
+  [`5f9f820`](https://github.com/nfraxlab/svc-infra/commit/5f9f8208041dc279f13ed2371ef026ee4571711b))
+
+
 ## v1.1.2 (2026-01-03)
 
 ### Bug Fixes
