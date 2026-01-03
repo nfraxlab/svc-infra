@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     JSON,
@@ -21,16 +20,10 @@ from sqlalchemy import (
     UniqueConstraint,
     text,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from svc_infra.db.sql.base import ModelBase
 from svc_infra.db.sql.types import GUID
-
-if TYPE_CHECKING:
-    from typing import Any
-
-    # User model is application-specific; this is a forward reference for type hints
-    User = Any
 
 
 class ProviderAccount(ModelBase):
@@ -49,8 +42,9 @@ class ProviderAccount(ModelBase):
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     raw_claims: Mapped[dict | None] = mapped_column(JSON)
 
-    # Bidirectional relationship to User model (use string to avoid circular import)
-    user: Mapped[User] = relationship("User", back_populates="provider_accounts")
+    # Note: The bidirectional relationship to User is defined on the application's
+    # User model side (see examples/src/svc_infra_template/models/user.py).
+    # We don't define it here to avoid requiring a specific User model to exist.
 
     created_at = mapped_column(
         DateTime(timezone=True),
