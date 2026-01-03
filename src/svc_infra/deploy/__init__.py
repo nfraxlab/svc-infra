@@ -277,6 +277,8 @@ def get_host(default: str = "127.0.0.1") -> str:
         >>> uvicorn.run(app, host=get_host(), port=get_port())
     """
     if is_containerized():
+        # Security: B104 skip justified - 0.0.0.0 only in containers where
+        # binding to all interfaces is required. Local dev defaults to 127.0.0.1.
         return "0.0.0.0"
     return os.environ.get("HOST", default)
 

@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 def sha1_hex(data: str) -> str:
+    # Security: B324 skip justified - HIBP API requires SHA1 for k-anonymity
+    # range queries. This is the API specification, not a security weakness.
     return hashlib.sha1(data.encode("utf-8")).hexdigest().upper()
 
 

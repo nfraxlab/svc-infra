@@ -23,6 +23,8 @@ def _gapi(base, token, path, method="GET", body=None):
             "Accept": "application/json",
         },
     )
+    # Security: B310 skip justified - URL constructed from trusted config (Grafana API),
+    # path is hardcoded. No user input flows into the URL.
     with urllib.request.urlopen(req) as r:
         ct = r.headers.get("Content-Type", "")
         raw = r.read()
