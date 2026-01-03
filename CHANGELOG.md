@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.1.2 (2026-01-03)
+
+### Bug Fixes
+
+- Add unit tests for db utils, webhooks, cache, and payments (Phase 1.2.5-1.2.7)
+  ([#78](https://github.com/nfraxlab/svc-infra/pull/78),
+  [`ac195b7`](https://github.com/nfraxlab/svc-infra/commit/ac195b78ee5ecd36c0d12c0e283a25604bf77772))
+
+
 ## v1.1.1 (2026-01-02)
 
 ### Bug Fixes
