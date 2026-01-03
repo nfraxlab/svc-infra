@@ -11,9 +11,9 @@ This section contains auto-generated API documentation from the svc-infra source
       show_root_heading: true
       heading_level: 3
 
-### Authentication
+### Security
 
-::: svc_infra.auth
+::: svc_infra.security
     options:
       show_root_heading: true
       heading_level: 3
