@@ -245,7 +245,7 @@ async def seed_initial_data(session: AsyncSession) -> None:
     session.add(admin_user)
 
     await session.commit()
-    print("✅ Database seeded successfully")
+    print(" Database seeded successfully")
 ```
 
 ### scaffold

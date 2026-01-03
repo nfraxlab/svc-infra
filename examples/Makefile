@@ -8,15 +8,15 @@ install: ## Install dependencies with Poetry
 	poetry install
 
 setup: install ## Complete project setup (scaffold models + migrations)
-	@echo "🚀 Setting up svc-infra template project..."
+	@echo " Setting up svc-infra template project..."
 	@if [ ! -f .env ]; then \
-		echo "📝 Creating .env from .env.example..."; \
+		echo " Creating .env from .env.example..."; \
 		cp .env.example .env; \
 	fi
-	@echo "🏗️  Running scaffolding and migrations..."
+	@echo "  Running scaffolding and migrations..."
 	python3 scripts/quick_setup.py
 	@echo ""
-	@echo "✅ Setup complete! Next steps:"
+	@echo " Setup complete! Next steps:"
 	@echo "   1. Review .env and configure as needed"
 	@echo "   2. Uncomment auth/tenancy/GDPR in src/svc_infra_template/main.py if desired"
 	@echo "   3. Run: make run"
@@ -24,12 +24,12 @@ setup: install ## Complete project setup (scaffold models + migrations)
 
 run: ## Start the development server
 	@if [ ! -f .env ]; then \
-		echo "📝 Creating .env from .env.example..."; \
+		echo " Creating .env from .env.example..."; \
 		cp .env.example .env; \
 	fi
 	@if [ ! -d "migrations" ]; then \
 		echo ""; \
-		echo "⚠️  No database migrations found!"; \
+		echo "⚠  No database migrations found!"; \
 		echo "   Run 'make setup' first to scaffold models and initialize the database."; \
 		echo ""; \
 		exit 1; \
@@ -47,9 +47,9 @@ update: ## Update dependencies
 	poetry update
 
 scaffold: ## Scaffold models only (no migrations)
-	@echo "🏗️  Scaffolding models..."
+	@echo "  Scaffolding models..."
 	python3 scripts/scaffold_models.py
 
 test-setup: ## Test duplicate prevention
-	@echo "🧪 Testing duplicate prevention..."
+	@echo " Testing duplicate prevention..."
 	python3 scripts/test_duplicate_prevention.py

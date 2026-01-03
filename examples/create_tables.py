@@ -4,6 +4,7 @@ Simple script to create database tables for the svc-infra-template example.
 
 For demonstration purposes only. In production, use Alembic migrations.
 """
+
 import asyncio
 import sys
 from pathlib import Path
@@ -22,7 +23,7 @@ async def create_tables():
         # Create all tables
         await conn.run_sync(Base.metadata.create_all)
 
-    print("✅ Database tables created successfully!")
+    print(" Database tables created successfully!")
     print(f"   Tables: {', '.join(Base.metadata.tables.keys())}")
 
     await engine.dispose()

@@ -367,10 +367,10 @@ logging.getLogger("svc_infra.api.fastapi.admin").setLevel(logging.DEBUG)
 ### Compliance
 
 **SOC 2 / ISO 27001:**
-- Audit trail requirement: ✅ All impersonation events logged
-- Access justification: ✅ Mandatory `reason` field
-- Time-bound access: ✅ Short TTL with no renewal
-- Least privilege: ✅ Permission-based access control
+- Audit trail requirement:  All impersonation events logged
+- Access justification:  Mandatory `reason` field
+- Time-bound access:  Short TTL with no renewal
+- Least privilege:  Permission-based access control
 
 **GDPR / Data Protection:**
 - Lawful basis: Support/debugging under legitimate interest or contract performance

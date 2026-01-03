@@ -303,12 +303,12 @@ breaker = CircuitBreaker(
 ### 2. Use Specific Exception Types
 
 ```python
-# ❌ Retries on ALL exceptions (including validation errors)
+#  Retries on ALL exceptions (including validation errors)
 @with_retry(max_attempts=3)
 async def fetch():
     ...
 
-# ✅ Only retry on transient failures
+#  Only retry on transient failures
 @with_retry(max_attempts=3, retry_on=(TimeoutError, ConnectionError))
 async def fetch():
     ...
@@ -329,12 +329,12 @@ async def fetch():
 ### 4. Don't Retry Non-Idempotent Operations
 
 ```python
-# ❌ Dangerous - may charge multiple times
+#  Dangerous - may charge multiple times
 @with_retry(max_attempts=3)
 async def charge_card(amount):
     ...
 
-# ✅ Use idempotency keys instead
+#  Use idempotency keys instead
 async def charge_card(amount, idempotency_key: str):
     return await payment_api.charge(
         amount=amount,
