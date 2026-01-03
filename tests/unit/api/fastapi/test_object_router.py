@@ -500,32 +500,32 @@ class TestMapExceptionToHttp:
         assert "bad input" in detail
 
     def test_key_error(self):
-        status, title, detail = map_exception_to_http(KeyError("not_found"))
+        status, title, _detail = map_exception_to_http(KeyError("not_found"))
         assert status == 404
         assert title == "Not Found"
 
     def test_permission_error(self):
-        status, title, detail = map_exception_to_http(PermissionError("denied"))
+        status, title, _detail = map_exception_to_http(PermissionError("denied"))
         assert status == 403
         assert title == "Forbidden"
 
     def test_timeout_error(self):
-        status, title, detail = map_exception_to_http(TimeoutError("timeout"))
+        status, title, _detail = map_exception_to_http(TimeoutError("timeout"))
         assert status == 504
         assert title == "Gateway Timeout"
 
     def test_not_implemented_error(self):
-        status, title, detail = map_exception_to_http(NotImplementedError("TODO"))
+        status, title, _detail = map_exception_to_http(NotImplementedError("TODO"))
         assert status == 501
         assert title == "Not Implemented"
 
     def test_connection_error(self):
-        status, title, detail = map_exception_to_http(ConnectionError("failed"))
+        status, title, _detail = map_exception_to_http(ConnectionError("failed"))
         assert status == 503
         assert title == "Service Unavailable"
 
     def test_generic_exception(self):
-        status, title, detail = map_exception_to_http(Exception("unknown"))
+        status, title, _detail = map_exception_to_http(Exception("unknown"))
         assert status == 500
         assert title == "Internal Error"
 
@@ -534,7 +534,9 @@ class TestMapExceptionToHttp:
             pass
 
         custom = {CustomError: 418}
-        status, title, detail = map_exception_to_http(CustomError("teapot"), custom_handlers=custom)
+        status, _title, _detail = map_exception_to_http(
+            CustomError("teapot"), custom_handlers=custom
+        )
         assert status == 418
 
     def test_subclass_matching(self):

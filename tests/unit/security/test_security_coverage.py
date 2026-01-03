@@ -88,7 +88,7 @@ class TestSignCookieEdgeCases:
 
     def test_sign_cookie_with_path_and_domain(self) -> None:
         val = sign_cookie({"user": "u1"}, key="k1", path="/api", domain="example.com")
-        ok, payload = verify_cookie(
+        ok, _payload = verify_cookie(
             val, key="k1", expected_path="/api", expected_domain="example.com"
         )
         assert ok
@@ -129,7 +129,7 @@ class TestSignCookieEdgeCases:
 
     def test_verify_cookie_none_old_keys(self) -> None:
         val = sign_cookie({"sub": "u"}, key="correct_key")
-        ok, payload = verify_cookie(val, key="correct_key", old_keys=None)
+        ok, _payload = verify_cookie(val, key="correct_key", old_keys=None)
         assert ok
 
 
