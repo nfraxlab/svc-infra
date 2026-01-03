@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-📚 REFERENCE IMPLEMENTATION: Automated Model Scaffolding
+ REFERENCE IMPLEMENTATION: Automated Model Scaffolding
 
 This script demonstrates how to automate model generation by calling the
 svc-infra CLI commands directly. It serves as both:
@@ -8,14 +8,14 @@ svc-infra CLI commands directly. It serves as both:
 2. An educational reference showing CLI usage patterns
 
 The script calls ACTUAL CLI COMMANDS (not Python imports):
-  ✅ poetry run svc-infra sql scaffold --kind auth ...
-  ✅ poetry run svc-infra sql scaffold --kind entity ...
+   poetry run svc-infra sql scaffold --kind auth ...
+   poetry run svc-infra sql scaffold --kind entity ...
 
 NOT: python -m svc_infra.cli ...
 
 Note: In development, we prefix with 'poetry run' to use the local svc-infra.
 In production (when svc-infra is installed globally), you can drop 'poetry run':
-  ✅ svc-infra sql scaffold ...
+   svc-infra sql scaffold ...
 
 This way you can:
 - Learn the CLI commands by seeing them executed
@@ -27,7 +27,7 @@ Generates:
 1. User model (authentication) - for add_auth_users()
 2. Project & Task models (business entities)
 
-🛡️ DUPLICATE PREVENTION:
+🛡 DUPLICATE PREVENTION:
 The script automatically checks for existing models before scaffolding.
 If a model file already exists, it will be skipped to protect your code.
 Use --overwrite flag to force replacement (use with caution).
@@ -73,17 +73,17 @@ def print_header(text: str):
 
 def print_success(text: str):
     """Print a success message."""
-    print(f"{Colors.GREEN}✅ {text}{Colors.END}")
+    print(f"{Colors.GREEN} {text}{Colors.END}")
 
 
 def print_warning(text: str):
     """Print a warning message."""
-    print(f"{Colors.YELLOW}⚠️  {text}{Colors.END}")
+    print(f"{Colors.YELLOW}⚠  {text}{Colors.END}")
 
 
 def print_error(text: str):
     """Print an error message."""
-    print(f"{Colors.RED}❌ {text}{Colors.END}")
+    print(f"{Colors.RED} {text}{Colors.END}")
 
 
 def check_model_exists(
@@ -179,7 +179,7 @@ def scaffold_user_model(overwrite: bool = False) -> bool:
         if exists:
             print_warning("User model already exists:")
             for file in existing_files:
-                print(f"  📁 {file}")
+                print(f"   {file}")
             print("\nSkipping to prevent overwriting existing code.")
             print("Use --overwrite flag if you want to replace existing files.")
             return False
@@ -203,8 +203,8 @@ def scaffold_user_model(overwrite: bool = False) -> bool:
 
     if success:
         print_success("User model scaffolded successfully")
-        print(f"\n  📁 Models:  {models_dir}/user.py")
-        print(f"  📁 Schemas: {schemas_dir}/user.py")
+        print(f"\n   Models:  {models_dir}/user.py")
+        print(f"   Schemas: {schemas_dir}/user.py")
         print("\n  Next steps:")
         print("  1. Review and customize the User model")
         print("  2. Add any custom fields (e.g., phone_number, avatar_url)")
@@ -241,7 +241,7 @@ def scaffold_project_model(overwrite: bool = False) -> bool:
         if exists:
             print_warning("Project model already exists:")
             for file in existing_files:
-                print(f"  📁 {file}")
+                print(f"   {file}")
             print("\nSkipping to prevent overwriting existing code.")
             print("Use --overwrite flag if you want to replace existing files.")
             return False
@@ -265,8 +265,8 @@ def scaffold_project_model(overwrite: bool = False) -> bool:
 
     if success:
         print_success("Project model scaffolded successfully")
-        print(f"\n  📁 Models:  {models_dir}/project.py")
-        print(f"  📁 Schemas: {schemas_dir}/project.py")
+        print(f"\n   Models:  {models_dir}/project.py")
+        print(f"   Schemas: {schemas_dir}/project.py")
 
     return success
 
@@ -296,7 +296,7 @@ def scaffold_task_model(overwrite: bool = False) -> bool:
         if exists:
             print_warning("Task model already exists:")
             for file in existing_files:
-                print(f"  📁 {file}")
+                print(f"   {file}")
             print("\nSkipping to prevent overwriting existing code.")
             print("Use --overwrite flag if you want to replace existing files.")
             return False
@@ -320,8 +320,8 @@ def scaffold_task_model(overwrite: bool = False) -> bool:
 
     if success:
         print_success("Task model scaffolded successfully")
-        print(f"\n  📁 Models:  {models_dir}/task.py")
-        print(f"  📁 Schemas: {schemas_dir}/task.py")
+        print(f"\n   Models:  {models_dir}/task.py")
+        print(f"   Schemas: {schemas_dir}/task.py")
 
     return success
 
@@ -389,7 +389,7 @@ def main():
 
     args = parser.parse_args()
 
-    print_header("🏗️  SVC-INFRA Model Scaffolding")
+    print_header("  SVC-INFRA Model Scaffolding")
     print("This script will generate SQLAlchemy models and Pydantic schemas")
     print("for authentication and business entities.\n")
 
@@ -424,14 +424,14 @@ def main():
             skipped.append("Task")
 
     # Print summary
-    print_header("📊 Scaffolding Summary")
+    print_header(" Scaffolding Summary")
 
     if successes:
         print_success(f"Successfully scaffolded: {', '.join(successes)}")
 
     if skipped:
         print_warning(f"Skipped (already exist): {', '.join(skipped)}")
-        print("\n  💡 Tip: Use --overwrite to replace existing files")
+        print("\n   Tip: Use --overwrite to replace existing files")
 
     if failures:
         print_error(f"Failed: {', '.join(failures)}")
@@ -439,10 +439,10 @@ def main():
     # Print next steps only if we created something new
     if successes:
         print_next_steps()
-        print_success("Scaffolding complete! 🎉")
+        print_success("Scaffolding complete! ")
         return 0
     elif skipped and not failures:
-        print("\n✨ All models already exist. Nothing to do!")
+        print("\n All models already exist. Nothing to do!")
         return 0
     else:
         print_error("Scaffolding failed. Check the output above.")

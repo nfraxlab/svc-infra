@@ -26,10 +26,10 @@ router, banking_provider = extract_router(
 
 ### Result
 
-- ✅ All banking endpoints under `/v0/banking/*`
-- ✅ Banking docs included in `/v0/docs` (not separate card)
-- ✅ Full `add_banking()` functionality preserved
-- ✅ Returns provider instance for additional use
+-  All banking endpoints under `/v0/banking/*`
+-  Banking docs included in `/v0/docs` (not separate card)
+-  Full `add_banking()` functionality preserved
+-  Returns provider instance for additional use
 
 ## Complete Example
 
@@ -506,7 +506,7 @@ def deprecated_in_version(
 
         # Add metadata for documentation
         wrapper.__doc__ = f"""
-        ⚠️ **DEPRECATED in {version}** - Sunset: {sunset_date}
+        ⚠ **DEPRECATED in {version}** - Sunset: {sunset_date}
 
         {message}
 
@@ -807,10 +807,10 @@ async def advanced_search(query: str):
 ### 1. Version Everything from Day 1
 
 ```python
-# ❌ Bad: No versioning
+#  Bad: No versioning
 app.include_router(user_router, prefix="/users")
 
-# ✅ Good: Version from the start
+#  Good: Version from the start
 app.include_router(user_router, prefix="/api/v1/users")
 ```
 

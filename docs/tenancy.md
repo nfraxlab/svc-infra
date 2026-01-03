@@ -513,14 +513,14 @@ def test_tenant_via_header(client):
 ### Performance Considerations
 
 ```python
-# ✅ Good: Composite indexes for common query patterns
+#  Good: Composite indexes for common query patterns
 Index("ix_items_tenant_status", "tenant_id", "status")
 Index("ix_items_tenant_created", "tenant_id", "created_at", postgresql_using="btree")
 
-# ✅ Good: Partition large tables by tenant
+#  Good: Partition large tables by tenant
 # See Migration Strategies section
 
-# ❌ Avoid: Full table scans without tenant filter
+#  Avoid: Full table scans without tenant filter
 # All queries should include tenant_id WHERE clause
 ```
 

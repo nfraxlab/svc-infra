@@ -2,7 +2,7 @@
 
 A comprehensive example demonstrating **ALL** svc-infra features for building production-ready FastAPI services.
 
-## ⚡ Quick Setup
+##  Quick Setup
 
 **Get started in 2 commands:**
 
@@ -12,52 +12,52 @@ make setup    # Installs deps, scaffolds models, runs migrations
 make run      # Starts the server at http://localhost:8001
 ```
 
-**✨ Features:**
-- 🛡️ Safe: Won't overwrite existing models (use `--overwrite` if needed)
-- 📚 Educational: Calls actual `svc-infra` CLI commands so you can learn
-- 🎯 Complete: Generates User (auth), Project, and Task models + migrations
+** Features:**
+- 🛡 Safe: Won't overwrite existing models (use `--overwrite` if needed)
+-  Educational: Calls actual `svc-infra` CLI commands so you can learn
+-  Complete: Generates User (auth), Project, and Task models + migrations
 
-📖 **See [`scripts/auth_reference.py`](scripts/auth_reference.py)** - Complete auth integration example  
-📚 **See [`SCAFFOLDING.md`](SCAFFOLDING.md)** - Full scaffolding documentation  
-🛠️ **See [Make Commands](#-available-make-commands)** - All available commands
+ **See [`scripts/auth_reference.py`](scripts/auth_reference.py)** - Complete auth integration example  
+ **See [`SCAFFOLDING.md`](SCAFFOLDING.md)** - Full scaffolding documentation  
+ **See [Make Commands](#-available-make-commands)** - All available commands
 
-## 🎯 What This Template Showcases
+##  What This Template Showcases
 
 This is a **complete, working example** that demonstrates **ALL 18 svc-infra features**:
 
 ### Core Infrastructure
-✅ **Flexible Service Setup** - Using `setup_service_api` for full control  
-✅ **Auto-Generated CRUD** - Zero-code REST endpoints via `SqlResource`  
-✅ **Database Integration** - SQLAlchemy 2.0 + async drivers with proper ModelBase usage  
-✅ **Environment-Aware Logging** - Auto-configured with the `pick()` helper  
-✅ **Type-Safe Configuration** - Pydantic Settings for all environment variables  
+ **Flexible Service Setup** - Using `setup_service_api` for full control  
+ **Auto-Generated CRUD** - Zero-code REST endpoints via `SqlResource`  
+ **Database Integration** - SQLAlchemy 2.0 + async drivers with proper ModelBase usage  
+ **Environment-Aware Logging** - Auto-configured with the `pick()` helper  
+ **Type-Safe Configuration** - Pydantic Settings for all environment variables  
 
 ### Production Features
-✅ **Observability** - Prometheus metrics + OpenTelemetry tracing  
-✅ **Security Headers & CORS** - Production-ready defaults with `add_security()`  
-✅ **Timeouts & Resource Limits** - Handler timeout, body read timeout, request size limiting  
-✅ **Graceful Shutdown** - Track in-flight requests for zero-downtime deploys  
-✅ **Rate Limiting** - Protect endpoints from abuse  
-✅ **Idempotency** - Prevent duplicate processing with automatic key management  
-✅ **Payment Integration** - Stripe/Adyen/Fake adapters  
-✅ **Webhooks** - Outbound event notifications with retry logic  
-✅ **Billing & Subscriptions** - Usage-based billing with quota enforcement  
+ **Observability** - Prometheus metrics + OpenTelemetry tracing  
+ **Security Headers & CORS** - Production-ready defaults with `add_security()`  
+ **Timeouts & Resource Limits** - Handler timeout, body read timeout, request size limiting  
+ **Graceful Shutdown** - Track in-flight requests for zero-downtime deploys  
+ **Rate Limiting** - Protect endpoints from abuse  
+ **Idempotency** - Prevent duplicate processing with automatic key management  
+ **Payment Integration** - Stripe/Adyen/Fake adapters  
+ **Webhooks** - Outbound event notifications with retry logic  
+ **Billing & Subscriptions** - Usage-based billing with quota enforcement  
 
 ### Advanced Features (Configurable)
-✅ **Authentication** - Users, OAuth, MFA, API keys (requires model setup)  
-✅ **Multi-Tenancy** - Automatic tenant isolation (header/subdomain/path)  
-✅ **Data Lifecycle & GDPR** - Retention, archival, erasure policies  
-✅ **Background Jobs** - Redis-backed queue with scheduler  
-✅ **Admin Operations** - Impersonation with audit logs  
+ **Authentication** - Users, OAuth, MFA, API keys (requires model setup)  
+ **Multi-Tenancy** - Automatic tenant isolation (header/subdomain/path)  
+ **Data Lifecycle & GDPR** - Retention, archival, erasure policies  
+ **Background Jobs** - Redis-backed queue with scheduler  
+ **Admin Operations** - Impersonation with audit logs  
 
 ### Operational
-✅ **Health Checks** - Kubernetes-style probes (liveness, readiness, startup)  
-✅ **Maintenance Mode** - Graceful service degradation  
-✅ **API Versioning** - Clean routing structure  
-✅ **Lifecycle Management** - Startup/shutdown handlers  
-✅ **Documentation** - Auto-generated OpenAPI with version-scoped docs  
+ **Health Checks** - Kubernetes-style probes (liveness, readiness, startup)  
+ **Maintenance Mode** - Graceful service degradation  
+ **API Versioning** - Clean routing structure  
+ **Lifecycle Management** - Startup/shutdown handlers  
+ **Documentation** - Auto-generated OpenAPI with version-scoped docs  
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Option 1: Automated Setup with Make (Recommended)
 
@@ -132,12 +132,12 @@ Server starts at **http://localhost:8001**
 - Metrics: http://localhost:8001/metrics
 - CRUD endpoints: http://localhost:8001/_sql/projects
 
-## 🛠️ Available Make Commands
+##  Available Make Commands
 
 ```bash
 make help       # Show all available commands
 make install    # Install dependencies with Poetry
-make setup      # Complete setup (install + scaffold + migrations) ⭐
+make setup      # Complete setup (install + scaffold + migrations)
 make scaffold   # Scaffold models only (no migrations)
 make run        # Start the development server
 make clean      # Clean up cache files
@@ -175,14 +175,14 @@ poetry run python create_tables.py
 ./run.sh
 ```
 
-## 📚 Documentation
+##  Documentation
 
 - **[QUICKSTART.md](QUICKSTART.md)** - Get started in 5 minutes
 - **[Database Guide](docs/DATABASE.md)** - Complete database setup, migrations, auto-CRUD
 - **[CLI Reference](docs/CLI.md)** - svc-infra CLI command documentation
 - **[Usage Guide](USAGE.md)** - Detailed feature usage examples
 
-## 📖 Key Features
+##  Key Features
 
 ### 1. Auto-Generated CRUD
 
@@ -379,7 +379,7 @@ Or manually with uvicorn:
 poetry run uvicorn --app-dir src svc_infra_template.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## 🌐 Running the Server
+##  Running the Server
 
 The API will be available at:
 
@@ -398,7 +398,7 @@ The API will be available at:
 - `GET /v1/storage/list` - List storage files
 - `POST /v1/storage/upload` - Direct storage upload
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 examples/
@@ -448,7 +448,7 @@ examples/
 9. **Review `api/v1/routes.py`** - Custom endpoint examples
 10. **Toggle features** - Change `.env` and see how the API adapts
 
-## 🛠️ Available Endpoints
+##  Available Endpoints
 
 Visit `/docs` for interactive documentation, or:
 
@@ -501,7 +501,7 @@ Each step has detailed comments and examples. Teams can:
 - Add team-specific middleware
 - Control CORS, versioning, and routing
 
-## �️ Model Scaffolding Scripts
+## � Model Scaffolding Scripts
 
 We provide two scripts to automate model generation using svc-infra CLI:
 
@@ -521,12 +521,12 @@ poetry run python quick_setup.py --overwrite
 ```
 
 **What it does:**
-1. ✅ Generates User model (for authentication)
-2. ✅ Generates Project and Task models (business logic)
-3. ✅ Initializes Alembic migrations
-4. ✅ Creates migration file
-5. ✅ Applies migration to database
-6. ✅ Provides next steps for enabling features
+1.  Generates User model (for authentication)
+2.  Generates Project and Task models (business logic)
+3.  Initializes Alembic migrations
+4.  Creates migration file
+5.  Applies migration to database
+6.  Provides next steps for enabling features
 
 ### `scaffold_models.py` - Granular Control
 
@@ -677,11 +677,11 @@ poetry update
 poetry shell
 ```
 
-## 💡 Design Philosophy
+##  Design Philosophy
 
 This project demonstrates a **flexible, team-friendly** approach to using svc-infra:
 
-### 🎯 Why This Pattern?
+###  Why This Pattern?
 
 - **Pick What You Need**: Enable only the features your team requires (DB, auth, payments, etc.)
 - **Clear Extension Points**: Organized in 4 steps: Logging → Service → Features → Custom
@@ -689,7 +689,7 @@ This project demonstrates a **flexible, team-friendly** approach to using svc-in
 - **Production-Ready**: Explicit configuration makes behavior predictable and debuggable
 - **Gradual Adoption**: Start simple, add features as you grow
 
-### ✅ Current Setup
+###  Current Setup
 
 - Explicit FastAPI setup with `setup_service_api`
 - Environment-aware logging with `setup_logging` + `pick()`
@@ -698,7 +698,7 @@ This project demonstrates a **flexible, team-friendly** approach to using svc-in
 - Auto-generated CRUD via `SqlResource`
 - Database models using svc-infra's `ModelBase`
 
-## 🔧 Customization
+##  Customization
 
 ### Copy for Your Project
 
@@ -761,6 +761,6 @@ See [Database Guide](docs/DATABASE.md) for complete details.
 
 ---
 
-**🎉 You have a complete, production-ready service template with all svc-infra features!**
+** You have a complete, production-ready service template with all svc-infra features!**
 
 For questions, check the inline comments in `main.py` or read the documentation in `docs/`.

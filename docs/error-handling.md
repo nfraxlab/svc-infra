@@ -56,13 +56,13 @@ except AuthenticationError:
 ### 2. Never Silently Swallow Exceptions
 
 ```python
-# ❌ WRONG
+#  WRONG
 try:
     risky_operation()
 except Exception:
     pass
 
-# ✅ CORRECT
+#  CORRECT
 try:
     risky_operation()
 except SpecificError as e:

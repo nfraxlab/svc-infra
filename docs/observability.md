@@ -127,10 +127,10 @@ METRICS_DEFAULT_BUCKETS="0.01,0.05,0.1,0.25,0.5,1,2.5,5,10"
 Follow Prometheus best practices:
 
 ```python
-# ✅ Good: Low cardinality, meaningful labels
+#  Good: Low cardinality, meaningful labels
 http_requests_total{method="GET", status="2xx", endpoint="/users"}
 
-# ❌ Bad: High cardinality (unique IDs, timestamps)
+#  Bad: High cardinality (unique IDs, timestamps)
 http_requests_total{user_id="uuid-123", timestamp="..."}
 ```
 
@@ -538,10 +538,10 @@ from svc_infra.obs.metrics.base import registry
 Avoid high-cardinality labels:
 
 ```python
-# ❌ Bad: User IDs create unbounded cardinality
+#  Bad: User IDs create unbounded cardinality
 http_requests_total{user_id="..."}
 
-# ✅ Good: Use bounded categories
+#  Good: Use bounded categories
 http_requests_total{user_tier="free|pro|enterprise"}
 ```
 

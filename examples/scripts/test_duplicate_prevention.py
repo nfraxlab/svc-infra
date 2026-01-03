@@ -14,7 +14,7 @@ from pathlib import Path
 def run_test():
     """Test duplicate prevention."""
     print("=" * 70)
-    print("🧪 Testing Duplicate Prevention")
+    print(" Testing Duplicate Prevention")
     print("=" * 70)
 
     # Create temporary directories
@@ -26,7 +26,7 @@ def run_test():
         models_dir.mkdir()
         schemas_dir.mkdir()
 
-        print("\n📁 Created test directories:")
+        print("\n Created test directories:")
         print(f"   Models:  {models_dir}")
         print(f"   Schemas: {schemas_dir}")
 
@@ -39,7 +39,7 @@ def run_test():
         user_model = models_dir / "user.py"
         user_model.write_text("# Existing User model\nclass User:\n    pass\n")
 
-        print(f"✅ Created dummy file: {user_model}")
+        print(f" Created dummy file: {user_model}")
 
         # Now test that scaffold detects it
         print("\n" + "-" * 70)
@@ -51,11 +51,11 @@ def run_test():
         exists, files = check_model_exists("user", models_dir, schemas_dir)
 
         if exists:
-            print("✅ PASS: Detected existing model:")
+            print(" PASS: Detected existing model:")
             for f in files:
                 print(f"   - {f}")
         else:
-            print("❌ FAIL: Did not detect existing model")
+            print(" FAIL: Did not detect existing model")
             return 1
 
         # Test 3: Check non-existent model
@@ -66,9 +66,9 @@ def run_test():
         exists, files = check_model_exists("project", models_dir, schemas_dir)
 
         if not exists:
-            print("✅ PASS: Correctly identified missing model")
+            print(" PASS: Correctly identified missing model")
         else:
-            print(f"❌ FAIL: Incorrectly detected model exists: {files}")
+            print(f" FAIL: Incorrectly detected model exists: {files}")
             return 1
 
         # Test 4: Partial existence (only model, no schema)
@@ -82,21 +82,21 @@ def run_test():
         exists, files = check_model_exists("task", models_dir, schemas_dir)
 
         if exists and len(files) == 1:
-            print("✅ PASS: Detected partial existence:")
+            print(" PASS: Detected partial existence:")
             print(f"   - {files[0]}")
         else:
-            print("❌ FAIL: Did not correctly detect partial existence")
+            print(" FAIL: Did not correctly detect partial existence")
             return 1
 
         print("\n" + "=" * 70)
-        print("✅ ALL TESTS PASSED!")
+        print(" ALL TESTS PASSED!")
         print("=" * 70)
 
-        print("\n📝 Summary:")
+        print("\n Summary:")
         print("   • check_model_exists() correctly detects existing models")
         print("   • check_model_exists() correctly identifies missing models")
         print("   • check_model_exists() detects partial existence (model XOR schema)")
-        print("\n✨ Duplicate prevention is working correctly!")
+        print("\n Duplicate prevention is working correctly!")
 
         return 0
 

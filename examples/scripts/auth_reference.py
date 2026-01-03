@@ -186,7 +186,7 @@ if settings.auth_enabled and settings.database_configured:
         post_login_redirect="/",    # Where to redirect after OAuth login
     )
 
-    print("✅ Authentication enabled with full user management")
+    print(" Authentication enabled with full user management")
 
 Then in .env:
     AUTH_ENABLED=true

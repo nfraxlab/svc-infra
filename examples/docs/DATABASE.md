@@ -72,14 +72,14 @@ add_sql_db(app, url=settings.sql_url)
 svc-infra's migration system discovers models through `ModelBase`:
 
 ```python
-# ✅ CORRECT - Will be discovered by migrations
+#  CORRECT - Will be discovered by migrations
 from svc_infra.db.sql.base import ModelBase
 
 class Project(ModelBase):
     __tablename__ = "projects"
     # ...
 
-# ❌ WRONG - Won't be discovered
+#  WRONG - Won't be discovered
 from sqlalchemy.orm import DeclarativeBase
 
 class Base(DeclarativeBase):
@@ -490,7 +490,7 @@ SQL_URL_FILE=/run/secrets/database_url
 ```python
 from svc_infra.db.sql.base import ModelBase as Base
 
-class MyModel(Base):  # ✅ Correct
+class MyModel(Base):  #  Correct
     ...
 ```
 
