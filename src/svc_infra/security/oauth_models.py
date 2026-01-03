@@ -49,8 +49,8 @@ class ProviderAccount(ModelBase):
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     raw_claims: Mapped[dict | None] = mapped_column(JSON)
 
-    # Bidirectional relationship to User model
-    user: Mapped[User] = relationship(back_populates="provider_accounts")
+    # Bidirectional relationship to User model (use string to avoid circular import)
+    user: Mapped[User] = relationship("User", back_populates="provider_accounts")
 
     created_at = mapped_column(
         DateTime(timezone=True),
