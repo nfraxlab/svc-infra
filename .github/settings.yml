@@ -22,8 +22,8 @@ branches:
       required_status_checks:
         strict: true
         contexts:
-          - "test"
-          - "lint"
+          - "CI / Test (Python 3.11)"
+          - "CI / Lint"
       enforce_admins: false
       required_linear_history: false
       restrictions: null
