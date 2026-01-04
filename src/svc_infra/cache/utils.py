@@ -40,6 +40,8 @@ def stable_hash(*args: Any, **kwargs: Any) -> str:
         logger.warning(f"JSON serialization failed for hash input, using repr: {e}")
         raw = repr((args, kwargs))
 
+    # Security: B324 skip justified - SHA1 used for cache key generation only,
+    # not for security. We need fast, deterministic hashing for cache lookups.
     return hashlib.sha1(raw.encode("utf-8")).hexdigest()
 
 

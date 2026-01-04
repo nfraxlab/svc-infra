@@ -6,8 +6,34 @@ This guide documents breaking changes and migration paths between versions of sv
 
 | svc-infra | Python | Notes |
 |-----------|--------|-------|
-| 0.1.x | 3.11+ | Current stable |
-| 0.2.x (planned) | 3.11+ | API refinements |
+| 1.0.x | 3.11+ | Stable API, production ready |
+| 0.1.x | 3.11+ | Legacy (deprecated) |
+
+## Migrating to 1.0.0
+
+### No Breaking Changes
+
+v1.0.0 is API-compatible with 0.1.x. This release marks API stability:
+
+- All documented APIs are now considered stable
+- Breaking changes will follow semantic versioning (major version bumps)
+- Deprecated features will have 2+ minor version warning period
+
+### What's New in 1.0.0
+
+- **Security headers**: `SecurityHeadersMiddleware` with CSP, HSTS, X-Frame-Options
+- **Enhanced documentation**: Comprehensive API reference with mkdocstrings
+- **Experimental APIs marked**: See `docs/reference/experimental.md`
+
+### Recommended Upgrades
+
+```python
+# Use add_security() for all security headers
+from svc_infra.security import add_security
+
+app = FastAPI()
+add_security(app, cors_origins=["https://myapp.com"])
+```
 
 ## Migrating to 0.1.x
 

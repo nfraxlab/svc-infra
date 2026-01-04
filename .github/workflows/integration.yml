@@ -1,0 +1,188 @@
+name: Integration Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      services:
+        description: "Services to test (redis, postgres, stripe, all)"
+        required: false
+        default: "all"
+  schedule:
+    # Run daily at 3 AM UTC
+    - cron: "0 3 * * *"
+
+jobs:
+  # =========================================================================
+  # Redis Integration Tests
+  # =========================================================================
+  redis:
+    name: Redis Integration Tests
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.services == 'redis' || github.event.inputs.services == 'all' || github.event_name == 'schedule' }}
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run Redis integration tests
+        env:
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          pytest tests/integration/test_redis_cache.py -v -m integration --tb=short
+
+  # =========================================================================
+  # PostgreSQL Integration Tests
+  # =========================================================================
+  postgres:
+    name: PostgreSQL Integration Tests
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.services == 'postgres' || github.event.inputs.services == 'all' || github.event_name == 'schedule' }}
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U testuser -d testdb"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install asyncpg psycopg2-binary
+
+      - name: Run PostgreSQL integration tests
+        env:
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+        run: |
+          pytest tests/integration/test_postgres_db.py -v -m integration --tb=short
+
+  # =========================================================================
+  # Stripe Integration Tests (requires STRIPE_API_KEY secret)
+  # =========================================================================
+  stripe:
+    name: Stripe Integration Tests
+    runs-on: ubuntu-latest
+    if: ${{ (github.event.inputs.services == 'stripe' || github.event.inputs.services == 'all' || github.event_name == 'schedule') && github.event_name != 'pull_request' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install stripe
+
+      - name: Run Stripe integration tests
+        env:
+          STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
+        run: |
+          if [ -n "$STRIPE_API_KEY" ]; then
+            pytest tests/integration/test_billing_stripe.py -v -m integration --tb=short
+          else
+            echo "STRIPE_API_KEY not set, skipping Stripe tests"
+          fi
+
+  # =========================================================================
+  # Full Integration Suite (Redis + Postgres + OAuth)
+  # =========================================================================
+  full-suite:
+    name: Full Integration Suite
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.services == 'all' || github.event_name == 'schedule' }}
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U testuser -d testdb"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install asyncpg psycopg2-binary
+
+      - name: Run all integration tests
+        env:
+          REDIS_URL: redis://localhost:6379/0
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+        run: |
+          pytest tests/integration -v -m integration --tb=short --ignore=tests/integration/test_billing_stripe.py
