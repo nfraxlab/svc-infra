@@ -1,5 +1,3 @@
-import time
-
 import pytest
 
 pytestmark = pytest.mark.jobs
@@ -42,17 +40,17 @@ def test_fail_backoff_and_retry(fakeredis):
     _clear_all(r)
     q = RedisJobQueue(r, prefix="t2", visibility_timeout=1)
     job = q.enqueue("demo", {"a": 2})
-    # speed up retry for test
-    r.hset(f"t2:job:{job.id}", mapping={"backoff_seconds": 1})
+    # Set a longer backoff to ensure job isn't immediately available after fail
+    r.hset(f"t2:job:{job.id}", mapping={"backoff_seconds": 60})
     got = q.reserve_next()
     assert got is not None
     assert got.attempts == 1
     q.fail(got.id, error="boom")
-    # immediately no job available
+    # immediately no job available (backoff is 60 seconds)
     assert q.reserve_next() is None
-    # move delayed to ready by manipulating time: advance score
-    # fakeredis honors time via time.time(), so we sleep a tiny bit
-    time.sleep(1.1)
+    # Manually move the delayed job to ready by setting its score to the past
+    # This is more reliable than time.sleep() in CI environments
+    r.zadd("t2:delayed", {job.id: 0})  # Score 0 = epoch, always in the past
     got2 = q.reserve_next()
     assert got2 is not None
     assert int(got2.attempts) == 2
