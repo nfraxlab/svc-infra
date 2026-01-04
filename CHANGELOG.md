@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.2.0 (2026-01-04)
+
+### Features
+
+- Add integration tests and CI workflow for Redis, PostgreSQL, Stripe
+  ([#80](https://github.com/nfraxlab/svc-infra/pull/80),
+  [`4ba6bf9`](https://github.com/nfraxlab/svc-infra/commit/4ba6bf94c644d6cd9fb01a01deb26adfa3eef0ba))
+
+
 ## v1.1.3 (2026-01-03)
 
 ### Bug Fixes
