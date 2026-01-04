@@ -1,0 +1,37 @@
+# docker-compose.integration.yml
+# Minimal compose file for running integration tests against real services.
+# Use: docker compose -f docker-compose.integration.yml up -d
+# Then: pytest tests/integration -v -m integration
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: svc-infra-integration-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: svc-infra-integration-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: testdb
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser -d testdb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
