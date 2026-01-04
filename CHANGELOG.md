@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.3.0 (2026-01-04)
+
+### Features
+
+- Add architecture, quickstart, troubleshooting, and performance docs
+  ([#81](https://github.com/nfraxlab/svc-infra/pull/81),
+  [`3b3ee66`](https://github.com/nfraxlab/svc-infra/commit/3b3ee66f1854f4d134b746ee7078642018aa50fa))
+
+
 ## v1.2.0 (2026-01-04)
 
 ### Features
