@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.4.0 (2026-01-04)
+
+### Features
+
+- Make redis queue backoff test more reliable in CI
+  ([#82](https://github.com/nfraxlab/svc-infra/pull/82),
+  [`4b70697`](https://github.com/nfraxlab/svc-infra/commit/4b70697bbf7fa8c4b7e2d5bce994c33b456a6f4f))
+
+
 ## v1.3.0 (2026-01-04)
 
 ### Features
