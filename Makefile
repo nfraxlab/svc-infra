@@ -150,6 +150,34 @@ unitv:
 		fi; \
 	fi
 
+# --- Benchmarks ---
+benchmark:
+	@echo "[benchmark] Running performance benchmarks"
+	@if command -v poetry >/dev/null 2>&1; then \
+		poetry install --no-interaction --only main,dev >/dev/null 2>&1 || true; \
+		poetry run pytest benchmarks/ --benchmark-only --benchmark-sort=mean; \
+	else \
+		pytest benchmarks/ --benchmark-only --benchmark-sort=mean; \
+	fi
+
+benchmark-save:
+	@echo "[benchmark] Running benchmarks and saving results"
+	@if command -v poetry >/dev/null 2>&1; then \
+		poetry install --no-interaction --only main,dev >/dev/null 2>&1 || true; \
+		poetry run pytest benchmarks/ --benchmark-only --benchmark-autosave --benchmark-save-data; \
+	else \
+		pytest benchmarks/ --benchmark-only --benchmark-autosave --benchmark-save-data; \
+	fi
+
+benchmark-compare:
+	@echo "[benchmark] Comparing with previous benchmark results"
+	@if command -v poetry >/dev/null 2>&1; then \
+		poetry install --no-interaction --only main,dev >/dev/null 2>&1 || true; \
+		poetry run pytest benchmarks/ --benchmark-only --benchmark-compare; \
+	else \
+		pytest benchmarks/ --benchmark-only --benchmark-compare; \
+	fi
+
 # --- Code Quality ---
 format:
 	@echo "[format] Formatting with ruff"
