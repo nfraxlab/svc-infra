@@ -119,6 +119,7 @@ s3 = ["aioboto3"]
 pytest = ">=8.0.0"
 pytest-asyncio = ">=0.23.0"
 pytest-cov = ">=4.0.0"
+pytest-benchmark = ">=4.0.0"
 ruff = ">=0.6.0"
 mypy = ">=1.10.0"
 types-requests = ">=2.31.0"
