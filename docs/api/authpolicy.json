@@ -1,0 +1,80 @@
+{
+  "name": "AuthPolicy",
+  "module": "svc_infra.api.fastapi.auth.policy",
+  "docstring": null,
+  "parameters": [],
+  "methods": [
+    {
+      "name": "on_login_success",
+      "signature": "(user: Any) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "user",
+          "type": "Any",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "on_mfa_challenge",
+      "signature": "(user: Any) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "user",
+          "type": "Any",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "should_require_mfa",
+      "signature": "(user: Any) -> bool",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "user",
+          "type": "Any",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "bool",
+      "is_async": false
+    }
+  ],
+  "bases": [
+    "Protocol"
+  ]
+}

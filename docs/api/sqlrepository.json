@@ -1,0 +1,478 @@
+{
+  "name": "SqlRepository",
+  "module": "svc_infra.db.sql.repository",
+  "docstring": "Very small async repository around a mapped SQLAlchemy model.",
+  "parameters": [
+    {
+      "name": "model",
+      "type": "type[Any]",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "id_attr",
+      "type": "str",
+      "default": "'id'",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "soft_delete",
+      "type": "bool",
+      "default": "False",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "soft_delete_field",
+      "type": "str",
+      "default": "'deleted_at'",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "soft_delete_flag_field",
+      "type": "str | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "immutable_fields",
+      "type": "set[str] | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(model: type[Any], id_attr: str = 'id', soft_delete: bool = False, soft_delete_field: str = 'deleted_at', soft_delete_flag_field: str | None = None, immutable_fields: set[str] | None = None)",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "model",
+          "type": "type[Any]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "id_attr",
+          "type": "str",
+          "default": "'id'",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "soft_delete",
+          "type": "bool",
+          "default": "False",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "soft_delete_field",
+          "type": "str",
+          "default": "'deleted_at'",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "soft_delete_flag_field",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "immutable_fields",
+          "type": "set[str] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "count",
+      "signature": "(session: AsyncSession, where: Sequence[Any] | None = None) -> int",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "where",
+          "type": "Sequence[Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "int",
+      "is_async": false
+    },
+    {
+      "name": "count_filtered",
+      "signature": "(session: AsyncSession, q: str, fields: Sequence[str], where: Sequence[Any] | None = None) -> int",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "q",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "Sequence[str]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "where",
+          "type": "Sequence[Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "int",
+      "is_async": false
+    },
+    {
+      "name": "create",
+      "signature": "(session: AsyncSession, data: dict[str, Any]) -> Any",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "dict[str, Any]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "Any",
+      "is_async": false
+    },
+    {
+      "name": "delete",
+      "signature": "(session: AsyncSession, id_value: Any, where: Sequence[Any] | None = None) -> bool",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "id_value",
+          "type": "Any",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "where",
+          "type": "Sequence[Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "bool",
+      "is_async": false
+    },
+    {
+      "name": "exists",
+      "signature": "(session: AsyncSession, where: Iterable[Any]) -> bool",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "where",
+          "type": "Iterable[Any]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "bool",
+      "is_async": false
+    },
+    {
+      "name": "get",
+      "signature": "(session: AsyncSession, id_value: Any, where: Sequence[Any] | None = None) -> Any | None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "id_value",
+          "type": "Any",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "where",
+          "type": "Sequence[Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "Any | None",
+      "is_async": false
+    },
+    {
+      "name": "list",
+      "signature": "(session: AsyncSession, limit: int, offset: int, order_by: Sequence[Any] | None = None, where: Sequence[Any] | None = None) -> Sequence[Any]",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "offset",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "order_by",
+          "type": "Sequence[Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "where",
+          "type": "Sequence[Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "Sequence[Any]",
+      "is_async": false
+    },
+    {
+      "name": "search",
+      "signature": "(session: AsyncSession, q: str, fields: Sequence[str], limit: int, offset: int, order_by: Sequence[Any] | None = None, where: Sequence[Any] | None = None) -> Sequence[Any]",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "q",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "Sequence[str]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "offset",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "order_by",
+          "type": "Sequence[Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "where",
+          "type": "Sequence[Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "Sequence[Any]",
+      "is_async": false
+    },
+    {
+      "name": "update",
+      "signature": "(session: AsyncSession, id_value: Any, data: dict[str, Any], where: Sequence[Any] | None = None) -> Any | None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "id_value",
+          "type": "Any",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "dict[str, Any]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "where",
+          "type": "Sequence[Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "Any | None",
+      "is_async": false
+    }
+  ],
+  "bases": []
+}

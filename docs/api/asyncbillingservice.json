@@ -1,0 +1,209 @@
+{
+  "name": "AsyncBillingService",
+  "module": "svc_infra.billing.async_service",
+  "docstring": null,
+  "parameters": [
+    {
+      "name": "session",
+      "type": "AsyncSession",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "tenant_id",
+      "type": "str",
+      "default": null,
+      "description": null,
+      "required": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(session: AsyncSession, tenant_id: str)",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "aggregate_daily",
+      "signature": "(metric: str, day_start: datetime) -> int",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "metric",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "day_start",
+          "type": "datetime",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "int",
+      "is_async": false
+    },
+    {
+      "name": "generate_monthly_invoice",
+      "signature": "(period_start: datetime, period_end: datetime, currency: str) -> str",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "period_start",
+          "type": "datetime",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "period_end",
+          "type": "datetime",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "currency",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "str",
+      "is_async": false
+    },
+    {
+      "name": "list_daily_aggregates",
+      "signature": "(metric: str, date_from: datetime | None, date_to: datetime | None) -> list[UsageAggregate]",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "metric",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "date_from",
+          "type": "datetime | None",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "date_to",
+          "type": "datetime | None",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "list[UsageAggregate]",
+      "is_async": false
+    },
+    {
+      "name": "record_usage",
+      "signature": "(metric: str, amount: int, at: datetime, idempotency_key: str, metadata: dict | None) -> str",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "metric",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "amount",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "at",
+          "type": "datetime",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "idempotency_key",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "metadata",
+          "type": "dict | None",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "str",
+      "is_async": false
+    }
+  ],
+  "bases": []
+}

@@ -1,0 +1,109 @@
+{
+  "name": "InMemoryScheduler",
+  "module": "svc_infra.jobs.scheduler",
+  "docstring": "Interval-based scheduler for simple periodic tasks (tests/local).\n\nNot a full cron parser. Tracks next_run_at per task.",
+  "parameters": [
+    {
+      "name": "tick_interval",
+      "type": "float",
+      "default": "60.0",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(tick_interval: float = 60.0)",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "tick_interval",
+          "type": "float",
+          "default": "60.0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "add_task",
+      "signature": "(name: str, interval_seconds: int, func: CronFunc) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "interval_seconds",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "func",
+          "type": "CronFunc",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "run",
+      "signature": "() -> None",
+      "docstring": "Run the scheduler loop indefinitely.\n\nCalls tick() at regular intervals to check and execute due tasks.\nThis method runs forever until cancelled.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "tick",
+      "signature": "() -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    }
+  ],
+  "bases": []
+}
