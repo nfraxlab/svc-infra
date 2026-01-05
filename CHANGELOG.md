@@ -1,6 +1,27 @@
 # CHANGELOG
 
 
+## v1.6.1 (2026-01-05)
+
+### Bug Fixes
+
+- Use griffe labels for async method detection
+  ([#88](https://github.com/nfraxlab/svc-infra/pull/88),
+  [`c2165e2`](https://github.com/nfraxlab/svc-infra/commit/c2165e2520f17312740996435da53eb5c51965c3))
+
+### Documentation
+
+- Add docstrings to classes missing API documentation
+  ([#85](https://github.com/nfraxlab/svc-infra/pull/85),
+  [`1291de5`](https://github.com/nfraxlab/svc-infra/commit/1291de52e15e63bf4a5d6b84eab582b4ae7003f6))
+
+- Enhance API extraction with auto-discovery ([#86](https://github.com/nfraxlab/svc-infra/pull/86),
+  [`ad13c43`](https://github.com/nfraxlab/svc-infra/commit/ad13c437d326bb29249cd4571a2d3ad12eca1406))
+
+- Remove stale dataclass JSON files ([#87](https://github.com/nfraxlab/svc-infra/pull/87),
+  [`7736963`](https://github.com/nfraxlab/svc-infra/commit/773696307f4524414cb5bf4cd77b5e9659722652))
+
+
 ## v1.6.0 (2026-01-05)
 
 ### Features
