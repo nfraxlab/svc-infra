@@ -7,49 +7,49 @@
       "name": "urls",
       "type": "str | list[str]",
       "default": null,
-      "description": null,
+      "description": "Single URL or list of URLs",
       "required": true
     },
     {
       "name": "headers",
       "type": "dict[str, str] | None",
       "default": "None",
-      "description": null,
+      "description": "HTTP headers to send",
       "required": false
     },
     {
       "name": "extract_text",
       "type": "bool",
       "default": "True",
-      "description": null,
+      "description": "Extract text from HTML (default: True)",
       "required": false
     },
     {
       "name": "follow_redirects",
       "type": "bool",
       "default": "True",
-      "description": null,
+      "description": "Follow redirects (default: True)",
       "required": false
     },
     {
       "name": "timeout",
       "type": "float",
       "default": "30.0",
-      "description": null,
+      "description": "Request timeout in seconds",
       "required": false
     },
     {
       "name": "extra_metadata",
       "type": "dict[str, Any] | None",
       "default": "None",
-      "description": null,
+      "description": "Additional metadata for all content",
       "required": false
     },
     {
       "name": "on_error",
       "type": "ErrorStrategy",
       "default": "'skip'",
-      "description": null,
+      "description": "Error handling strategy",
       "required": false
     }
   ],
@@ -70,54 +70,58 @@
           "name": "urls",
           "type": "str | list[str]",
           "default": null,
-          "description": null,
+          "description": "Single URL or list of URLs",
           "required": true
         },
         {
           "name": "headers",
           "type": "dict[str, str] | None",
           "default": "None",
-          "description": null,
+          "description": "HTTP headers to send",
           "required": false
         },
         {
           "name": "extract_text",
           "type": "bool",
           "default": "True",
-          "description": null,
+          "description": "Extract text from HTML (default: True)",
           "required": false
         },
         {
           "name": "follow_redirects",
           "type": "bool",
           "default": "True",
-          "description": null,
+          "description": "Follow redirects (default: True)",
           "required": false
         },
         {
           "name": "timeout",
           "type": "float",
           "default": "30.0",
-          "description": null,
+          "description": "Request timeout in seconds",
           "required": false
         },
         {
           "name": "extra_metadata",
           "type": "dict[str, Any] | None",
           "default": "None",
-          "description": null,
+          "description": "Additional metadata for all content",
           "required": false
         },
         {
           "name": "on_error",
           "type": "ErrorStrategy",
           "default": "'skip'",
-          "description": null,
+          "description": "Error handling strategy",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "load",
@@ -133,10 +137,21 @@
         }
       ],
       "returns": "list[LoadedContent]",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "httpx.HTTPError",
+          "description": "If request fails and on_error=\"raise\"."
+        }
+      ]
     }
   ],
   "bases": [
     "BaseLoader"
-  ]
+  ],
+  "source_file": "src/svc_infra/loaders/url.py",
+  "source_line": 20
 }

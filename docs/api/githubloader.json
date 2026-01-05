@@ -7,63 +7,63 @@
       "name": "repo",
       "type": "str",
       "default": null,
-      "description": null,
+      "description": "Repository in \"owner/repo\" format",
       "required": true
     },
     {
       "name": "path",
       "type": "str",
       "default": "''",
-      "description": null,
+      "description": "Path within repo (empty string for root)",
       "required": false
     },
     {
       "name": "branch",
       "type": "str",
       "default": "'main'",
-      "description": null,
+      "description": "Branch name",
       "required": false
     },
     {
       "name": "pattern",
       "type": "str",
       "default": "'*.md'",
-      "description": null,
+      "description": "Glob pattern for files to include",
       "required": false
     },
     {
       "name": "token",
       "type": "str | None",
       "default": "None",
-      "description": null,
+      "description": "GitHub token (or use GITHUB_TOKEN env var)",
       "required": false
     },
     {
       "name": "recursive",
       "type": "bool",
       "default": "True",
-      "description": null,
+      "description": "Search subdirectories",
       "required": false
     },
     {
       "name": "skip_patterns",
       "type": "list[str] | None",
       "default": "None",
-      "description": null,
+      "description": "Patterns to skip (overrides defaults if provided)",
       "required": false
     },
     {
       "name": "extra_metadata",
       "type": "dict[str, Any] | None",
       "default": "None",
-      "description": null,
+      "description": "Additional metadata for all content",
       "required": false
     },
     {
       "name": "on_error",
       "type": "ErrorStrategy",
       "default": "'skip'",
-      "description": null,
+      "description": "Error handling strategy",
       "required": false
     }
   ],
@@ -84,68 +84,72 @@
           "name": "repo",
           "type": "str",
           "default": null,
-          "description": null,
+          "description": "Repository in \"owner/repo\" format",
           "required": true
         },
         {
           "name": "path",
           "type": "str",
           "default": "''",
-          "description": null,
+          "description": "Path within repo (empty string for root)",
           "required": false
         },
         {
           "name": "branch",
           "type": "str",
           "default": "'main'",
-          "description": null,
+          "description": "Branch name",
           "required": false
         },
         {
           "name": "pattern",
           "type": "str",
           "default": "'*.md'",
-          "description": null,
+          "description": "Glob pattern for files to include",
           "required": false
         },
         {
           "name": "token",
           "type": "str | None",
           "default": "None",
-          "description": null,
+          "description": "GitHub token (or use GITHUB_TOKEN env var)",
           "required": false
         },
         {
           "name": "recursive",
           "type": "bool",
           "default": "True",
-          "description": null,
+          "description": "Search subdirectories",
           "required": false
         },
         {
           "name": "skip_patterns",
           "type": "list[str] | None",
           "default": "None",
-          "description": null,
+          "description": "Patterns to skip (overrides defaults if provided)",
           "required": false
         },
         {
           "name": "extra_metadata",
           "type": "dict[str, Any] | None",
           "default": "None",
-          "description": null,
+          "description": "Additional metadata for all content",
           "required": false
         },
         {
           "name": "on_error",
           "type": "ErrorStrategy",
           "default": "'skip'",
-          "description": null,
+          "description": "Error handling strategy",
           "required": false
         }
       ],
       "returns": "None",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "load",
@@ -161,10 +165,25 @@
         }
       ],
       "returns": "list[LoadedContent]",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "ValueError",
+          "description": "If repository not found or access denied."
+        },
+        {
+          "type": "httpx.HTTPError",
+          "description": "If API request fails and on_error=\"raise\"."
+        }
+      ]
     }
   ],
   "bases": [
     "BaseLoader"
-  ]
+  ],
+  "source_file": "src/svc_infra/loaders/github.py",
+  "source_line": 21
 }
