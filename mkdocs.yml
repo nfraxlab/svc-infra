@@ -85,7 +85,6 @@ nav:
       - Testing: testing.md
       - Developer Experience: dx.md
   - Reference:
-      - API Reference: reference/api.md
       - Idempotency: idempotency.md
       - Versioned Integrations: versioned-integrations.md
       - Documents: documents.md
