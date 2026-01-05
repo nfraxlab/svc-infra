@@ -417,7 +417,7 @@ def extract_function(func: Function) -> dict[str, Any]:
         "docstring": docstring_text,
         "parameters": extracted_params,
         "returns": return_type,
-        "is_async": func.is_async if hasattr(func, "is_async") else False,
+        "is_async": "async" in (func.labels if hasattr(func, "labels") else set()),
         "is_classmethod": is_classmethod,
         "is_staticmethod": is_staticmethod,
         "is_property": is_property,
