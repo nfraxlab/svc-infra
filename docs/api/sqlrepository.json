@@ -137,7 +137,7 @@
         }
       ],
       "returns": "int",
-      "is_async": false,
+      "is_async": true,
       "is_classmethod": false,
       "is_staticmethod": false,
       "is_property": false,
@@ -185,7 +185,7 @@
         }
       ],
       "returns": "int",
-      "is_async": false,
+      "is_async": true,
       "is_classmethod": false,
       "is_staticmethod": false,
       "is_property": false,
@@ -219,7 +219,7 @@
         }
       ],
       "returns": "Any",
-      "is_async": false,
+      "is_async": true,
       "is_classmethod": false,
       "is_staticmethod": false,
       "is_property": false,
@@ -260,7 +260,7 @@
         }
       ],
       "returns": "bool",
-      "is_async": false,
+      "is_async": true,
       "is_classmethod": false,
       "is_staticmethod": false,
       "is_property": false,
@@ -294,7 +294,7 @@
         }
       ],
       "returns": "bool",
-      "is_async": false,
+      "is_async": true,
       "is_classmethod": false,
       "is_staticmethod": false,
       "is_property": false,
@@ -335,7 +335,7 @@
         }
       ],
       "returns": "Any | None",
-      "is_async": false,
+      "is_async": true,
       "is_classmethod": false,
       "is_staticmethod": false,
       "is_property": false,
@@ -390,7 +390,7 @@
         }
       ],
       "returns": "Sequence[Any]",
-      "is_async": false,
+      "is_async": true,
       "is_classmethod": false,
       "is_staticmethod": false,
       "is_property": false,
@@ -459,7 +459,7 @@
         }
       ],
       "returns": "Sequence[Any]",
-      "is_async": false,
+      "is_async": true,
       "is_classmethod": false,
       "is_staticmethod": false,
       "is_property": false,
@@ -507,7 +507,7 @@
         }
       ],
       "returns": "Any | None",
-      "is_async": false,
+      "is_async": true,
       "is_classmethod": false,
       "is_staticmethod": false,
       "is_property": false,
