@@ -15,6 +15,12 @@ class License(BaseModel):
 
 
 class ServiceInfo(BaseModel):
+    """OpenAPI service metadata configuration.
+
+    Defines the top-level service information for OpenAPI documentation
+    including name, version, description, contact, and license details.
+    """
+
     name: str = "Service Infrastructure App"
     release: str = "0.1.0"
     description: str | None = None

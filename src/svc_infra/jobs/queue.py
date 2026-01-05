@@ -42,6 +42,12 @@ class Job:
 
 
 class JobQueue(Protocol):
+    """Protocol defining a background job queue interface.
+
+    Implementations must provide enqueue, reserve, acknowledge, and fail
+    operations for reliable background job processing with retry semantics.
+    """
+
     def enqueue(self, name: str, payload: dict[str, Any], *, delay_seconds: int = 0) -> Job:
         pass
 

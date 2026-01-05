@@ -13,6 +13,20 @@ if TYPE_CHECKING:
 
 @dataclass
 class SqlResource:
+    """Configuration for SQL CRUD resource endpoints.
+
+    Defines the model, URL prefix, schemas, and behavior options for
+    auto-generated REST API endpoints with support for soft-delete,
+    search, ordering, and multi-tenant isolation.
+
+    Attributes:
+        model: SQLAlchemy model class for the resource.
+        prefix: URL prefix for the resource endpoints (e.g., "/users").
+        tags: OpenAPI tags for documentation grouping.
+        soft_delete: If True, delete marks records instead of removing them.
+        tenant_field: Field name for multi-tenant row-level isolation.
+    """
+
     model: type[object]
     prefix: str
     tags: list[str] | None = None

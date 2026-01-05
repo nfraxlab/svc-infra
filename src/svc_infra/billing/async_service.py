@@ -33,6 +33,29 @@ from .models import Invoice, InvoiceLine, UsageAggregate, UsageEvent
 
 
 class AsyncBillingService:
+    """Async billing service for usage tracking and invoicing.
+
+    Provides full async/await support for recording usage events,
+    aggregating metrics, and generating invoices for multi-tenant
+    billing workflows.
+
+    Attributes:
+        session: SQLAlchemy async database session.
+        tenant_id: Tenant identifier for multi-tenant billing isolation.
+
+    Example:
+        ```python
+        async with async_session_maker() as session:
+            service = AsyncBillingService(session, tenant_id="tenant_123")
+            await service.record_usage(
+                metric="api_calls",
+                amount=1,
+                at=datetime.now(timezone.utc),
+                idempotency_key="unique-key",
+            )
+        ```
+    """
+
     def __init__(self, session: AsyncSession, tenant_id: str):
         self.session = session
         self.tenant_id = tenant_id
