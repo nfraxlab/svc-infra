@@ -251,9 +251,115 @@ def extract_parameter(param: Parameter) -> dict[str, Any]:
         "name": param.name,
         "type": str(param.annotation) if param.annotation else None,
         "default": str(param.default) if param.default else None,
-        "description": None,  # Will be extracted from docstring if available
+        "description": None,  # Will be filled from docstring Args section
         "required": param.default is None and param.name not in ("self", "cls"),
     }
+
+
+def parse_docstring_args(docstring: str | None) -> dict[str, str]:
+    """Parse Args section from Google-style docstring.
+
+    Returns a dict mapping parameter names to descriptions.
+    """
+    if not docstring:
+        return {}
+
+    args_map: dict[str, str] = {}
+    in_args = False
+    current_param = ""
+    current_desc_lines: list[str] = []
+
+    for line in docstring.split("\n"):
+        stripped = line.strip()
+
+        # Check for Args: section start
+        if stripped == "Args:":
+            in_args = True
+            continue
+
+        # Check for section end (new section or empty line after content)
+        if in_args and stripped and not stripped.startswith(" ") and stripped.endswith(":"):
+            if stripped in ("Returns:", "Raises:", "Yields:", "Example:", "Note:", "Attributes:"):
+                in_args = False
+                if current_param:
+                    args_map[current_param] = " ".join(current_desc_lines).strip()
+                continue
+
+        if in_args:
+            # New parameter line: "param_name: description" or "param_name (type): description"
+            if ": " in stripped and not stripped.startswith(" "):
+                # Handle "param_name: description" or "param_name (type): description"
+                colon_idx = stripped.index(": ")
+                param_part = stripped[:colon_idx]
+                desc_part = stripped[colon_idx + 2 :]
+
+                # Remove type annotation if present: "param_name (type)"
+                if " (" in param_part and param_part.endswith(")"):
+                    param_name = param_part.split(" (")[0]
+                else:
+                    param_name = param_part
+
+                # Save previous param
+                if current_param:
+                    args_map[current_param] = " ".join(current_desc_lines).strip()
+
+                current_param = param_name
+                current_desc_lines = [desc_part] if desc_part else []
+            elif stripped and current_param:
+                # Continuation of previous parameter description
+                current_desc_lines.append(stripped)
+
+    # Save last param
+    if current_param:
+        args_map[current_param] = " ".join(current_desc_lines).strip()
+
+    return args_map
+
+
+def parse_docstring_raises(docstring: str | None) -> list[dict[str, str]]:
+    """Parse Raises section from Google-style docstring."""
+    if not docstring:
+        return []
+
+    raises_list: list[dict[str, str]] = []
+    in_raises = False
+    current_exc = ""
+    current_desc_lines: list[str] = []
+
+    for line in docstring.split("\n"):
+        stripped = line.strip()
+
+        if stripped == "Raises:":
+            in_raises = True
+            continue
+
+        if in_raises and stripped and not stripped.startswith(" ") and stripped.endswith(":"):
+            if stripped in ("Returns:", "Args:", "Yields:", "Example:", "Note:", "Attributes:"):
+                in_raises = False
+                if current_exc:
+                    raises_list.append(
+                        {"type": current_exc, "description": " ".join(current_desc_lines).strip()}
+                    )
+                continue
+
+        if in_raises:
+            if ": " in stripped and not stripped.startswith(" "):
+                if current_exc:
+                    raises_list.append(
+                        {"type": current_exc, "description": " ".join(current_desc_lines).strip()}
+                    )
+                colon_idx = stripped.index(": ")
+                current_exc = stripped[:colon_idx]
+                current_desc_lines = [stripped[colon_idx + 2 :]]
+            elif stripped and current_exc:
+                current_desc_lines.append(stripped)
+
+    if current_exc:
+        raises_list.append(
+            {"type": current_exc, "description": " ".join(current_desc_lines).strip()}
+        )
+
+    return raises_list
 
 
 def extract_function(func: Function) -> dict[str, Any]:
@@ -275,13 +381,47 @@ def extract_function(func: Function) -> dict[str, Any]:
     if return_type:
         signature += f" -> {return_type}"
 
+    # Parse docstring for parameter descriptions
+    docstring_text = str(func.docstring.value) if func.docstring else None
+    args_map = parse_docstring_args(docstring_text)
+    raises_list = parse_docstring_raises(docstring_text)
+
+    # Extract parameters with descriptions
+    extracted_params = []
+    for p in func.parameters:
+        param_data = extract_parameter(p)
+        if p.name in args_map:
+            param_data["description"] = args_map[p.name]
+        extracted_params.append(param_data)
+
+    # Check decorators for classmethod/staticmethod/property
+    decorators = []
+    is_classmethod = False
+    is_staticmethod = False
+    is_property = False
+
+    if hasattr(func, "decorators"):
+        for dec in func.decorators:
+            dec_name = str(dec.value) if hasattr(dec, "value") else str(dec)
+            decorators.append(dec_name)
+            if "classmethod" in dec_name:
+                is_classmethod = True
+            elif "staticmethod" in dec_name:
+                is_staticmethod = True
+            elif "property" in dec_name:
+                is_property = True
+
     return {
         "name": func.name,
         "signature": signature,
-        "docstring": str(func.docstring.value) if func.docstring else None,
-        "parameters": [extract_parameter(p) for p in func.parameters],
+        "docstring": docstring_text,
+        "parameters": extracted_params,
         "returns": return_type,
         "is_async": func.is_async if hasattr(func, "is_async") else False,
+        "is_classmethod": is_classmethod,
+        "is_staticmethod": is_staticmethod,
+        "is_property": is_property,
+        "raises": raises_list if raises_list else None,
     }
 
 
@@ -294,15 +434,40 @@ def extract_class(cls: Class, module_path: str) -> dict[str, Any]:
         except Exception:
             pass
 
-    # Get __init__ parameters
+    # Get source file and line
+    source_file = None
+    source_line = None
+    if hasattr(cls, "filepath") and cls.filepath:
+        # Convert to relative path from src/
+        filepath = Path(cls.filepath)
+        try:
+            # Find "src" in the path and get relative path from there
+            parts = filepath.parts
+            if "src" in parts:
+                src_idx = parts.index("src")
+                source_file = str(Path(*parts[src_idx:]))
+            else:
+                source_file = str(filepath)
+        except Exception:
+            source_file = str(filepath)
+    if hasattr(cls, "lineno") and cls.lineno:
+        source_line = cls.lineno
+
+    # Get __init__ parameters with descriptions
     init_params = []
+    init_docstring = None
     if "__init__" in cls.members:
         init_member = cls.members["__init__"]
         init_func = resolve_member(init_member)
         if isinstance(init_func, Function):
-            init_params = [
-                extract_parameter(p) for p in init_func.parameters if p.name not in ("self", "cls")
-            ]
+            init_docstring = str(init_func.docstring.value) if init_func.docstring else None
+            args_map = parse_docstring_args(init_docstring)
+            for p in init_func.parameters:
+                if p.name not in ("self", "cls"):
+                    param_data = extract_parameter(p)
+                    if p.name in args_map:
+                        param_data["description"] = args_map[p.name]
+                    init_params.append(param_data)
 
     # Extract public methods (exclude private/dunder except __init__)
     methods = []
@@ -323,6 +488,8 @@ def extract_class(cls: Class, module_path: str) -> dict[str, Any]:
         "parameters": init_params,
         "methods": methods,
         "bases": [str(base) for base in cls.bases] if cls.bases else [],
+        "source_file": source_file,
+        "source_line": source_line,
     }
 
 

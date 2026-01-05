@@ -47,7 +47,11 @@
         }
       ],
       "returns": null,
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "aggregate_daily",
@@ -77,7 +81,11 @@
         }
       ],
       "returns": "int",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "generate_monthly_invoice",
@@ -114,7 +122,11 @@
         }
       ],
       "returns": "str",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "list_daily_aggregates",
@@ -151,7 +163,11 @@
         }
       ],
       "returns": "list[UsageAggregate]",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     },
     {
       "name": "record_usage",
@@ -202,8 +218,14 @@
         }
       ],
       "returns": "str",
-      "is_async": false
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
     }
   ],
-  "bases": []
+  "bases": [],
+  "source_file": "src/svc_infra/billing/async_service.py",
+  "source_line": 35
 }
