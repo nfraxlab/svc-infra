@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## v1.6.0 (2026-01-05)
+
+### Features
+
+- Auto-discover classes in API extraction script
+  ([#84](https://github.com/nfraxlab/svc-infra/pull/84),
+  [`df78faf`](https://github.com/nfraxlab/svc-infra/commit/df78faf2622e6b0003dbb09ee8bf43681c99a78a))
+
+Co-authored-by: nfrax <alixkhatami@gmail.com>
+
+
 ## v1.5.0 (2026-01-05)
 
 ### Features
