@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.5.0 (2026-01-05)
+
+### Features
+
+- Add griffe-based API reference extraction system
+  ([#83](https://github.com/nfraxlab/svc-infra/pull/83),
+  [`c3ccf3d`](https://github.com/nfraxlab/svc-infra/commit/c3ccf3d2852e57190f57aa6b06d1b1cdf49974a9))
+
+
 ## v1.4.0 (2026-01-04)
 
 ### Features
