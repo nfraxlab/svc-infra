@@ -1,0 +1,322 @@
+{
+  "name": "NoSqlResource",
+  "module": "svc_infra.db.nosql.resource",
+  "docstring": "Mongo resource declaration used by API & CLI.\nDefine indexes here (either IndexModel or simple alias dicts).",
+  "parameters": [
+    {
+      "name": "collection",
+      "type": "str | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "prefix",
+      "type": "str",
+      "default": "''",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "document_model",
+      "type": "type[Any] | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "read_schema",
+      "type": "type[Any] | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "create_schema",
+      "type": "type[Any] | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "update_schema",
+      "type": "type[Any] | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "search_fields",
+      "type": "Sequence[str] | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "tags",
+      "type": "list[str] | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "id_field",
+      "type": "str",
+      "default": "'_id'",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "soft_delete",
+      "type": "bool",
+      "default": "False",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "soft_delete_field",
+      "type": "str",
+      "default": "'deleted_at'",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "soft_delete_flag_field",
+      "type": "str | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "service_factory",
+      "type": "Callable[[Any], Any] | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "read_name",
+      "type": "str | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "create_name",
+      "type": "str | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "update_name",
+      "type": "str | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "create_exclude",
+      "type": "tuple[str, ...]",
+      "default": "('_id',)",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "read_exclude",
+      "type": "tuple[str, ...]",
+      "default": "()",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "update_exclude",
+      "type": "tuple[str, ...]",
+      "default": "()",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "indexes",
+      "type": "Iterable[IndexModel | IndexAlias] | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(collection: str | None = None, prefix: str = '', document_model: type[Any] | None = None, read_schema: type[Any] | None = None, create_schema: type[Any] | None = None, update_schema: type[Any] | None = None, search_fields: Sequence[str] | None = None, tags: list[str] | None = None, id_field: str = '_id', soft_delete: bool = False, soft_delete_field: str = 'deleted_at', soft_delete_flag_field: str | None = None, service_factory: Callable[[Any], Any] | None = None, read_name: str | None = None, create_name: str | None = None, update_name: str | None = None, create_exclude: tuple[str, ...] = ('_id',), read_exclude: tuple[str, ...] = (), update_exclude: tuple[str, ...] = (), indexes: Iterable[IndexModel | IndexAlias] | None = None) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "collection",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "prefix",
+          "type": "str",
+          "default": "''",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "document_model",
+          "type": "type[Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "read_schema",
+          "type": "type[Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "create_schema",
+          "type": "type[Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "update_schema",
+          "type": "type[Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "search_fields",
+          "type": "Sequence[str] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "list[str] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "id_field",
+          "type": "str",
+          "default": "'_id'",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "soft_delete",
+          "type": "bool",
+          "default": "False",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "soft_delete_field",
+          "type": "str",
+          "default": "'deleted_at'",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "soft_delete_flag_field",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "service_factory",
+          "type": "Callable[[Any], Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "read_name",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "create_name",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "update_name",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "create_exclude",
+          "type": "tuple[str, ...]",
+          "default": "('_id',)",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "read_exclude",
+          "type": "tuple[str, ...]",
+          "default": "()",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "update_exclude",
+          "type": "tuple[str, ...]",
+          "default": "()",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "indexes",
+          "type": "Iterable[IndexModel | IndexAlias] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "resolved_collection",
+      "signature": "() -> str",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "str",
+      "is_async": false
+    }
+  ],
+  "bases": []
+}

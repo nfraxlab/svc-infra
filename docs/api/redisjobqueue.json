@@ -1,0 +1,176 @@
+{
+  "name": "RedisJobQueue",
+  "module": "svc_infra.jobs.redis_queue",
+  "docstring": "Redis-backed job queue with visibility timeout and delayed retries.\n\nKeys (with optional prefix):\n  - {p}:ready (LIST)        ready job ids\n  - {p}:processing (LIST)   in-flight job ids\n  - {p}:processing_vt (ZSET) id -> visible_at (epoch seconds)\n  - {p}:delayed (ZSET)      id -> available_at (epoch seconds)\n  - {p}:seq (STRING)        INCR for job ids\n  - {p}:job:{id} (HASH)     job fields (json payload)\n  - {p}:dlq (LIST)          dead-letter job ids",
+  "parameters": [
+    {
+      "name": "client",
+      "type": "Redis",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "prefix",
+      "type": "str",
+      "default": "'jobs'",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "visibility_timeout",
+      "type": "int",
+      "default": "60",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(client: Redis, prefix: str = 'jobs', visibility_timeout: int = 60)",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "client",
+          "type": "Redis",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "prefix",
+          "type": "str",
+          "default": "'jobs'",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "visibility_timeout",
+          "type": "int",
+          "default": "60",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "ack",
+      "signature": "(job_id: str) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "job_id",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "enqueue",
+      "signature": "(name: str, payload: dict, delay_seconds: int = 0) -> Job",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "payload",
+          "type": "dict",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "delay_seconds",
+          "type": "int",
+          "default": "0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "Job",
+      "is_async": false
+    },
+    {
+      "name": "fail",
+      "signature": "(job_id: str, error: str | None = None) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "job_id",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "error",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "reserve_next",
+      "signature": "() -> Job | None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "Job | None",
+      "is_async": false
+    }
+  ],
+  "bases": [
+    "JobQueue"
+  ]
+}

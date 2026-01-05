@@ -1,6 +1,6 @@
 {
   "name": "DualAPIRouter",
-  "module": "svc_infra.api.fastapi.dual",
+  "module": "svc_infra.api.fastapi",
   "docstring": "Registers two routes per endpoint:\n  \u2022 primary: shown in OpenAPI (no trailing slash)\n  \u2022 alternate: hidden in OpenAPI (with trailing slash)\nKeeps redirect_slashes=False behavior (no 307s).",
   "parameters": [
     {

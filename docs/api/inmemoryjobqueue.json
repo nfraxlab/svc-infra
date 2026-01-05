@@ -1,0 +1,131 @@
+{
+  "name": "InMemoryJobQueue",
+  "module": "svc_infra.jobs.queue",
+  "docstring": "Simple in-memory queue for tests and local runs.\n\nSingle-threaded reserve/ack/fail semantics. Not suitable for production.",
+  "parameters": [],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "()",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "ack",
+      "signature": "(job_id: str) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "job_id",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "enqueue",
+      "signature": "(name: str, payload: dict[str, Any], delay_seconds: int = 0) -> Job",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "payload",
+          "type": "dict[str, Any]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "delay_seconds",
+          "type": "int",
+          "default": "0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "Job",
+      "is_async": false
+    },
+    {
+      "name": "fail",
+      "signature": "(job_id: str, error: str | None = None) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "job_id",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "error",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "reserve_next",
+      "signature": "() -> Job | None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "Job | None",
+      "is_async": false
+    }
+  ],
+  "bases": []
+}
