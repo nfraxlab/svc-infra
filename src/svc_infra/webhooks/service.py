@@ -10,6 +10,18 @@ from svc_infra.webhooks.encryption import encrypt_secret
 
 @dataclass
 class WebhookSubscription:
+    """Webhook subscription configuration.
+
+    Represents a registered webhook endpoint that receives events
+    for a specific topic with HMAC signature verification.
+
+    Attributes:
+        topic: Event topic to subscribe to (e.g., "order.created").
+        url: Destination URL for webhook delivery.
+        secret: HMAC signing secret for payload verification.
+        id: Unique subscription identifier (auto-generated).
+    """
+
     topic: str
     url: str
     secret: str
@@ -37,6 +49,17 @@ class InMemoryWebhookSubscriptions:
 
 
 class WebhookService:
+    """Service for publishing webhook events via the outbox pattern.
+
+    Provides reliable webhook delivery by encrypting secrets and
+    enqueuing messages to an outbox store for later processing.
+    Supports fan-out to multiple subscribers per topic.
+
+    Attributes:
+        _outbox: OutboxStore for reliable message persistence.
+        _subs: Subscription registry for topic-to-endpoint mapping.
+    """
+
     def __init__(self, outbox: OutboxStore, subs: InMemoryWebhookSubscriptions):
         self._outbox = outbox
         self._subs = subs

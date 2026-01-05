@@ -1,7 +1,7 @@
 {
   "name": "AuthPolicy",
   "module": "svc_infra.api.fastapi.auth.policy",
-  "docstring": null,
+  "docstring": "Protocol defining authentication policy interface.\n\nImplement this protocol to customize authentication behavior including\nMFA requirements, login hooks, and challenge handling.",
   "parameters": [],
   "methods": [
     {

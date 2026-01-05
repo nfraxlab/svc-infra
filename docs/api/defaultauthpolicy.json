@@ -1,7 +1,7 @@
 {
   "name": "DefaultAuthPolicy",
   "module": "svc_infra.api.fastapi.auth.policy",
-  "docstring": null,
+  "docstring": "Default authentication policy implementation.\n\nChecks user-level MFA settings and provides no-op hooks for login\nand challenge events. Override this class to customize MFA logic,\naudit logging, or add tenant/global policy rules.\n\nAttributes:\n    settings: Application settings for auth configuration.",
   "parameters": [
     {
       "name": "settings",

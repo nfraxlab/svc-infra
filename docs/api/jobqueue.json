@@ -1,7 +1,7 @@
 {
   "name": "JobQueue",
   "module": "svc_infra.jobs.queue",
-  "docstring": null,
+  "docstring": "Protocol defining a background job queue interface.\n\nImplementations must provide enqueue, reserve, acknowledge, and fail\noperations for reliable background job processing with retry semantics.",
   "parameters": [],
   "methods": [
     {

@@ -1,7 +1,7 @@
 {
   "name": "AsyncBillingService",
   "module": "svc_infra.billing.async_service",
-  "docstring": null,
+  "docstring": "Async billing service for usage tracking and invoicing.\n\nProvides full async/await support for recording usage events,\naggregating metrics, and generating invoices for multi-tenant\nbilling workflows.\n\nAttributes:\n    session: SQLAlchemy async database session.\n    tenant_id: Tenant identifier for multi-tenant billing isolation.\n\nExample:\n    ```python\n    async with async_session_maker() as session:\n        service = AsyncBillingService(session, tenant_id=\"tenant_123\")\n        await service.record_usage(\n            metric=\"api_calls\",\n            amount=1,\n            at=datetime.now(timezone.utc),\n            idempotency_key=\"unique-key\",\n        )\n    ```",
   "parameters": [
     {
       "name": "session",

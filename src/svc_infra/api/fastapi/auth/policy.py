@@ -4,6 +4,12 @@ from typing import Any, Protocol
 
 
 class AuthPolicy(Protocol):
+    """Protocol defining authentication policy interface.
+
+    Implement this protocol to customize authentication behavior including
+    MFA requirements, login hooks, and challenge handling.
+    """
+
     async def should_require_mfa(self, user: Any) -> bool:
         pass
 
@@ -15,6 +21,16 @@ class AuthPolicy(Protocol):
 
 
 class DefaultAuthPolicy:
+    """Default authentication policy implementation.
+
+    Checks user-level MFA settings and provides no-op hooks for login
+    and challenge events. Override this class to customize MFA logic,
+    audit logging, or add tenant/global policy rules.
+
+    Attributes:
+        settings: Application settings for auth configuration.
+    """
+
     def __init__(self, settings):
         self.settings = settings
 
