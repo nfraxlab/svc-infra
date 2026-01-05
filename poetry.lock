@@ -2607,23 +2607,6 @@ i18n = ["babel (>=2.9.0)"]
 min-versions = ["babel (==2.9.0)", "click (==7.0)", "colorama (==0.4) ; platform_system == \"Windows\"", "ghp-import (==1.0)", "importlib-metadata (==4.4) ; python_version < \"3.10\"", "jinja2 (==2.11.1)", "markdown (==3.3.6)", "markupsafe (==2.0.1)", "mergedeep (==1.3.4)", "mkdocs-get-deps (==0.2.0)", "packaging (==20.5)", "pathspec (==0.11.1)", "pyyaml (==5.1)", "pyyaml-env-tag (==0.1)", "watchdog (==2.0)"]
 
 [[package]]
-name = "mkdocs-autorefs"
-version = "1.4.3"
-description = "Automatically link across pages in MkDocs."
-optional = false
-python-versions = ">=3.9"
-groups = ["dev"]
-files = [
-    {file = "mkdocs_autorefs-1.4.3-py3-none-any.whl", hash = "sha256:469d85eb3114801d08e9cc55d102b3ba65917a869b893403b8987b601cf55dc9"},
-    {file = "mkdocs_autorefs-1.4.3.tar.gz", hash = "sha256:beee715b254455c4aa93b6ef3c67579c399ca092259cc41b7d9342573ff1fc75"},
-]
-
-[package.dependencies]
-Markdown = ">=3.3"
-markupsafe = ">=2.0.1"
-mkdocs = ">=1.1"
-
-[[package]]
 name = "mkdocs-get-deps"
 version = "0.2.0"
 description = "MkDocs extension that lists all dependencies according to a mkdocs.yml file"
@@ -2681,49 +2664,6 @@ files = [
     {file = "mkdocs_material_extensions-1.3.1-py3-none-any.whl", hash = "sha256:adff8b62700b25cb77b53358dad940f3ef973dd6db797907c49e3c2ef3ab4e31"},
     {file = "mkdocs_material_extensions-1.3.1.tar.gz", hash = "sha256:10c9511cea88f568257f960358a467d12b970e1f7b2c0e5fb2bb48cab1928443"},
 ]
-
-[[package]]
-name = "mkdocstrings"
-version = "1.0.0"
-description = "Automatic documentation from sources, for MkDocs."
-optional = false
-python-versions = ">=3.10"
-groups = ["dev"]
-files = [
-    {file = "mkdocstrings-1.0.0-py3-none-any.whl", hash = "sha256:4c50eb960bff6e05dfc631f6bc00dfabffbcb29c5ff25f676d64daae05ed82fa"},
-    {file = "mkdocstrings-1.0.0.tar.gz", hash = "sha256:351a006dbb27aefce241ade110d3cd040c1145b7a3eb5fd5ac23f03ed67f401a"},
-]
-
-[package.dependencies]
-Jinja2 = ">=3.1"
-Markdown = ">=3.6"
-MarkupSafe = ">=1.1"
-mkdocs = ">=1.6"
-mkdocs-autorefs = ">=1.4"
-mkdocstrings-python = {version = ">=1.16.2", optional = true, markers = "extra == \"python\""}
-pymdown-extensions = ">=6.3"
-
-[package.extras]
-crystal = ["mkdocstrings-crystal (>=0.3.4)"]
-python = ["mkdocstrings-python (>=1.16.2)"]
-python-legacy = ["mkdocstrings-python-legacy (>=0.2.1)"]
-
-[[package]]
-name = "mkdocstrings-python"
-version = "2.0.1"
-description = "A Python handler for mkdocstrings."
-optional = false
-python-versions = ">=3.10"
-groups = ["dev"]
-files = [
-    {file = "mkdocstrings_python-2.0.1-py3-none-any.whl", hash = "sha256:66ecff45c5f8b71bf174e11d49afc845c2dfc7fc0ab17a86b6b337e0f24d8d90"},
-    {file = "mkdocstrings_python-2.0.1.tar.gz", hash = "sha256:843a562221e6a471fefdd4b45cc6c22d2607ccbad632879234fa9692e9cf7732"},
-]
-
-[package.dependencies]
-griffe = ">=1.13"
-mkdocs-autorefs = ">=1.4"
-mkdocstrings = ">=0.30"
 
 [[package]]
 name = "moto"
@@ -6164,4 +6104,4 @@ stripe = ["stripe"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "60a8fc3bd2f50c71081c1edbb4f705c3bf69a3215036c989f4cf3eac95b56e68"
+content-hash = "c4522170f25874a6fb50a7a9454bd1690fb6ba2041a50229da63b81fc4f10972"
