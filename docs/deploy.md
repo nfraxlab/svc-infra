@@ -304,9 +304,20 @@ if __name__ == "__main__":
 
 ### Platform Enum
 
-::: svc_infra.deploy.Platform
-    options:
-      show_source: false
+See [`Platform`](https://nfrax.com/svc-infra/api) in the API reference for the full platform enumeration.
+
+```python
+from svc_infra.deploy import Platform
+
+# Available platforms
+Platform.LOCAL      # Local development
+Platform.DOCKER     # Docker container
+Platform.K8S        # Kubernetes
+Platform.AWS_ECS    # AWS ECS
+Platform.AWS_LAMBDA # AWS Lambda
+Platform.GCP_RUN    # Google Cloud Run
+Platform.AZURE_ACA  # Azure Container Apps
+```
 
 ### Functions
 

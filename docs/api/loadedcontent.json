@@ -1,0 +1,151 @@
+{
+  "name": "LoadedContent",
+  "module": "svc_infra.loaders.models",
+  "docstring": "Content loaded from a remote or local source.\n\nThis is the standard output format for all loaders. It's designed to be\ncompatible with ai-infra's Retriever.add_text() method.\n\nAttributes:\n    content: The text content that was loaded.\n    metadata: Flexible metadata dict. Loaders add source-specific metadata\n        (e.g., repo, path, branch for GitHub). Users can add custom metadata\n        via the loader's `extra_metadata` parameter.\n    source: Source identifier (URL, file path, GitHub URI, etc.).\n        Format varies by loader:\n        - GitHubLoader: \"github://owner/repo/path\"\n        - URLLoader: \"https://example.com/page\"\n        - S3Loader: \"s3://bucket/key\"\n    content_type: MIME type or content category (e.g., \"text/markdown\",\n        \"text/x-python\", \"text/html\"). None if unknown.\n    encoding: Character encoding (default: utf-8).\n\nExample:\n    >>> content = LoadedContent(\n    ...     content=\"# Authentication\\n\\nThis guide covers...\",\n    ...     source=\"github://nfraxlab/svc-infra/docs/auth.md\",\n    ...     content_type=\"text/markdown\",\n    ...     metadata={\"repo\": \"nfraxlab/svc-infra\", \"path\": \"docs/auth.md\"},\n    ... )\n    >>>\n    >>> # Use with ai-infra Retriever\n    >>> retriever.add_text(content.content, metadata=content.metadata)",
+  "parameters": [
+    {
+      "name": "content",
+      "type": "str",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "metadata",
+      "type": "dict[str, Any]",
+      "default": "dict()",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "source",
+      "type": "str",
+      "default": "''",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "content_type",
+      "type": "str | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "encoding",
+      "type": "str",
+      "default": "'utf-8'",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(content: str, metadata: dict[str, Any] = dict(), source: str = '', content_type: str | None = None, encoding: str = 'utf-8') -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "content",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "metadata",
+          "type": "dict[str, Any]",
+          "default": "dict()",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "source",
+          "type": "str",
+          "default": "''",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "content_type",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "encoding",
+          "type": "str",
+          "default": "'utf-8'",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "from_dict",
+      "signature": "(data: dict[str, Any]) -> LoadedContent",
+      "docstring": "Create LoadedContent from a dictionary.\n\nArgs:\n    data: Dictionary with content, metadata, source, etc.\n\nReturns:\n    New LoadedContent instance.\n\nExample:\n    >>> data = {\"content\": \"Hello\", \"source\": \"test.txt\"}\n    >>> content = LoadedContent.from_dict(data)",
+      "parameters": [
+        {
+          "name": "cls",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "data",
+          "type": "dict[str, Any]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "LoadedContent",
+      "is_async": false
+    },
+    {
+      "name": "to_dict",
+      "signature": "() -> dict[str, Any]",
+      "docstring": "Convert to dictionary for JSON serialization.\n\nReturns:\n    Dictionary with all fields, suitable for JSON serialization.\n\nExample:\n    >>> data = loaded_content.to_dict()\n    >>> json.dumps(data)",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "dict[str, Any]",
+      "is_async": false
+    },
+    {
+      "name": "to_tuple",
+      "signature": "() -> tuple[str, dict[str, Any]]",
+      "docstring": "Convert to (content, metadata) tuple.\n\nThis format is compatible with ai-infra's Retriever.add_text() and\nthe legacy LoadedDocument type from ai-infra/retriever/loaders.py.\n\nReturns:\n    Tuple of (content, metadata).\n\nExample:\n    >>> content, metadata = loaded_content.to_tuple()\n    >>> retriever.add_text(content, metadata=metadata)",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "tuple[str, dict[str, Any]]",
+      "is_async": false
+    }
+  ],
+  "bases": []
+}

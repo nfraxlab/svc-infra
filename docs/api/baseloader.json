@@ -1,0 +1,90 @@
+{
+  "name": "BaseLoader",
+  "module": "svc_infra.loaders.base",
+  "docstring": "Abstract base class for content loaders.\n\nAll loaders are async-first with sync wrappers provided for convenience.\nSubclasses must implement the `load()` method.\n\nAttributes:\n    on_error: How to handle errors during loading.\n        - \"skip\" (default): Log warning and skip failed items\n        - \"raise\": Raise exception on first failure\n\nExample:\n    >>> class MyLoader(BaseLoader):\n    ...     async def load(self) -> list[LoadedContent]:\n    ...         # Implement loading logic\n    ...         return [LoadedContent(content=\"...\", source=\"...\")]\n    >>>\n    >>> # Async usage (preferred)\n    >>> loader = MyLoader()\n    >>> contents = await loader.load()\n    >>>\n    >>> # Sync usage (convenience)\n    >>> contents = loader.load_sync()",
+  "parameters": [
+    {
+      "name": "on_error",
+      "type": "ErrorStrategy",
+      "default": "'skip'",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(on_error: ErrorStrategy = 'skip') -> None",
+      "docstring": "Initialize the base loader.\n\nArgs:\n    on_error: Error handling strategy (\"skip\" or \"raise\").",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "on_error",
+          "type": "ErrorStrategy",
+          "default": "'skip'",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "aiter",
+      "signature": "() -> AsyncIterator[LoadedContent]",
+      "docstring": "Iterate over loaded content asynchronously.\n\nThis is useful for progress tracking or streaming large datasets.\nDefault implementation loads all content first, but subclasses\ncan override for true streaming.\n\nYields:\n    LoadedContent objects as they are loaded.\n\nExample:\n    >>> async for content in loader.aiter():\n    ...     print(f\"Loaded: {content.source}\")\n    ...     process(content)",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "AsyncIterator[LoadedContent]",
+      "is_async": false
+    },
+    {
+      "name": "load",
+      "signature": "() -> list[LoadedContent]",
+      "docstring": "Load all content from the source.\n\nThis is the main method that subclasses must implement.\n\nReturns:\n    List of LoadedContent objects.\n\nRaises:\n    Various exceptions depending on the loader and error strategy.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "list[LoadedContent]",
+      "is_async": false
+    },
+    {
+      "name": "load_sync",
+      "signature": "() -> list[LoadedContent]",
+      "docstring": "Synchronous wrapper for load().\n\nCreates a new event loop if needed. Prefer the async version\nwhen running in an async context.\n\nReturns:\n    List of LoadedContent objects.\n\nExample:\n    >>> # In a script or notebook\n    >>> loader = GitHubLoader(\"nfraxlab/svc-infra\", path=\"docs\")\n    >>> contents = loader.load_sync()",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "list[LoadedContent]",
+      "is_async": false
+    }
+  ],
+  "bases": [
+    "ABC"
+  ]
+}

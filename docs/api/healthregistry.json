@@ -1,0 +1,184 @@
+{
+  "name": "HealthRegistry",
+  "module": "svc_infra.health",
+  "docstring": "Registry of health checks for a service.\n\nThe registry manages multiple health checks and provides methods to:\n- Run all checks and aggregate results\n- Wait for all critical checks to pass (startup probe)\n- Determine overall service health\n\nExample:\n    >>> registry = HealthRegistry()\n    >>> registry.add(\"database\", check_database(db_url), critical=True)\n    >>> registry.add(\"cache\", check_redis(redis_url), critical=False)\n    >>>\n    >>> # Run all checks\n    >>> result = await registry.check_all()\n    >>> print(result.status)  # \"healthy\" or \"unhealthy\"\n    >>>\n    >>> # Wait for startup\n    >>> await registry.wait_until_healthy(timeout=60)",
+  "parameters": [],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "() -> None",
+      "docstring": "Initialize empty health registry.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "add",
+      "signature": "(name: str, check_fn: HealthCheckFn, critical: bool = True, timeout: float = 5.0) -> None",
+      "docstring": "Register a health check.\n\nArgs:\n    name: Unique name for this check (e.g., \"database\", \"redis\")\n    check_fn: Async function that returns HealthCheckResult\n    critical: If True, failure means service is unhealthy\n    timeout: Maximum time to wait for this check (seconds)\n\nRaises:\n    ValueError: If a check with this name already exists",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "check_fn",
+          "type": "HealthCheckFn",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "critical",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "float",
+          "default": "5.0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "check_all",
+      "signature": "() -> AggregatedHealthResult",
+      "docstring": "Run all registered health checks concurrently.\n\nReturns:\n    AggregatedHealthResult with overall status and individual results",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "AggregatedHealthResult",
+      "is_async": false
+    },
+    {
+      "name": "check_one",
+      "signature": "(name: str) -> HealthCheckResult",
+      "docstring": "Run a single health check by name.\n\nArgs:\n    name: Name of the check to run\n\nReturns:\n    HealthCheckResult for the check\n\nRaises:\n    KeyError: If check not found",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "HealthCheckResult",
+      "is_async": false
+    },
+    {
+      "name": "clear",
+      "signature": "() -> None",
+      "docstring": "Remove all registered health checks.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "remove",
+      "signature": "(name: str) -> bool",
+      "docstring": "Remove a health check by name.\n\nArgs:\n    name: Name of the check to remove\n\nReturns:\n    True if check was removed, False if not found",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "bool",
+      "is_async": false
+    },
+    {
+      "name": "wait_until_healthy",
+      "signature": "(timeout: float = 60.0, interval: float = 2.0, check_names: list[str] | None = None) -> bool",
+      "docstring": "Wait until all (or specified) critical checks pass.\n\nUseful for startup scripts to wait for dependencies before\nthe main application starts accepting traffic.\n\nArgs:\n    timeout: Maximum time to wait (seconds)\n    interval: Time between check attempts (seconds)\n    check_names: Specific checks to wait for (None = all critical)\n\nReturns:\n    True if all checks passed, False if timeout reached\n\nExample:\n    >>> # Wait up to 60 seconds for database\n    >>> if not await registry.wait_until_healthy(timeout=60):\n    ...     raise RuntimeError(\"Dependencies not ready\")",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "float",
+          "default": "60.0",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "interval",
+          "type": "float",
+          "default": "2.0",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "check_names",
+          "type": "list[str] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "bool",
+      "is_async": false
+    }
+  ],
+  "bases": []
+}

@@ -34,20 +34,6 @@ theme:
 
 plugins:
   - search
-  - mkdocstrings:
-      handlers:
-        python:
-          options:
-            docstring_style: google
-            show_source: true
-            show_root_heading: true
-            show_root_full_path: false
-            show_symbol_type_heading: true
-            show_symbol_type_toc: true
-            members_order: source
-            merge_init_into_class: true
-            separate_signature: true
-            signature_crossrefs: true
 
 markdown_extensions:
   - pymdownx.highlight:

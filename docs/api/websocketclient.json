@@ -1,0 +1,206 @@
+{
+  "name": "WebSocketClient",
+  "module": "svc_infra.websocket.client",
+  "docstring": "Async WebSocket client for connecting to external services.\n\nFeatures:\n- Async context manager support\n- Auto-reconnection with exponential backoff (via websocket_connect)\n- Configurable ping/pong keepalive\n- Send text, bytes, or JSON\n- Async iterator for receiving messages\n\nExample:\n    async with WebSocketClient(\"wss://api.example.com\") as ws:\n        await ws.send_json({\"type\": \"hello\"})\n        async for message in ws:\n            print(message)\n\nArgs:\n    url: WebSocket URL (ws:// or wss://)\n    config: WebSocket configuration (timeouts, ping/pong, etc.)\n    headers: Additional HTTP headers for the handshake\n    subprotocols: List of subprotocols to negotiate",
+  "parameters": [
+    {
+      "name": "url",
+      "type": "str",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "config",
+      "type": "WebSocketConfig | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "headers",
+      "type": "dict[str, str] | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "subprotocols",
+      "type": "list[str] | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(url: str, config: WebSocketConfig | None = None, headers: dict[str, str] | None = None, subprotocols: list[str] | None = None)",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "url",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "config",
+          "type": "WebSocketConfig | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "headers",
+          "type": "dict[str, str] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "subprotocols",
+          "type": "list[str] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "close",
+      "signature": "(code: int = 1000, reason: str = '') -> None",
+      "docstring": "Close the connection gracefully.\n\nArgs:\n    code: WebSocket close code (default: 1000 = normal closure)\n    reason: Close reason message",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "code",
+          "type": "int",
+          "default": "1000",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "reason",
+          "type": "str",
+          "default": "''",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "connect",
+      "signature": "() -> None",
+      "docstring": "Establish WebSocket connection.\n\nRaises:\n    ConnectionFailedError: If connection cannot be established",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "recv",
+      "signature": "() -> str | bytes",
+      "docstring": "Receive next message.\n\nReturns:\n    Message content (str for text frames, bytes for binary)\n\nRaises:\n    WebSocketError: If not connected\n    ConnectionClosedError: If connection is closed",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "str | bytes",
+      "is_async": false
+    },
+    {
+      "name": "recv_json",
+      "signature": "() -> Any",
+      "docstring": "Receive and parse JSON message.\n\nReturns:\n    Parsed JSON object\n\nRaises:\n    WebSocketError: If not connected\n    ConnectionClosedError: If connection is closed\n    json.JSONDecodeError: If message is not valid JSON",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "Any",
+      "is_async": false
+    },
+    {
+      "name": "send",
+      "signature": "(data: str | bytes) -> None",
+      "docstring": "Send text or binary message.\n\nArgs:\n    data: Message content (str for text, bytes for binary)\n\nRaises:\n    WebSocketError: If not connected\n    ConnectionClosedError: If connection is closed",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "data",
+          "type": "str | bytes",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "send_json",
+      "signature": "(data: Any) -> None",
+      "docstring": "Send JSON-serialized message.\n\nArgs:\n    data: Object to serialize and send\n\nRaises:\n    WebSocketError: If not connected\n    ConnectionClosedError: If connection is closed\n    TypeError/ValueError: If data cannot be serialized",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "data",
+          "type": "Any",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    }
+  ],
+  "bases": []
+}

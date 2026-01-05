@@ -1,0 +1,170 @@
+{
+  "name": "GitHubLoader",
+  "module": "svc_infra.loaders.github",
+  "docstring": "Load files from a GitHub repository.\n\nFetches files matching a pattern from a GitHub repo using the GitHub API.\nSupports public repos and private repos (with token).\n\nArgs:\n    repo: Repository in \"owner/repo\" format (e.g., \"nfraxlab/svc-infra\")\n    path: Path within repo to load from (e.g., \"docs\", \"examples/src\").\n        Empty string means repo root.\n    branch: Branch name (default: \"main\")\n    pattern: Glob pattern for files to include (default: \"*.md\").\n        Use \"*\" to match all files.\n    token: GitHub token for private repos or higher rate limits.\n        Falls back to GITHUB_TOKEN environment variable.\n    recursive: Whether to search subdirectories (default: True)\n    skip_patterns: List of patterns to skip. Default patterns are:\n        __pycache__, *.pyc, *.pyo, .git, node_modules, *.lock, .env*\n    extra_metadata: Additional metadata to attach to all loaded content.\n    on_error: How to handle errors (\"skip\" or \"raise\"). Default: \"skip\"\n\nExample:\n    >>> # Load all markdown from docs/\n    >>> loader = GitHubLoader(\"nfraxlab/svc-infra\", path=\"docs\")\n    >>> contents = await loader.load()\n    >>> for c in contents:\n    ...     print(f\"Loaded: {c.source}\")\n    >>>\n    >>> # Load Python files from examples\n    >>> loader = GitHubLoader(\n    ...     \"nfraxlab/svc-infra\",\n    ...     path=\"examples/src\",\n    ...     pattern=\"*.py\",\n    ...     skip_patterns=[\"__pycache__\", \"test_*\"],\n    ... )\n    >>> contents = await loader.load()\n    >>>\n    >>> # Private repo with token\n    >>> loader = GitHubLoader(\n    ...     \"myorg/private-repo\",\n    ...     token=\"ghp_xxxx\",  # or set GITHUB_TOKEN env var\n    ... )\n    >>> contents = await loader.load()\n\nNote:\n    - GitHub API rate limits: 60 requests/hour unauthenticated,\n      5000 requests/hour with token\n    - Large repos may require multiple API calls (tree is fetched recursively)\n    - Binary files are automatically skipped",
+  "parameters": [
+    {
+      "name": "repo",
+      "type": "str",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "path",
+      "type": "str",
+      "default": "''",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "branch",
+      "type": "str",
+      "default": "'main'",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "pattern",
+      "type": "str",
+      "default": "'*.md'",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "token",
+      "type": "str | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "recursive",
+      "type": "bool",
+      "default": "True",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "skip_patterns",
+      "type": "list[str] | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "extra_metadata",
+      "type": "dict[str, Any] | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "on_error",
+      "type": "ErrorStrategy",
+      "default": "'skip'",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(repo: str, path: str = '', branch: str = 'main', pattern: str = '*.md', token: str | None = None, recursive: bool = True, skip_patterns: list[str] | None = None, extra_metadata: dict[str, Any] | None = None, on_error: ErrorStrategy = 'skip') -> None",
+      "docstring": "Initialize the GitHub loader.\n\nArgs:\n    repo: Repository in \"owner/repo\" format\n    path: Path within repo (empty string for root)\n    branch: Branch name\n    pattern: Glob pattern for files to include\n    token: GitHub token (or use GITHUB_TOKEN env var)\n    recursive: Search subdirectories\n    skip_patterns: Patterns to skip (overrides defaults if provided)\n    extra_metadata: Additional metadata for all content\n    on_error: Error handling strategy",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "repo",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "path",
+          "type": "str",
+          "default": "''",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "branch",
+          "type": "str",
+          "default": "'main'",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "pattern",
+          "type": "str",
+          "default": "'*.md'",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "token",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "recursive",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "skip_patterns",
+          "type": "list[str] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "extra_metadata",
+          "type": "dict[str, Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "on_error",
+          "type": "ErrorStrategy",
+          "default": "'skip'",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "load",
+      "signature": "() -> list[LoadedContent]",
+      "docstring": "Load all matching files from the GitHub repository.\n\nReturns:\n    List of LoadedContent objects for each matching file.\n\nRaises:\n    ValueError: If repository not found or access denied.\n    httpx.HTTPError: If API request fails and on_error=\"raise\".",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "list[LoadedContent]",
+      "is_async": false
+    }
+  ],
+  "bases": [
+    "BaseLoader"
+  ]
+}

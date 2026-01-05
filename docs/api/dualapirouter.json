@@ -1,0 +1,531 @@
+{
+  "name": "DualAPIRouter",
+  "module": "svc_infra.api.fastapi.dual",
+  "docstring": "Registers two routes per endpoint:\n  \u2022 primary: shown in OpenAPI (no trailing slash)\n  \u2022 alternate: hidden in OpenAPI (with trailing slash)\nKeeps redirect_slashes=False behavior (no 307s).",
+  "parameters": [
+    {
+      "name": "args",
+      "type": null,
+      "default": "()",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "redirect_slashes",
+      "type": "bool",
+      "default": "False",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "kwargs",
+      "type": null,
+      "default": "{}",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(args = (), redirect_slashes: bool = False, kwargs = {}) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "args",
+          "type": null,
+          "default": "()",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "redirect_slashes",
+          "type": "bool",
+          "default": "False",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "kwargs",
+          "type": null,
+          "default": "{}",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "add_api_route",
+      "signature": "(path, endpoint, kwargs = {})",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "path",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "endpoint",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "kwargs",
+          "type": null,
+          "default": "{}",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "delete",
+      "signature": "(path: str, _ = (), show_in_schema: bool = True, kwargs: Any = {})",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "path",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "_",
+          "type": null,
+          "default": "()",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "show_in_schema",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "kwargs",
+          "type": "Any",
+          "default": "{}",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "get",
+      "signature": "(path: str, _ = (), show_in_schema: bool = True, kwargs: Any = {})",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "path",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "_",
+          "type": null,
+          "default": "()",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "show_in_schema",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "kwargs",
+          "type": "Any",
+          "default": "{}",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "head",
+      "signature": "(path: str, _ = (), show_in_schema: bool = True, kwargs: Any = {})",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "path",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "_",
+          "type": null,
+          "default": "()",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "show_in_schema",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "kwargs",
+          "type": "Any",
+          "default": "{}",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "list",
+      "signature": "(path: str, model: type[BaseModel], envelope: bool = False, cursor: bool = True, page: bool = True, default_limit: int = 50, max_limit: int = 200, show_in_schema: bool = True, kwargs: Any = {})",
+      "docstring": "Sugar for list endpoints.\n\n- Auto-inject pagination/filter context (no Depends in your signature).\n- Auto-picks response_model: list[model] or Paginated[model].\n- Works with your OpenAPI mutators which already attach the shared params.\n- Per-route opt-out of OpenAPI param auto-attach: openapi_extra={\"x_no_auto_pagination\": True}",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "path",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "model",
+          "type": "type[BaseModel]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "envelope",
+          "type": "bool",
+          "default": "False",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "cursor",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "default_limit",
+          "type": "int",
+          "default": "50",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "max_limit",
+          "type": "int",
+          "default": "200",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "show_in_schema",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "kwargs",
+          "type": "Any",
+          "default": "{}",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "options",
+      "signature": "(path: str, _ = (), show_in_schema: bool = True, kwargs: Any = {})",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "path",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "_",
+          "type": null,
+          "default": "()",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "show_in_schema",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "kwargs",
+          "type": "Any",
+          "default": "{}",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "patch",
+      "signature": "(path: str, _ = (), show_in_schema: bool = True, kwargs: Any = {})",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "path",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "_",
+          "type": null,
+          "default": "()",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "show_in_schema",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "kwargs",
+          "type": "Any",
+          "default": "{}",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "post",
+      "signature": "(path: str, _ = (), show_in_schema: bool = True, kwargs: Any = {})",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "path",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "_",
+          "type": null,
+          "default": "()",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "show_in_schema",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "kwargs",
+          "type": "Any",
+          "default": "{}",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "put",
+      "signature": "(path: str, _ = (), show_in_schema: bool = True, kwargs: Any = {})",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "path",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "_",
+          "type": null,
+          "default": "()",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "show_in_schema",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "kwargs",
+          "type": "Any",
+          "default": "{}",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "websocket",
+      "signature": "(path: str, _ = (), kwargs: Any = {})",
+      "docstring": "Dual-registrations for WebSockets. Starlette doesn't expose OpenAPI for WS,\nso there is no schema visibility knob here.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "path",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "_",
+          "type": null,
+          "default": "()",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "kwargs",
+          "type": "Any",
+          "default": "{}",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    }
+  ],
+  "bases": [
+    "APIRouter"
+  ]
+}
