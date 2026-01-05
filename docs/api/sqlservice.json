@@ -1,0 +1,405 @@
+{
+  "name": "SqlService",
+  "module": "svc_infra.db.sql.service",
+  "docstring": "Small orchestration layer. Extend/override for business logic, RBAC, etc.",
+  "parameters": [
+    {
+      "name": "repo",
+      "type": "SqlRepository",
+      "default": null,
+      "description": null,
+      "required": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(repo: SqlRepository)",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "repo",
+          "type": "SqlRepository",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "count",
+      "signature": "(session: AsyncSession) -> int",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "int",
+      "is_async": false
+    },
+    {
+      "name": "count_filtered",
+      "signature": "(session: AsyncSession, q: str, fields: Sequence[str]) -> int",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "q",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "Sequence[str]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "int",
+      "is_async": false
+    },
+    {
+      "name": "create",
+      "signature": "(session: AsyncSession, data: dict[str, Any])",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "dict[str, Any]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "delete",
+      "signature": "(session: AsyncSession, id_value: Any) -> bool",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "id_value",
+          "type": "Any",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "bool",
+      "is_async": false
+    },
+    {
+      "name": "exists",
+      "signature": "(session: AsyncSession, where)",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "where",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "get",
+      "signature": "(session: AsyncSession, id_value: Any)",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "id_value",
+          "type": "Any",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "list",
+      "signature": "(session: AsyncSession, limit: int, offset: int, order_by = None)",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "offset",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "order_by",
+          "type": null,
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "pre_create",
+      "signature": "(data: dict[str, Any]) -> dict[str, Any]",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "data",
+          "type": "dict[str, Any]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "dict[str, Any]",
+      "is_async": false
+    },
+    {
+      "name": "pre_update",
+      "signature": "(data: dict[str, Any]) -> dict[str, Any]",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "data",
+          "type": "dict[str, Any]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "dict[str, Any]",
+      "is_async": false
+    },
+    {
+      "name": "search",
+      "signature": "(session: AsyncSession, q: str, fields: Sequence[str], limit: int, offset: int, order_by = None)",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "q",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "Sequence[str]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "offset",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "order_by",
+          "type": null,
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "update",
+      "signature": "(session: AsyncSession, id_value: Any, data: dict[str, Any])",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "session",
+          "type": "AsyncSession",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "id_value",
+          "type": "Any",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "dict[str, Any]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    }
+  ],
+  "bases": []
+}

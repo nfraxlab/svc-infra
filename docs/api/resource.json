@@ -1,0 +1,135 @@
+{
+  "name": "Resource",
+  "module": "svc_infra.cache.resources",
+  "docstring": "Resource-based cache management helper.\n\nThis class provides convenient decorators for entity-based caching\nwith standardized key patterns and tag management.",
+  "parameters": [
+    {
+      "name": "name",
+      "type": "str",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "id_field",
+      "type": "str",
+      "default": null,
+      "description": null,
+      "required": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(name: str, id_field: str)",
+      "docstring": "Initialize resource cache manager.\n\nArgs:\n    name: Resource name (e.g., \"user\", \"product\")\n    id_field: ID field name (e.g., \"user_id\", \"product_id\")",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "id_field",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "cache_read",
+      "signature": "(suffix: str, ttl: int, key_template: str | None = None, tags_template: tuple[str, ...] | None = None, lock: bool = True)",
+      "docstring": "Cache decorator for resource read operations.\n\nArgs:\n    suffix: Cache key suffix (e.g., \"profile\", \"settings\")\n    ttl: Time to live in seconds\n    key_template: Custom key template (defaults to \"{name}:{suffix}:{id_field}\")\n    tags_template: Custom tags template (defaults to (\"{name}:{id_field}\",))\n    lock: Enable singleflight to prevent cache stampede\n\nReturns:\n    Cache decorator function",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "suffix",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "ttl",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "key_template",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "tags_template",
+          "type": "tuple[str, ...] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "lock",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "cache_write",
+      "signature": "(recache: list[tuple[Callable, Callable]] | None = None, recache_max_concurrency: int = 5)",
+      "docstring": "Cache invalidation decorator for resource write operations.\n\nArgs:\n    recache: List of (getter, kwargs_builder) pairs for recaching\n    recache_max_concurrency: Maximum concurrent recache operations\n\nReturns:\n    Cache invalidation decorator",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "recache",
+          "type": "list[tuple[Callable, Callable]] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "recache_max_concurrency",
+          "type": "int",
+          "default": "5",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    }
+  ],
+  "bases": []
+}

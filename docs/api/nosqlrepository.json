@@ -1,0 +1,443 @@
+{
+  "name": "NoSqlRepository",
+  "module": "svc_infra.db.nosql.repository",
+  "docstring": "Very small async repository for Mongo-like document stores (Motor).\nMirrors SqlRepository capabilities:\n  - list / count / get / create / update / delete\n  - optional soft delete with timestamp + flag field\n  - search (regex OR across fields)\n  - exists(filter)\n  - basic sort support (list of (field, direction) tuples: 1 or -1)",
+  "parameters": [
+    {
+      "name": "collection_name",
+      "type": "str",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "id_field",
+      "type": "str",
+      "default": "'_id'",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "soft_delete",
+      "type": "bool",
+      "default": "False",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "soft_delete_field",
+      "type": "str",
+      "default": "'deleted_at'",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "soft_delete_flag_field",
+      "type": "str | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "immutable_fields",
+      "type": "set[str] | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(collection_name: str, id_field: str = '_id', soft_delete: bool = False, soft_delete_field: str = 'deleted_at', soft_delete_flag_field: str | None = None, immutable_fields: set[str] | None = None)",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "collection_name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "id_field",
+          "type": "str",
+          "default": "'_id'",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "soft_delete",
+          "type": "bool",
+          "default": "False",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "soft_delete_field",
+          "type": "str",
+          "default": "'deleted_at'",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "soft_delete_flag_field",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "immutable_fields",
+          "type": "set[str] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "count",
+      "signature": "(db, filter: dict[str, Any] | None = None) -> int",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "db",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "filter",
+          "type": "dict[str, Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "int",
+      "is_async": false
+    },
+    {
+      "name": "count_filtered",
+      "signature": "(db, q: str, fields: Sequence[str]) -> int",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "db",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "q",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "Sequence[str]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "int",
+      "is_async": false
+    },
+    {
+      "name": "create",
+      "signature": "(db, data: dict[str, Any]) -> dict[str, Any]",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "db",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "dict[str, Any]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "dict[str, Any]",
+      "is_async": false
+    },
+    {
+      "name": "delete",
+      "signature": "(db, id_value: Any) -> bool",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "db",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "id_value",
+          "type": "Any",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "bool",
+      "is_async": false
+    },
+    {
+      "name": "exists",
+      "signature": "(db, where: Iterable[dict[str, Any]]) -> bool",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "db",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "where",
+          "type": "Iterable[dict[str, Any]]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "bool",
+      "is_async": false
+    },
+    {
+      "name": "get",
+      "signature": "(db, id_value: Any) -> dict | None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "db",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "id_value",
+          "type": "Any",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "dict | None",
+      "is_async": false
+    },
+    {
+      "name": "list",
+      "signature": "(db, limit: int, offset: int, sort: builtins.list[tuple[str, int]] | None = None, filter: dict[str, Any] | None = None) -> builtins.list[dict[str, Any]]",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "db",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "offset",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "sort",
+          "type": "builtins.list[tuple[str, int]] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "filter",
+          "type": "dict[str, Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "builtins.list[dict[str, Any]]",
+      "is_async": false
+    },
+    {
+      "name": "search",
+      "signature": "(db, q: str, fields: Sequence[str], limit: int, offset: int, sort: builtins.list[tuple[str, int]] | None = None) -> builtins.list[dict[str, Any]]",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "db",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "q",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "Sequence[str]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "offset",
+          "type": "int",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "sort",
+          "type": "builtins.list[tuple[str, int]] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "builtins.list[dict[str, Any]]",
+      "is_async": false
+    },
+    {
+      "name": "update",
+      "signature": "(db, id_value: Any, data: dict[str, Any]) -> dict | None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "db",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "id_value",
+          "type": "Any",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "dict[str, Any]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "dict | None",
+      "is_async": false
+    }
+  ],
+  "bases": []
+}

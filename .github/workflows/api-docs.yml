@@ -1,0 +1,65 @@
+name: API Docs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/svc_infra/**/*.py'
+      - 'scripts/extract_api_docs.py'
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  generate-api-docs:
+    name: Generate API Docs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+
+      - name: Install project
+        run: poetry install --no-interaction
+
+      - name: Generate API docs
+        run: poetry run python scripts/extract_api_docs.py
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          git diff --quiet docs/api/ || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and push
+        if: steps.git-check.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add docs/api/
+          git commit -m "docs: auto-generate API documentation [skip ci]"
+          git push

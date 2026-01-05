@@ -1,0 +1,10 @@
+{
+  "name": "ServiceInfo",
+  "module": "svc_infra.api.fastapi.openapi.models",
+  "docstring": null,
+  "parameters": [],
+  "methods": [],
+  "bases": [
+    "BaseModel"
+  ]
+}

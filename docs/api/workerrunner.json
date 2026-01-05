@@ -1,0 +1,107 @@
+{
+  "name": "WorkerRunner",
+  "module": "svc_infra.jobs.runner",
+  "docstring": "Cooperative worker loop with graceful stop.\n\n- start(): begin polling the queue and processing jobs\n- stop(grace_seconds): signal stop, wait up to grace for current job to finish",
+  "parameters": [
+    {
+      "name": "queue",
+      "type": "JobQueue",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "handler",
+      "type": "ProcessFunc",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "poll_interval",
+      "type": "float",
+      "default": "0.25",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(queue: JobQueue, handler: ProcessFunc, poll_interval: float = 0.25)",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "queue",
+          "type": "JobQueue",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "handler",
+          "type": "ProcessFunc",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "poll_interval",
+          "type": "float",
+          "default": "0.25",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false
+    },
+    {
+      "name": "start",
+      "signature": "() -> asyncio.Task",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "asyncio.Task",
+      "is_async": false
+    },
+    {
+      "name": "stop",
+      "signature": "(grace_seconds: float = 10.0) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "grace_seconds",
+          "type": "float",
+          "default": "10.0",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    }
+  ],
+  "bases": []
+}

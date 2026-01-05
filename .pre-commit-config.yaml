@@ -58,3 +58,11 @@ repos:
         language: system
         types: [python]
         stages: [manual]
+
+      - id: api-docs
+        name: API Docs Generation
+        entry: poetry run python scripts/extract_api_docs.py
+        language: system
+        pass_filenames: false
+        files: ^src/svc_infra/
+        stages: [pre-commit]

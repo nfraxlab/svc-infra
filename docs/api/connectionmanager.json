@@ -1,0 +1,371 @@
+{
+  "name": "ConnectionManager",
+  "module": "svc_infra.websocket.manager",
+  "docstring": "Server-side WebSocket connection manager.\n\nFeatures:\n- Track multiple connections per user\n- Room/group support for targeted broadcasts\n- Connection lifecycle hooks\n- Thread-safe with asyncio.Lock\n\nExample:\n    manager = ConnectionManager()\n\n    @app.websocket(\"/ws/{user_id}\")\n    async def websocket_endpoint(websocket: WebSocket, user_id: str):\n        await manager.connect(user_id, websocket)\n        try:\n            async for message in websocket.iter_json():\n                await manager.broadcast(message)\n        finally:\n            await manager.disconnect(user_id, websocket)",
+  "parameters": [],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "() -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "broadcast",
+      "signature": "(message: Any, exclude_user: str | None = None) -> int",
+      "docstring": "Broadcast message to all connected users.\n\nArgs:\n    message: Message to send (str, bytes, or JSON-serializable object)\n    exclude_user: Optional user ID to exclude from broadcast\n\nReturns:\n    Number of connections message was sent to",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "message",
+          "type": "Any",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "exclude_user",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "int",
+      "is_async": false
+    },
+    {
+      "name": "broadcast_to_room",
+      "signature": "(room: str, message: Any, exclude_user: str | None = None) -> int",
+      "docstring": "Broadcast message to all users in a room.\n\nArgs:\n    room: Target room name\n    message: Message to send\n    exclude_user: Optional user ID to exclude\n\nReturns:\n    Number of connections message was sent to",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "room",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "message",
+          "type": "Any",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "exclude_user",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "int",
+      "is_async": false
+    },
+    {
+      "name": "connect",
+      "signature": "(user_id: str, websocket: WebSocket, metadata: dict[str, Any] | None = None, accept: bool = True) -> str",
+      "docstring": "Register a new connection for a user.\n\nArgs:\n    user_id: Unique identifier for the user\n    websocket: The WebSocket connection\n    metadata: Optional metadata to store with the connection\n    accept: Whether to call websocket.accept() (default: True)\n\nReturns:\n    connection_id for tracking multiple connections per user",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "user_id",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "websocket",
+          "type": "WebSocket",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "metadata",
+          "type": "dict[str, Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "accept",
+          "type": "bool",
+          "default": "True",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "str",
+      "is_async": false
+    },
+    {
+      "name": "disconnect",
+      "signature": "(user_id: str, websocket: WebSocket | None = None) -> None",
+      "docstring": "Remove connection(s) for a user.\n\nArgs:\n    user_id: Unique identifier for the user\n    websocket: If provided, only that connection is removed.\n              Otherwise, all connections for the user are removed.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "user_id",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "websocket",
+          "type": "WebSocket | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "get_room_users",
+      "signature": "(room: str) -> list[str]",
+      "docstring": "Get list of user IDs in a room.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "room",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "list[str]",
+      "is_async": false
+    },
+    {
+      "name": "get_user_connections",
+      "signature": "(user_id: str) -> list[ConnectionInfo]",
+      "docstring": "Get connection info for a user.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "user_id",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "list[ConnectionInfo]",
+      "is_async": false
+    },
+    {
+      "name": "is_user_connected",
+      "signature": "(user_id: str) -> bool",
+      "docstring": "Check if a user has any active connections.",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "user_id",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "bool",
+      "is_async": false
+    },
+    {
+      "name": "join_room",
+      "signature": "(user_id: str, room: str) -> None",
+      "docstring": "Add user to a room.\n\nArgs:\n    user_id: User to add\n    room: Room name",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "user_id",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "room",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "leave_room",
+      "signature": "(user_id: str, room: str) -> None",
+      "docstring": "Remove user from a room.\n\nArgs:\n    user_id: User to remove\n    room: Room name",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "user_id",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "room",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false
+    },
+    {
+      "name": "on_connect",
+      "signature": "(callback: Callable[[str, WebSocket], Awaitable[None]]) -> Callable[[str, WebSocket], Awaitable[None]]",
+      "docstring": "Register callback for new connections.\n\nCan be used as a decorator:\n    @manager.on_connect\n    async def handle_connect(user_id: str, websocket: WebSocket):\n        print(f\"{user_id} connected\")",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "callback",
+          "type": "Callable[[str, WebSocket], Awaitable[None]]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "Callable[[str, WebSocket], Awaitable[None]]",
+      "is_async": false
+    },
+    {
+      "name": "on_disconnect",
+      "signature": "(callback: Callable[[str, WebSocket], Awaitable[None]]) -> Callable[[str, WebSocket], Awaitable[None]]",
+      "docstring": "Register callback for disconnections.\n\nCan be used as a decorator:\n    @manager.on_disconnect\n    async def handle_disconnect(user_id: str, websocket: WebSocket):\n        print(f\"{user_id} disconnected\")",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "callback",
+          "type": "Callable[[str, WebSocket], Awaitable[None]]",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "Callable[[str, WebSocket], Awaitable[None]]",
+      "is_async": false
+    },
+    {
+      "name": "send_to_user",
+      "signature": "(user_id: str, message: Any) -> int",
+      "docstring": "Send message to all connections for a user.\n\nArgs:\n    user_id: Target user ID\n    message: Message to send (str, bytes, or JSON-serializable object)\n\nReturns:\n    Number of connections message was sent to",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "user_id",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "message",
+          "type": "Any",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "int",
+      "is_async": false
+    }
+  ],
+  "bases": []
+}

@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "API Class Documentation",
+  "description": "Schema for auto-generated API documentation from Python source",
+  "type": "object",
+  "required": ["name", "module"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Class name"
+    },
+    "module": {
+      "type": "string",
+      "description": "Full module path (e.g., 'ai_infra.llm')"
+    },
+    "docstring": {
+      "type": ["string", "null"],
+      "description": "Class docstring"
+    },
+    "parameters": {
+      "type": "array",
+      "description": "Constructor parameters",
+      "items": {
+        "$ref": "#/definitions/Parameter"
+      }
+    },
+    "methods": {
+      "type": "array",
+      "description": "Public methods",
+      "items": {
+        "$ref": "#/definitions/Method"
+      }
+    },
+    "bases": {
+      "type": "array",
+      "description": "Base class names",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "definitions": {
+    "Parameter": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Parameter name"
+        },
+        "type": {
+          "type": ["string", "null"],
+          "description": "Type annotation"
+        },
+        "default": {
+          "type": ["string", "null"],
+          "description": "Default value as string"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Parameter description from docstring"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether parameter is required"
+        }
+      }
+    },
+    "Method": {
+      "type": "object",
+      "required": ["name", "signature"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Method name"
+        },
+        "signature": {
+          "type": "string",
+          "description": "Method signature (params) -> return_type"
+        },
+        "docstring": {
+          "type": ["string", "null"],
+          "description": "Method docstring"
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Parameter"
+          }
+        },
+        "returns": {
+          "type": ["string", "null"],
+          "description": "Return type annotation"
+        },
+        "is_async": {
+          "type": "boolean",
+          "description": "Whether method is async"
+        }
+      }
+    }
+  }
+}

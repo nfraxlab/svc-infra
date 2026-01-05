@@ -135,7 +135,7 @@ python-semantic-release = ">=9.0.0"
 # Documentation
 mkdocs = ">=1.6.0"
 mkdocs-material = ">=9.5.0"
-mkdocstrings = {extras = ["python"], version = ">=0.25.0"}
+griffe = "^1.15.0"
 
 [tool.poetry.scripts]
 svc-infra = "svc_infra.cli:main"
