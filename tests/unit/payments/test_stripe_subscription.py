@@ -68,8 +68,8 @@ class TestStripeSubscriptionCreate:
 
         result = await adapter.create_subscription(
             SubscriptionCreateIn(
-                provider_customer_id="cus_test",
-                provider_price_id="price_test123",
+                customer_provider_id="cus_test",
+                price_provider_id="price_test123",
                 quantity=1,
             )
         )
@@ -102,9 +102,9 @@ class TestStripeSubscriptionCreate:
 
         result = await adapter.create_subscription(
             SubscriptionCreateIn(
-                provider_customer_id="cus_test",
-                provider_price_id="price_test",
-                trial_period_days=14,
+                customer_provider_id="cus_test",
+                price_provider_id="price_test",
+                trial_days=14,
             )
         )
 
@@ -129,8 +129,8 @@ class TestStripeSubscriptionCreate:
 
         result = await adapter.create_subscription(
             SubscriptionCreateIn(
-                provider_customer_id="cus_test",
-                provider_price_id="price_test",
+                customer_provider_id="cus_test",
+                price_provider_id="price_test",
                 quantity=5,
             )
         )
@@ -273,7 +273,9 @@ class TestStripeSubscriptionUpdate:
 
         adapter = StripeAdapter()
 
-        monkeypatch.setattr(stripe_sdk.Subscription, "retrieve", lambda sid: mock_subscription)
+        monkeypatch.setattr(
+            stripe_sdk.Subscription, "retrieve", lambda sid, **kw: mock_subscription
+        )
         monkeypatch.setattr(stripe_sdk.Subscription, "modify", lambda sid, **kw: mock_subscription)
 
         from svc_infra.apf_payments.schemas import SubscriptionUpdateIn
@@ -336,7 +338,9 @@ class TestStripeSubscriptionRetrieve:
 
         adapter = StripeAdapter()
 
-        monkeypatch.setattr(stripe_sdk.Subscription, "retrieve", lambda sid: mock_subscription)
+        monkeypatch.setattr(
+            stripe_sdk.Subscription, "retrieve", lambda sid, **kw: mock_subscription
+        )
 
         result = await adapter.get_subscription("sub_get")
 
