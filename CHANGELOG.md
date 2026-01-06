@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.6.2 (2026-01-06)
+
+### Bug Fixes
+
+- Update stripe test error module paths and schema field names
+  ([#89](https://github.com/nfraxlab/svc-infra/pull/89),
+  [`7c02dca`](https://github.com/nfraxlab/svc-infra/commit/7c02dca4deb898860988ab8b97dfebb584ea1e4d))
+
+
 ## v1.6.1 (2026-01-05)
 
 ### Bug Fixes
