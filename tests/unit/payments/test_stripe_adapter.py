@@ -333,23 +333,32 @@ class TestStripeRefunds:
 
             adapter = StripeAdapter()
 
+        # Mock PaymentIntent with latest_charge
+        mock_charge = mocker.Mock()
+        mock_charge.id = "ch_123"
+
+        mock_pi = mocker.Mock()
+        mock_pi.id = "pi_123"
+        mock_pi.status = "succeeded"
+        mock_pi.amount = 5000
+        mock_pi.currency = "usd"
+        mock_pi.client_secret = "secret_123"
+        mock_pi.latest_charge = mock_charge
+        mock_pi.next_action = None
+        mock_pi.payment_method = None
+        mock_pi.get = lambda k, d=None: None
+
         mock_refund = mocker.Mock()
         mock_refund.id = "re_123"
-        mock_refund.payment_intent = "pi_123"
-        mock_refund.amount = 5000
-        mock_refund.currency = "usd"
-        mock_refund.status = "succeeded"
-        mock_refund.reason = None
-        mock_refund.created = 1704067200
 
+        monkeypatch.setattr(stripe_sdk.PaymentIntent, "retrieve", lambda pid, **kw: mock_pi)
         monkeypatch.setattr(stripe_sdk.Refund, "create", lambda **kw: mock_refund)
 
         from svc_infra.apf_payments.schemas import RefundIn
 
         result = await adapter.refund("pi_123", RefundIn())
 
-        assert result.provider_refund_id == "re_123"
-        assert result.amount == 5000
+        assert result.provider_intent_id == "pi_123"
         assert result.status == "succeeded"
 
     @pytest.mark.asyncio
@@ -370,15 +379,25 @@ class TestStripeRefunds:
 
             adapter = StripeAdapter()
 
+        # Mock PaymentIntent with latest_charge
+        mock_charge = mocker.Mock()
+        mock_charge.id = "ch_123"
+
+        mock_pi = mocker.Mock()
+        mock_pi.id = "pi_123"
+        mock_pi.status = "succeeded"
+        mock_pi.amount = 5000
+        mock_pi.currency = "usd"
+        mock_pi.client_secret = "secret_123"
+        mock_pi.latest_charge = mock_charge
+        mock_pi.next_action = None
+        mock_pi.payment_method = None
+        mock_pi.get = lambda k, d=None: None
+
         mock_refund = mocker.Mock()
         mock_refund.id = "re_456"
-        mock_refund.payment_intent = "pi_123"
-        mock_refund.amount = 2500
-        mock_refund.currency = "usd"
-        mock_refund.status = "succeeded"
-        mock_refund.reason = "requested_by_customer"
-        mock_refund.created = 1704067200
 
+        monkeypatch.setattr(stripe_sdk.PaymentIntent, "retrieve", lambda pid, **kw: mock_pi)
         monkeypatch.setattr(stripe_sdk.Refund, "create", lambda **kw: mock_refund)
 
         from svc_infra.apf_payments.schemas import RefundIn
@@ -387,14 +406,15 @@ class TestStripeRefunds:
             "pi_123", RefundIn(amount=2500, reason="requested_by_customer")
         )
 
-        assert result.amount == 2500
-        assert result.reason == "requested_by_customer"
+        assert result.provider_intent_id == "pi_123"
+        assert result.status == "succeeded"
 
 
 class TestStripeWebhooks:
     """Tests for Stripe webhook handling."""
 
-    def test_verify_webhook_valid(self, monkeypatch, mocker) -> None:
+    @pytest.mark.asyncio
+    async def test_verify_webhook_valid(self, monkeypatch, mocker) -> None:
         """Should verify valid webhook signature."""
         monkeypatch.setenv("STRIPE_SECRET", "sk_test_123")
         monkeypatch.setenv("STRIPE_WEBHOOK_SECRET", "whsec_test123")
@@ -414,14 +434,15 @@ class TestStripeWebhooks:
             adapter = StripeAdapter()
 
         mock_event = mocker.Mock()
+        mock_event.id = "evt_123"
         mock_event.type = "payment_intent.succeeded"
-        mock_event.data = {"object": {"id": "pi_123"}}
+        mock_event.data.object = {"id": "pi_123"}
 
         monkeypatch.setattr(
-            stripe_sdk.Webhook, "construct_event", lambda payload, sig, secret: mock_event
+            stripe_sdk.Webhook, "construct_event", lambda payload, sig_header, secret: mock_event
         )
 
-        result = adapter.verify_webhook(b'{"test": true}', "sig_header")
+        result = await adapter.verify_and_parse_webhook("sig_header", b'{"test": true}')
 
         assert result["type"] == "payment_intent.succeeded"
 

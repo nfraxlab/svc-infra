@@ -46,12 +46,14 @@ class TestStripeAuthenticationErrors:
         monkeypatch.setattr(
             stripe_sdk.Customer,
             "create",
-            MagicMock(side_effect=stripe_sdk.error.AuthenticationError("Invalid API key provided")),
+            MagicMock(
+                side_effect=stripe_sdk._error.AuthenticationError("Invalid API key provided")
+            ),
         )
 
         from svc_infra.apf_payments.schemas import CustomerUpsertIn
 
-        with pytest.raises(stripe_sdk.error.AuthenticationError):
+        with pytest.raises(stripe_sdk._error.AuthenticationError):
             await adapter.ensure_customer(CustomerUpsertIn(email="test@example.com"))
 
     @pytest.mark.asyncio
@@ -67,7 +69,7 @@ class TestStripeAuthenticationErrors:
             stripe_sdk.Customer,
             "create",
             MagicMock(
-                side_effect=stripe_sdk.error.AuthenticationError(
+                side_effect=stripe_sdk._error.AuthenticationError(
                     "API key has been revoked or expired"
                 )
             ),
@@ -75,7 +77,7 @@ class TestStripeAuthenticationErrors:
 
         from svc_infra.apf_payments.schemas import CustomerUpsertIn
 
-        with pytest.raises(stripe_sdk.error.AuthenticationError):
+        with pytest.raises(stripe_sdk._error.AuthenticationError):
             await adapter.ensure_customer(CustomerUpsertIn(email="test@example.com"))
 
 
@@ -113,14 +115,14 @@ class TestStripeRateLimitErrors:
             stripe_sdk.Customer,
             "list",
             MagicMock(
-                side_effect=stripe_sdk.error.RateLimitError(
+                side_effect=stripe_sdk._error.RateLimitError(
                     "Rate limit exceeded, please slow down requests"
                 )
             ),
         )
 
-        with pytest.raises(stripe_sdk.error.RateLimitError):
-            await adapter.list_customers()
+        with pytest.raises(stripe_sdk._error.RateLimitError):
+            await adapter.list_customers(provider="stripe", user_id=None, limit=10, cursor=None)
 
 
 class TestStripeCardErrors:
@@ -154,7 +156,7 @@ class TestStripeCardErrors:
         adapter = StripeAdapter()
 
         # Create a CardError with proper attributes
-        card_error = stripe_sdk.error.CardError(
+        card_error = stripe_sdk._error.CardError(
             message="Your card was declined",
             param="card_number",
             code="card_declined",
@@ -169,9 +171,10 @@ class TestStripeCardErrors:
 
         from svc_infra.apf_payments.schemas import IntentCreateIn
 
-        with pytest.raises(stripe_sdk.error.CardError):
+        with pytest.raises(stripe_sdk._error.CardError):
             await adapter.create_intent(
-                IntentCreateIn(amount=5000, currency="USD", customer_provider_id="cus_test")
+                IntentCreateIn(amount=5000, currency="USD", customer_provider_id="cus_test"),
+                user_id="user_123",
             )
 
     @pytest.mark.asyncio
@@ -183,7 +186,7 @@ class TestStripeCardErrors:
 
         adapter = StripeAdapter()
 
-        card_error = stripe_sdk.error.CardError(
+        card_error = stripe_sdk._error.CardError(
             message="Your card has insufficient funds",
             param="card_number",
             code="card_declined",
@@ -198,9 +201,10 @@ class TestStripeCardErrors:
 
         from svc_infra.apf_payments.schemas import IntentCreateIn
 
-        with pytest.raises(stripe_sdk.error.CardError) as exc_info:
+        with pytest.raises(stripe_sdk._error.CardError) as exc_info:
             await adapter.create_intent(
-                IntentCreateIn(amount=5000, currency="USD", customer_provider_id="cus_test")
+                IntentCreateIn(amount=5000, currency="USD", customer_provider_id="cus_test"),
+                user_id="user_123",
             )
 
         assert exc_info.value.decline_code == "insufficient_funds"
@@ -214,7 +218,7 @@ class TestStripeCardErrors:
 
         adapter = StripeAdapter()
 
-        card_error = stripe_sdk.error.CardError(
+        card_error = stripe_sdk._error.CardError(
             message="Your card has expired",
             param="exp_month",
             code="expired_card",
@@ -228,9 +232,10 @@ class TestStripeCardErrors:
 
         from svc_infra.apf_payments.schemas import IntentCreateIn
 
-        with pytest.raises(stripe_sdk.error.CardError):
+        with pytest.raises(stripe_sdk._error.CardError):
             await adapter.create_intent(
-                IntentCreateIn(amount=5000, currency="USD", customer_provider_id="cus_test")
+                IntentCreateIn(amount=5000, currency="USD", customer_provider_id="cus_test"),
+                user_id="user_123",
             )
 
 
@@ -268,14 +273,14 @@ class TestStripeInvalidRequestErrors:
             stripe_sdk.Customer,
             "retrieve",
             MagicMock(
-                side_effect=stripe_sdk.error.InvalidRequestError(
+                side_effect=stripe_sdk._error.InvalidRequestError(
                     message="No such customer: cus_invalid",
                     param="customer",
                 )
             ),
         )
 
-        with pytest.raises(stripe_sdk.error.InvalidRequestError):
+        with pytest.raises(stripe_sdk._error.InvalidRequestError):
             await adapter.get_customer("cus_invalid")
 
     @pytest.mark.asyncio
@@ -290,15 +295,15 @@ class TestStripeInvalidRequestErrors:
         monkeypatch.setattr(
             stripe_sdk.Subscription,
             "retrieve",
-            MagicMock(
-                side_effect=stripe_sdk.error.InvalidRequestError(
+            lambda sid, **kwargs: (_ for _ in ()).throw(
+                stripe_sdk._error.InvalidRequestError(
                     message="No such subscription: sub_invalid",
                     param="subscription",
                 )
             ),
         )
 
-        with pytest.raises(stripe_sdk.error.InvalidRequestError):
+        with pytest.raises(stripe_sdk._error.InvalidRequestError):
             await adapter.get_subscription("sub_invalid")
 
     @pytest.mark.asyncio
@@ -314,7 +319,7 @@ class TestStripeInvalidRequestErrors:
             stripe_sdk.Subscription,
             "create",
             MagicMock(
-                side_effect=stripe_sdk.error.InvalidRequestError(
+                side_effect=stripe_sdk._error.InvalidRequestError(
                     message="Missing required param: items",
                     param="items",
                 )
@@ -323,9 +328,11 @@ class TestStripeInvalidRequestErrors:
 
         from svc_infra.apf_payments.schemas import SubscriptionCreateIn
 
-        with pytest.raises(stripe_sdk.error.InvalidRequestError):
+        with pytest.raises(stripe_sdk._error.InvalidRequestError):
             await adapter.create_subscription(
-                SubscriptionCreateIn(customer_provider_id="cus_test", items=[])
+                SubscriptionCreateIn(
+                    customer_provider_id="cus_test", price_provider_id="price_test"
+                )
             )
 
 
@@ -363,14 +370,14 @@ class TestStripeNetworkErrors:
             stripe_sdk.Customer,
             "list",
             MagicMock(
-                side_effect=stripe_sdk.error.APIConnectionError(
+                side_effect=stripe_sdk._error.APIConnectionError(
                     "Failed to establish a connection to Stripe"
                 )
             ),
         )
 
-        with pytest.raises(stripe_sdk.error.APIConnectionError):
-            await adapter.list_customers()
+        with pytest.raises(stripe_sdk._error.APIConnectionError):
+            await adapter.list_customers(provider="stripe", user_id=None, limit=10, cursor=None)
 
     @pytest.mark.asyncio
     async def test_stripe_api_error(self, mock_stripe_settings, monkeypatch):
@@ -381,15 +388,22 @@ class TestStripeNetworkErrors:
 
         adapter = StripeAdapter()
 
+        # Mock Customer.list to return empty result first
+        mock_list_result = MagicMock()
+        mock_list_result.data = []
+        monkeypatch.setattr(stripe_sdk.Customer, "list", lambda **kw: mock_list_result)
+
         monkeypatch.setattr(
             stripe_sdk.Customer,
             "create",
-            MagicMock(side_effect=stripe_sdk.error.APIError("Stripe API is currently unavailable")),
+            MagicMock(
+                side_effect=stripe_sdk._error.APIError("Stripe API is currently unavailable")
+            ),
         )
 
         from svc_infra.apf_payments.schemas import CustomerUpsertIn
 
-        with pytest.raises(stripe_sdk.error.APIError):
+        with pytest.raises(stripe_sdk._error.APIError):
             await adapter.ensure_customer(CustomerUpsertIn(email="test@example.com"))
 
 
@@ -428,7 +442,7 @@ class TestStripeIdempotencyErrors:
             stripe_sdk.PaymentIntent,
             "create",
             MagicMock(
-                side_effect=stripe_sdk.error.IdempotencyError(
+                side_effect=stripe_sdk._error.IdempotencyError(
                     "Keys for idempotent requests must be unique"
                 )
             ),
@@ -436,12 +450,13 @@ class TestStripeIdempotencyErrors:
 
         from svc_infra.apf_payments.schemas import IntentCreateIn
 
-        with pytest.raises(stripe_sdk.error.IdempotencyError):
+        with pytest.raises(stripe_sdk._error.IdempotencyError):
             await adapter.create_intent(
                 IntentCreateIn(
                     amount=5000,
                     currency="USD",
                     customer_provider_id="cus_test",
                     idempotency_key="dup_key_123",
-                )
+                ),
+                user_id="user_123",
             )
