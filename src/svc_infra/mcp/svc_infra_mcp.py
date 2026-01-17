@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, cast
 
-from ai_infra.llm.tools.custom.cli import cli_cmd_help, cli_subcmd_help
+from ai_infra.llm.shell import cli_cmd_help, cli_subcmd_help
 from ai_infra.mcp.server.tools import mcp_from_functions
 
 from svc_infra.app.env import prepare_env
