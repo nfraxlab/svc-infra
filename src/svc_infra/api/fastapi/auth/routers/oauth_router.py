@@ -701,6 +701,9 @@ def _create_oauth_router(
             ip_hash=None,
         )
 
+        # Commit the session and refresh token to the database
+        await session.commit()
+
         # Generate JWT token for the response
         jwt_token = await strategy.write_token(user)
 

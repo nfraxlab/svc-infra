@@ -14,6 +14,12 @@ _PERMISSION_LOCK = threading.Lock()
 
 # Central role -> permissions mapping. Projects can extend at startup.
 PERMISSION_REGISTRY: dict[str, set[str]] = {
+    # Default "user" role: every authenticated user should have these.
+    # Users can always view/manage their own sessions.
+    "user": {
+        "security.session.list",
+        "security.session.revoke",
+    },
     "admin": {
         "user.read",
         "user.write",
@@ -53,7 +59,9 @@ def get_permissions_for_roles(roles: Iterable[str]) -> set[str]:
 
 def principal_permissions(principal: Identity) -> set[str]:
     roles = getattr(principal.user, "roles", []) or []
-    return get_permissions_for_roles(roles)
+    # All authenticated users implicitly have the "user" role
+    all_roles = set(roles) | {"user"}
+    return get_permissions_for_roles(all_roles)
 
 
 def has_permission(principal: Identity, permission: str) -> bool:
