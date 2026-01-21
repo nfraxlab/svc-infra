@@ -204,7 +204,23 @@ def auth_session_router(
         except Exception:
             pass
 
-        # 5) mint token and set cookie
+        # 5) Create AuthSession for session tracking
+        from svc_infra.security.session import issue_session_and_refresh
+
+        try:
+            await issue_session_and_refresh(
+                session,
+                user_id=user.id,
+                tenant_id=getattr(user, "tenant_id", None),
+                user_agent=str(request.headers.get("user-agent", ""))[:512],
+                ip_hash=ip_hash,
+            )
+            await session.commit()
+        except Exception:
+            # Don't block login if session tracking fails
+            pass
+
+        # 6) mint token and set cookie
         token = await strategy.write_token(user)
         st = get_auth_settings()
         resp = JSONResponse({"access_token": token, "token_type": "bearer"})

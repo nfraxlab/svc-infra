@@ -54,11 +54,12 @@ class TestSecurityAcceptance:
         r_no = local_client.get("/secure/owned/u-2")
         assert r_no.status_code == 403
 
-    def test_sessions_list_requires_permission(self, local_client: TestClient):
-        # No admin role → listing sessions should be forbidden (security.session.list)
+    def test_sessions_list_allowed_for_authenticated_users(self, local_client: TestClient):
+        # All authenticated users get implicit "user" role with security.session.list permission
         r = local_client.get("/users/sessions/me")
-        assert r.status_code == 403
-        assert "missing_permissions" in r.json().get("detail", "")
+        # Should succeed (200 with empty list or session data)
+        assert r.status_code == 200
+        assert isinstance(r.json(), list)
 
     def test_sessions_list_with_admin(self, local_client: TestClient):
         # Grant admin role to allow listing

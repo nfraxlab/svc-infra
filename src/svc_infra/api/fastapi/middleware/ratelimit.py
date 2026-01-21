@@ -26,6 +26,19 @@ class SimpleRateLimitMiddleware:
 
     Matching uses prefix matching: "/v1/chat" matches "/v1/chat", "/v1/chat/stream",
     but not "/api/v1/chat" or "/v1/chatter".
+
+    CORS Support:
+        When this middleware is added after CORS middleware (meaning it runs first
+        due to LIFO ordering), 429 responses won't have CORS headers unless you
+        provide `cors_origins`. This ensures browsers can read the rate limit response.
+
+        Example:
+            app.add_middleware(
+                SimpleRateLimitMiddleware,
+                limit=60,
+                window=60,
+                cors_origins=["http://localhost:3000", "https://myapp.com"],
+            )
     """
 
     def __init__(
@@ -46,6 +59,8 @@ class SimpleRateLimitMiddleware:
         allow_untrusted_tenant_header: bool = False,
         store: RateLimitStore | None = None,
         skip_paths: list[str] | None = None,
+        # CORS origins to include in 429 responses (prevents browser CORS errors on rate limit)
+        cors_origins: list[str] | None = None,
     ):
         self.app = app
         self.limit, self.window = limit, window
@@ -55,6 +70,7 @@ class SimpleRateLimitMiddleware:
         self._allow_untrusted_tenant_header = allow_untrusted_tenant_header
         self.store = store or InMemoryRateLimitStore(limit=limit)
         self.skip_paths = skip_paths or []
+        self.cors_origins = set(cors_origins) if cors_origins else None
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope.get("type") != "http":
@@ -124,17 +140,28 @@ class SimpleRateLimitMiddleware:
                 }
             ).encode("utf-8")
 
+            # Build response headers
+            headers: list[tuple[bytes, bytes]] = [
+                (b"content-type", b"application/json"),
+                (b"x-ratelimit-limit", str(limit).encode()),
+                (b"x-ratelimit-remaining", b"0"),
+                (b"x-ratelimit-reset", str(reset).encode()),
+                (b"retry-after", str(retry).encode()),
+            ]
+
+            # Add CORS headers if origin matches configured origins
+            # This ensures browsers can read 429 responses without CORS errors
+            if self.cors_origins:
+                origin = request.headers.get("origin")
+                if origin and (origin in self.cors_origins or "*" in self.cors_origins):
+                    headers.append((b"access-control-allow-origin", origin.encode()))
+                    headers.append((b"access-control-allow-credentials", b"true"))
+
             await send(
                 {
                     "type": "http.response.start",
                     "status": 429,
-                    "headers": [
-                        (b"content-type", b"application/json"),
-                        (b"x-ratelimit-limit", str(limit).encode()),
-                        (b"x-ratelimit-remaining", b"0"),
-                        (b"x-ratelimit-reset", str(reset).encode()),
-                        (b"retry-after", str(retry).encode()),
-                    ],
+                    "headers": headers,
                 }
             )
             await send({"type": "http.response.body", "body": body, "more_body": False})

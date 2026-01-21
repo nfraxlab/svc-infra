@@ -59,9 +59,15 @@ def bind_apikey_model(user_model: type[ModelBase], *, table_name: str = "api_key
     Create and register an ApiKey model bound to the provided user_model and table name.
     Call this once during app boot (e.g., inside add_auth_users when enable_api_keys=True).
     """
+    global _ApiKeyModel
+
+    # Guard: return existing model if already bound (prevents duplicate registration)
+    if _ApiKeyModel is not None:
+        return _ApiKeyModel
 
     class ApiKey(ModelBase):
         __tablename__ = table_name
+        __table_args__ = {"extend_existing": True}  # Allow redefinition if needed
 
         id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=uuid.uuid4)
 
@@ -129,7 +135,6 @@ def bind_apikey_model(user_model: type[ModelBase], *, table_name: str = "api_key
         def mark_used(self):
             self.last_used_at = _now()
 
-    global _ApiKeyModel
     _ApiKeyModel = ApiKey
     return ApiKey
 
