@@ -67,7 +67,6 @@ def bind_apikey_model(user_model: type[ModelBase], *, table_name: str = "api_key
 
     class ApiKey(ModelBase):
         __tablename__ = table_name
-        __table_args__ = {"extend_existing": True}  # Allow redefinition if needed
 
         id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=uuid.uuid4)
 
@@ -111,6 +110,7 @@ def bind_apikey_model(user_model: type[ModelBase], *, table_name: str = "api_key
         __table_args__ = (
             UniqueConstraint("key_prefix", name="uq_apikey_prefix"),
             Index("ix_api_keys_user_id", "user_id"),
+            {"extend_existing": True},
         )
 
         # Helpers
