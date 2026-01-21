@@ -440,13 +440,15 @@ class TestPrincipalPermissions:
         user = type("U", (), {"id": uuid.uuid4()})()  # No roles attr
         principal = DummyPrincipal(user)
         perms = principal_permissions(principal)
-        assert perms == set()
+        # All authenticated users get implicit "user" role with session permissions
+        assert perms == {"security.session.list", "security.session.revoke"}
 
     def test_principal_permissions_none_roles(self) -> None:
         user = type("U", (), {"id": uuid.uuid4(), "roles": None})()
         principal = DummyPrincipal(user)
         perms = principal_permissions(principal)
-        assert perms == set()
+        # All authenticated users get implicit "user" role with session permissions
+        assert perms == {"security.session.list", "security.session.revoke"}
 
 
 class TestMaybeAwait:
@@ -626,7 +628,8 @@ class TestRequirePermission:
         user = DummyUser(roles=["support"])
         principal = DummyPrincipal(user)
 
-        guard = RequireAnyPermission("admin.impersonate", "security.session.revoke")
+        # Use permissions that no role has (including implicit "user" role)
+        guard = RequireAnyPermission("admin.impersonate", "nonexistent.permission")
         dep = guard.dependency
 
         with pytest.raises(HTTPException) as exc:
