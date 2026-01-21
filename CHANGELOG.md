@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+## v1.7.0 (2026-01-21)
+
+### Bug Fixes
+
+- Update cli import path to ai_infra.llm.shell
+  ([#90](https://github.com/nfraxlab/svc-infra/pull/90),
+  [`8813330`](https://github.com/nfraxlab/svc-infra/commit/88133300c36ed7c6ea81c7e37a05c2b8bd3ad0d0))
+
+### Features
+
+- **auth**: Add session tracking to password login flow
+  ([#91](https://github.com/nfraxlab/svc-infra/pull/91),
+  [`13a09ee`](https://github.com/nfraxlab/svc-infra/commit/13a09ee8aec578ac94c398e05055e49887a3b458))
+
+
 ## v1.6.2 (2026-01-06)
 
 ### Bug Fixes
