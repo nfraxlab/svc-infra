@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.8.0 (2026-01-22)
+
+### Features
+
+- **api**: Add version app registry for direct OpenAPI access
+  ([#92](https://github.com/nfraxlab/svc-infra/pull/92),
+  [`9002dcd`](https://github.com/nfraxlab/svc-infra/commit/9002dcddb8fd2006f14914a65e4a2bf6a8bc352c))
+
+
 ## v1.7.0 (2026-01-21)
 
 ### Bug Fixes
