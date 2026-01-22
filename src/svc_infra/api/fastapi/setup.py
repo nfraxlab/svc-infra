@@ -4,6 +4,7 @@ import logging
 import os
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
+from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,6 +31,75 @@ from svc_infra.api.fastapi.routers import register_all_routers
 from svc_infra.app.env import CURRENT_ENVIRONMENT, DEV_ENV, LOCAL_ENV
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Version App Registry
+# ---------------------------------------------------------------------------
+# Stores references to mounted version apps (e.g., v0, v1) so applications
+# can access their OpenAPI specs directly without HTTP requests.
+# This avoids deadlocks when a single-worker server tries to fetch its own OpenAPI.
+# ---------------------------------------------------------------------------
+
+_version_apps: dict[str, FastAPI] = {}
+_root_app: FastAPI | None = None
+
+
+def get_version_app(version: str = "v0") -> FastAPI | None:
+    """Get the FastAPI app for a specific API version.
+
+    Use this to access the OpenAPI spec without HTTP:
+
+        from svc_infra.api.fastapi.setup import get_version_app
+
+        v0_app = get_version_app("v0")
+        if v0_app:
+            spec = v0_app.openapi()  # No HTTP request!
+
+    Args:
+        version: Version tag (e.g., "v0", "v1"). Default is "v0".
+
+    Returns:
+        FastAPI app for that version, or None if not found.
+    """
+    return _version_apps.get(version.strip("/"))
+
+
+def get_version_openapi(version: str = "v0") -> dict[str, Any] | None:
+    """Get the OpenAPI spec for a specific API version without HTTP.
+
+    This is the recommended way to get OpenAPI specs for MCP tool generation,
+    avoiding the deadlock that occurs when a server tries to fetch from itself.
+
+    Args:
+        version: Version tag (e.g., "v0", "v1"). Default is "v0".
+
+    Returns:
+        OpenAPI spec dict, or None if version not found.
+
+    Example:
+        from svc_infra.api.fastapi.setup import get_version_openapi
+        from ai_infra.mcp.server.openapi import _mcp_from_openapi
+
+        spec = get_version_openapi("v0")
+        if spec:
+            mcp, cleanup, report = _mcp_from_openapi(
+                spec,  # Pass dict, not URL - no HTTP!
+                base_url="http://localhost:8000/v0",
+            )
+    """
+    app = get_version_app(version)
+    if app:
+        return app.openapi()
+    return None
+
+
+def get_root_app() -> FastAPI | None:
+    """Get the root FastAPI app.
+
+    Returns:
+        Root FastAPI app, or None if not set up yet.
+    """
+    return _root_app
 
 
 def _gen_operation_id_factory():
@@ -321,6 +391,8 @@ def setup_service_api(
     skip_paths: list[str] | None = None,
     **fastapi_kwargs,  # Forward all other FastAPI kwargs (lifespan, etc.)
 ) -> FastAPI:
+    global _root_app, _version_apps
+
     # infer if not explicitly provided
     effective_root_include_api_key = (
         any(bool(v.include_api_key) for v in versions)
@@ -339,12 +411,18 @@ def setup_service_api(
         **fastapi_kwargs,  # Forward to _build_parent_app
     )
 
-    # Mount each version
+    # Store root app reference for direct access
+    _root_app = parent
+
+    # Mount each version and store references
     for spec in versions:
         child = _build_child_app(service, spec, skip_paths=skip_paths)
         tag_str = str(spec.tag).strip("/")
         mount_path = f"/{tag_str}"
         parent.mount(mount_path, child, name=tag_str)
+
+        # Store version app reference for direct OpenAPI access (avoids HTTP deadlock)
+        _version_apps[tag_str] = child
 
     @parent.get("/", include_in_schema=False, response_class=HTMLResponse)
     def index():

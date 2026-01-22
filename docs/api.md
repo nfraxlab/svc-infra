@@ -551,6 +551,37 @@ app.include_router(v1_router)
 app.include_router(v2_router)
 ```
 
+### Accessing Version OpenAPI Specs
+
+When building tools that need the OpenAPI spec (e.g., for MCP tool generation), use the version registry to avoid HTTP self-request deadlocks:
+
+```python
+from svc_infra.api.fastapi import get_version_openapi, get_version_app
+
+# Get OpenAPI spec dict directly (no HTTP request)
+spec = get_version_openapi("v0")
+if spec:
+    print(f"Found {len(spec['paths'])} paths in v0 API")
+
+# Get the FastAPI app instance for a version
+v0_app = get_version_app("v0")
+if v0_app:
+    print(f"v0 app title: {v0_app.title}")
+```
+
+This is particularly useful for:
+- MCP tool generation from OpenAPI without HTTP round-trips
+- Single-worker servers (e.g., uvicorn with `--reload`) that would deadlock fetching their own OpenAPI
+- Testing and introspection
+
+**Available functions:**
+
+| Function | Description |
+|----------|-------------|
+| `get_version_openapi(version)` | Get OpenAPI spec dict for a version (e.g., "v0") |
+| `get_version_app(version)` | Get FastAPI app instance for a version |
+| `get_root_app()` | Get the root FastAPI app |
+
 ### Header-Based Versioning
 
 ```python
