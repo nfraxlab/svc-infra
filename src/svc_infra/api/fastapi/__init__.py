@@ -27,7 +27,12 @@ from svc_infra.health import (
 from .cache.add import setup_caching
 from .ease import easy_service_api, easy_service_app
 from .pagination import cursor_window, sort_by, text_filter, use_pagination
-from .setup import setup_service_api
+from .setup import (
+    get_root_app,
+    get_version_app,
+    get_version_openapi,
+    setup_service_api,
+)
 
 __all__ = [
     "DualAPIRouter",
@@ -48,6 +53,10 @@ __all__ = [
     "easy_service_api",
     "easy_service_app",
     "setup_caching",
+    # Version app registry (for direct OpenAPI access without HTTP)
+    "get_version_app",
+    "get_version_openapi",
+    "get_root_app",
     # Pagination
     "use_pagination",
     "text_filter",
