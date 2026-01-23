@@ -5,6 +5,7 @@ This module provides a flexible background job system with multiple backends:
 - **InMemoryJobQueue**: Simple in-memory queue for tests and local development
 - **RedisJobQueue**: Production-ready Redis-backed queue with visibility timeout
 - **InMemoryScheduler**: Interval-based scheduler for periodic tasks
+- **JobRegistry**: Handler registry with dispatch and metrics
 
 Example:
     from svc_infra.jobs import easy_jobs, Job
@@ -24,6 +25,22 @@ Example:
             await send_email(job.payload["to"])
 
     await process_one(queue, handler)
+
+Using JobRegistry (recommended for larger applications):
+    from svc_infra.jobs import JobRegistry, JobResult, Job
+
+    registry = JobRegistry(metric_prefix="myapp_jobs")
+
+    @registry.handler("send_email")
+    async def handle_send_email(job: Job) -> JobResult:
+        await send_email(job.payload["to"])
+        return JobResult(success=True, message="Email sent")
+
+    # In worker loop:
+    async def worker_handler(job: Job) -> None:
+        result = await registry.dispatch(job)
+        if not result.success:
+            raise RuntimeError(result.message)
 
 Environment Variables:
     JOBS_DRIVER: Backend driver ("memory" or "redis"), defaults to "memory"
@@ -49,6 +66,9 @@ from .queue import InMemoryJobQueue, Job, JobQueue
 
 # Redis-backed queue for production
 from .redis_queue import RedisJobQueue
+
+# Job registry with dispatch and metrics
+from .registry import JobRegistry, JobResult, JobTimeoutError, UnknownJobError
 
 # Runner for long-lived workers
 from .runner import WorkerRunner
@@ -76,4 +96,9 @@ __all__ = [
     "WorkerRunner",
     # Configuration loader
     "schedule_from_env",
+    # Job registry
+    "JobRegistry",
+    "JobResult",
+    "UnknownJobError",
+    "JobTimeoutError",
 ]

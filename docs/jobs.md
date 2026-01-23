@@ -204,6 +204,86 @@ async def dispatch_handler(job: Job) -> None:
     await handler(job.payload)
 ```
 
+### JobRegistry (Recommended)
+
+For larger applications, use the built-in `JobRegistry` class which provides:
+
+- **Handler registration** (imperative or decorator style)
+- **Dispatch with timeout** protection
+- **Prometheus metrics** (optional, lazy-initialized)
+- **Structured results** via `JobResult`
+
+```python
+from svc_infra.jobs import JobRegistry, JobResult, Job
+
+# Create a registry with custom metric prefix
+registry = JobRegistry(metric_prefix="myapp_jobs")
+
+# Register handlers with decorator
+@registry.handler("send_email")
+async def handle_send_email(job: Job) -> JobResult:
+    to = job.payload["to"]
+    subject = job.payload["subject"]
+    await email_service.send(to=to, subject=subject)
+    return JobResult(
+        success=True,
+        message=f"Email sent to {to}",
+        details={"to": to, "subject": subject},
+    )
+
+@registry.handler("process_payment")
+async def handle_payment(job: Job) -> JobResult:
+    payment_id = job.payload["payment_id"]
+    try:
+        await payment_service.process(payment_id)
+        return JobResult(success=True, message=f"Payment {payment_id} processed")
+    except PaymentError as e:
+        return JobResult(success=False, message=str(e))
+
+# Or register imperatively
+registry.register("generate_report", handle_generate_report)
+
+# Use in worker loop
+async def worker_handler(job: Job) -> None:
+    result = await registry.dispatch(job, timeout=60.0)
+    if not result.success:
+        raise RuntimeError(result.message)  # Will trigger retry
+```
+
+**JobResult Fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | `bool` | Whether job completed successfully |
+| `message` | `str` | Human-readable result message |
+| `details` | `dict` | Optional additional details |
+
+**JobRegistry Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `register(name, handler)` | Register a handler imperatively |
+| `handler(name)` | Decorator to register a handler |
+| `dispatch(job, timeout=300)` | Dispatch job to handler with optional timeout |
+| `has_handler(name)` | Check if handler exists |
+| `get_handler(name)` | Get handler function (or None) |
+| `list_handlers()` | List all registered handler names |
+
+**Exceptions:**
+
+| Exception | When Raised |
+|-----------|-------------|
+| `UnknownJobError` | Job name has no registered handler |
+| `JobTimeoutError` | Handler exceeded timeout |
+
+**Prometheus Metrics (if svc-infra[metrics] installed):**
+
+| Metric | Labels | Description |
+|--------|--------|-------------|
+| `{prefix}_processed_total` | `job_name`, `status` | Total jobs processed |
+| `{prefix}_duration_seconds` | `job_name` | Processing duration histogram |
+| `{prefix}_failures_total` | `job_name`, `error_type` | Failure count by type |
+
 ### Dependency Injection in Handlers
 
 ```python

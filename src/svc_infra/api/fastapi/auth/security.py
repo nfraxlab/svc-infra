@@ -123,6 +123,24 @@ async def resolve_bearer_or_cookie_principal(
     if not getattr(db_user, "is_active", True):
         raise HTTPException(401, "account_disabled")
 
+    # Check if user has any active (non-revoked) sessions
+    # If all sessions are revoked, the token should be rejected
+    from svc_infra.security.models import AuthSession
+
+    active_session_check = await session.execute(
+        select(AuthSession.id)
+        .where(
+            AuthSession.user_id == db_user.id,
+            AuthSession.revoked_at.is_(None),
+        )
+        .limit(1)
+    )
+    has_active_session = active_session_check.scalar_one_or_none() is not None
+
+    if not has_active_session:
+        # All sessions revoked - invalidate this token
+        raise HTTPException(401, "session_revoked")
+
     via = "jwt" if raw_auth else "cookie"
     user_scopes = get_user_scope_resolver()(db_user)
     # dedupe while keeping order

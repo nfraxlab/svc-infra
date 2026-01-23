@@ -205,15 +205,19 @@ def auth_session_router(
             pass
 
         # 5) Create AuthSession for session tracking
-        from svc_infra.security.session import issue_session_and_refresh
+        from svc_infra.security.session import issue_session_and_refresh, lookup_ip_location
 
         try:
+            # Look up location from IP (best-effort, async)
+            location = await lookup_ip_location(client_ip) if client_ip else None
+
             await issue_session_and_refresh(
                 session,
                 user_id=user.id,
                 tenant_id=getattr(user, "tenant_id", None),
                 user_agent=str(request.headers.get("user-agent", ""))[:512],
                 ip_hash=ip_hash,
+                location=location,
             )
             await session.commit()
         except Exception:
