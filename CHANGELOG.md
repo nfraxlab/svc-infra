@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.9.0 (2026-01-26)
+
+### Features
+
+- Add JobRegistry and session management enhancements
+  ([#93](https://github.com/nfraxlab/svc-infra/pull/93),
+  [`bf1db26`](https://github.com/nfraxlab/svc-infra/commit/bf1db26f471ae15c18ea810fe3ff8ed967f41212))
+
+
 ## v1.8.0 (2026-01-22)
 
 ### Features
