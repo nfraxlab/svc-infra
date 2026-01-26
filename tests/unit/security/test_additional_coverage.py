@@ -159,6 +159,15 @@ class FakeDB:
     def add(self, obj: Any) -> None:
         self.added.append(obj)
 
+    async def execute(self, stmt: Any) -> Any:
+        """Mock execute for queries."""
+
+        class Result:
+            def scalar_one_or_none(self):
+                return None
+
+        return Result()
+
 
 class TestIssueSessionAndRefresh:
     @pytest.mark.asyncio
