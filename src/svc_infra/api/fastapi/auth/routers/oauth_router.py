@@ -33,7 +33,11 @@ from svc_infra.api.fastapi.paths.auth import (
 )
 from svc_infra.app.env import require_secret
 from svc_infra.security.models import RefreshToken
-from svc_infra.security.session import issue_session_and_refresh, rotate_session_refresh
+from svc_infra.security.session import (
+    issue_session_and_refresh,
+    lookup_ip_location,
+    rotate_session_refresh,
+)
 
 
 def _gen_pkce_pair() -> tuple[str, str]:
@@ -692,13 +696,21 @@ def _create_oauth_router(
         user.last_login = datetime.now(UTC)
         await session.commit()
 
+        # Get client IP for location lookup
+        client_ip = getattr(request.client, "host", None)
+        ip_hash = hashlib.sha256(client_ip.encode()).hexdigest() if client_ip else None
+
+        # Look up location from IP (best-effort)
+        location = await lookup_ip_location(client_ip) if client_ip else None
+
         # Create session + initial refresh token
         raw_refresh, _rt = await issue_session_and_refresh(
             session,
             user_id=user.id,
             tenant_id=getattr(user, "tenant_id", None),
             user_agent=str(request.headers.get("user-agent", ""))[:512],
-            ip_hash=None,
+            ip_hash=ip_hash,
+            location=location,
         )
 
         # Commit the session and refresh token to the database

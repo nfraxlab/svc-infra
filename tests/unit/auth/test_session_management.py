@@ -47,6 +47,9 @@ class FakeAsyncSession:
             def all(self):
                 return []
 
+            def scalar_one_or_none(self):
+                return None
+
         return Result()
 
 

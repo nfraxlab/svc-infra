@@ -61,6 +61,61 @@ if not user:
 - Sessions are enumerable and revocable via the sessions router.
 - Refresh tokens are rotated; old tokens are invalidated via a revocation list.
 
+### Session Management API
+
+The sessions router provides endpoints for managing user sessions:
+
+**List Sessions**
+```
+GET /sessions/me
+Permission: security.session.list
+```
+Returns all sessions for the current user, including:
+- `id`: Session identifier
+- `user_agent`: Browser/client user agent
+- `ip_hash`: Hashed IP address
+- `location`: Geographic location from IP (city, region, country)
+- `revoked`: Whether the session is revoked
+- `last_seen_at`: Last activity timestamp
+- `created_at`: Session creation timestamp
+
+**Revoke Session**
+```
+POST /sessions/{session_id}/revoke
+Permission: security.session.revoke
+```
+Revokes a session and all its refresh tokens. Revoked sessions remain in history but cannot be used. Returns 204 on success.
+
+**Delete Session**
+```
+DELETE /sessions/{session_id}
+Permission: security.session.revoke
+```
+Revokes (if not already revoked) and permanently deletes a session from history. Returns 204 on success.
+
+**Delete All Sessions**
+```
+DELETE /sessions/me/all
+Permission: security.session.revoke
+```
+Revokes and permanently deletes all sessions for the current user, clearing session history. Returns 204 on success.
+
+### Session Location Tracking
+
+Sessions automatically capture geographic location from the client IP address using IP geolocation services. The `location` field contains a human-readable string (e.g., "San Francisco, CA, US") or `null` if location lookup fails.
+
+Implementation uses free IP geolocation APIs with graceful fallbacks if the service is unavailable.
+
+### Session Reuse
+
+When a user logs in from the same device (matching IP hash and user agent), svc-infra reuses the existing session rather than creating a new one. This keeps session lists clean and provides accurate "last seen" tracking.
+
+### Security Considerations
+
+- All sessions revoked = token invalidated: If a user revokes all their sessions, existing access tokens become invalid on the next API call
+- Session ownership is enforced: Users can only view/revoke/delete their own sessions
+- IP hashing: Raw IPs are never stored; only secure hashes are persisted
+
 Operational notes:
 - Persist sessions/tokens in a durable DB.
 - Favor short access token TTLs if refresh flow is robust.

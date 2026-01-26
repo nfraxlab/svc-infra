@@ -1,0 +1,232 @@
+{
+  "name": "JobRegistry",
+  "module": "svc_infra.jobs.registry",
+  "docstring": "Registry for job handlers with dispatch and metrics.\n\nProvides a centralized way to register job handlers and dispatch jobs\nto them with optional timeout and Prometheus metrics.\n\nAttributes:\n    metric_prefix: Prefix for Prometheus metric names (default: \"jobs\")\n\nExample:\n    registry = JobRegistry(metric_prefix=\"myapp_jobs\")\n\n    # Register with decorator\n    @registry.handler(\"process_order\")\n    async def handle_order(job: Job) -> JobResult:\n        order_id = job.payload[\"order_id\"]\n        return JobResult(success=True, message=f\"Processed order {order_id}\")\n\n    # Register imperatively\n    registry.register(\"send_notification\", send_notification_handler)\n\n    # Dispatch\n    result = await registry.dispatch(job, timeout=60.0)",
+  "parameters": [
+    {
+      "name": "metric_prefix",
+      "type": "str",
+      "default": "'jobs'",
+      "description": "Prefix for Prometheus metric names.",
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(metric_prefix: str = 'jobs') -> None",
+      "docstring": "Initialize the job registry.\n\nArgs:\n    metric_prefix: Prefix for Prometheus metric names.\n                   Metrics will be named: {prefix}_processed_total,\n                   {prefix}_duration_seconds, {prefix}_failures_total",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "metric_prefix",
+          "type": "str",
+          "default": "'jobs'",
+          "description": "Prefix for Prometheus metric names.",
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    },
+    {
+      "name": "dispatch",
+      "signature": "(job: Job, timeout: float | None = 300.0) -> JobResult",
+      "docstring": "Dispatch a job to its registered handler.\n\nLooks up the handler by job name, executes it with optional timeout,\nand records Prometheus metrics for observability.\n\nArgs:\n    job: The job to dispatch (from queue.reserve_next())\n    timeout: Maximum execution time in seconds (default: 5 minutes).\n             Set to None to disable timeout.\n\nReturns:\n    JobResult from the handler\n\nRaises:\n    UnknownJobError: If no handler is registered for the job name\n    JobTimeoutError: If job exceeds timeout (when timeout is not None)\n    Exception: Re-raised from handler on failure\n\nExample:\n    async def worker_handler(job: Job) -> None:\n        result = await registry.dispatch(job)\n        if not result.success:\n            logger.error(f\"Job failed: {result.message}\")",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "job",
+          "type": "Job",
+          "default": null,
+          "description": "The job to dispatch (from queue.reserve_next())",
+          "required": true
+        },
+        {
+          "name": "timeout",
+          "type": "float | None",
+          "default": "300.0",
+          "description": "Maximum execution time in seconds (default: 5 minutes). Set to None to disable timeout.",
+          "required": false
+        }
+      ],
+      "returns": "JobResult",
+      "is_async": true,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": [
+        {
+          "type": "UnknownJobError",
+          "description": "If no handler is registered for the job name"
+        },
+        {
+          "type": "JobTimeoutError",
+          "description": "If job exceeds timeout (when timeout is not None)"
+        },
+        {
+          "type": "Exception",
+          "description": "Re-raised from handler on failure"
+        },
+        {
+          "type": "Exception",
+          "description": "Re-raised from handler on failure"
+        }
+      ]
+    },
+    {
+      "name": "get_handler",
+      "signature": "(name: str) -> HandlerFunc | None",
+      "docstring": "Get the handler function for a job name.\n\nArgs:\n    name: Job name\n\nReturns:\n    Handler function or None if not registered",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": "Job name",
+          "required": true
+        }
+      ],
+      "returns": "HandlerFunc | None",
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    },
+    {
+      "name": "handler",
+      "signature": "(name: str) -> Callable[[HandlerFunc], HandlerFunc]",
+      "docstring": "Decorator to register a handler for a job name.\n\nArgs:\n    name: Job name to register\n\nReturns:\n    Decorator function\n\nExample:\n    @registry.handler(\"send_email\")\n    async def handle_send_email(job: Job) -> JobResult:\n        return JobResult(success=True, message=\"Email sent\")",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": "Job name to register",
+          "required": true
+        }
+      ],
+      "returns": "Callable[[HandlerFunc], HandlerFunc]",
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    },
+    {
+      "name": "has_handler",
+      "signature": "(name: str) -> bool",
+      "docstring": "Check if a handler is registered for a job name.\n\nArgs:\n    name: Job name\n\nReturns:\n    True if handler exists",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": "Job name",
+          "required": true
+        }
+      ],
+      "returns": "bool",
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    },
+    {
+      "name": "list_handlers",
+      "signature": "() -> list[str]",
+      "docstring": "Get list of all registered job handler names.\n\nReturns:\n    List of job names that have registered handlers",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "list[str]",
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    },
+    {
+      "name": "register",
+      "signature": "(name: str, handler: HandlerFunc) -> None",
+      "docstring": "Register a handler for a job name.\n\nArgs:\n    name: Job name to register\n    handler: Async function taking a Job and returning JobResult\n\nExample:\n    async def my_handler(job: Job) -> JobResult:\n        return JobResult(success=True, message=\"Done\")\n\n    registry.register(\"my_job\", my_handler)",
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": "Job name to register",
+          "required": true
+        },
+        {
+          "name": "handler",
+          "type": "HandlerFunc",
+          "default": null,
+          "description": "Async function taking a Job and returning JobResult",
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    }
+  ],
+  "bases": [],
+  "source_file": "src/svc_infra/jobs/registry.py",
+  "source_line": 100
+}

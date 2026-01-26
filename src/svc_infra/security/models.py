@@ -34,6 +34,7 @@ class AuthSession(ModelBase):
     tenant_id: Mapped[str | None] = mapped_column(String(64), index=True)
     user_agent: Mapped[str | None] = mapped_column(String(512))
     ip_hash: Mapped[str | None] = mapped_column(String(64), index=True)
+    location: Mapped[str | None] = mapped_column(String(128))  # City, Country from IP geolocation
     last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     revoke_reason: Mapped[str | None] = mapped_column(Text)
