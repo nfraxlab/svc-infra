@@ -378,6 +378,9 @@ class JobRegistry:
                 f"Job {job.id} timed out after {duration:.2f}s (limit: {timeout}s)",
                 extra={"duration": duration, "timeout": timeout},
             )
+            # timeout is guaranteed to be set here since TimeoutError only occurs
+            # when asyncio.wait_for is called with a timeout value
+            assert timeout is not None
             raise JobTimeoutError(job.name, timeout) from None
 
         except Exception as e:
