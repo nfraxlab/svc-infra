@@ -1,172 +1,334 @@
 # svc-infra Development Roadmap
 
 > **Current Version**: 1.1.0
-> **Production Readiness**: 45% (5/11 pts) -> Target: 82%+ (9/11 pts)
-> **Target v1.0.0**: Phase 0 completion
+> **Target v1.0.0**: Phase 0 completion (Email Infrastructure)
 > **Target v2.0.0**: Phase 1-4 completion
 
 ---
 
-## Phase 0: Production Readiness Gate (v1.0.x)
+## Phase 0: Email Infrastructure Module (v1.0.x)
 
-**Goal**: Increase production readiness from 45% (5/11 pts) to 82%+ (9/11 pts) by achieving 60%+ test coverage.
+**Goal**: Create a first-class email module following the same DX patterns as `storage`, `webhooks`, and other svc-infra capabilities. Unified API across multiple providers with zero-config setup.
 
 **Current State**:
-- [OK] Linting (1 pt)
-- [OK] Type checking (1 pt)
-- [X] Tests pass (2 pts) - blocked by coverage threshold
-- [X] Coverage >=60% (2 pts) - currently 52.84%
-- [!] Vulnerability scan (2 pts) - pip-audit not installed
-- [OK] Package builds (2 pts)
-- [OK] Documentation (1 pt)
+- Email exists but is buried in `api/fastapi/auth/sender.py`
+- SMTP only, no modern providers
+- Tightly coupled to auth settings
+- Not exposed in public API
+- Synchronous (blocking)
 
-**Target State**: 9/11 pts (82%) with all critical checks passing.
-
----
-
-### 0.1 Install Security Tooling (+2 pts)
-
-> Add pip-audit to dev dependencies for vulnerability scanning.
-
-- [x] **Add pip-audit to pyproject.toml** [OK]
- - [x] Add `pip-audit` to dev dependencies
- - [x] Run `poetry lock && poetry install`
- - [x] Fix 7 vulnerabilities in 6 packages (fastapi-users, filelock, mcp, starlette, urllib3, werkzeug)
- - [x] Verify `make report` shows vulnerability scan passing (+2 pts)
-
-**Result**: Production readiness improved from 45% (5/11 pts) -> 63% (7/11 pts)
+**Target State**:
+- Top-level `svc_infra.email` module
+- Multiple backend support (Console, SMTP, Resend, SendGrid, AWS SES, Postmark)
+- Unified `send()` API across all providers
+- Async-first with sync fallback
+- Template support (Jinja2)
+- `add_email(app)` / `easy_email()` / `get_email()` pattern
+- Auth module migrated to use new email infrastructure
 
 ---
 
-### 0.2 Auth Module Tests (~15% -> 60% coverage)
+### 0.1 Core Email Infrastructure
 
-> The auth module has the lowest coverage. Focus on high-impact areas.
+> Create the foundational email module structure.
 
-- [ ] **test_auth_guard.py** (target: +108 lines covered)
- - [ ] Test `require_auth` decorator with valid JWT
- - [ ] Test `require_auth` decorator with expired JWT
- - [ ] Test `require_auth` decorator with invalid signature
- - [ ] Test `require_roles` with matching roles
- - [ ] Test `require_roles` with missing roles (403)
- - [ ] Test `require_permissions` decorator
- - [ ] Test anonymous access rejection
+**Files to create:**
+- `src/svc_infra/email/__init__.py`
+- `src/svc_infra/email/base.py`
+- `src/svc_infra/email/settings.py`
+- `src/svc_infra/email/add.py`
+- `src/svc_infra/email/easy.py`
 
-- [ ] **test_auth_providers.py** (target: +13 lines covered)
- - [ ] Test Google OAuth provider configuration
- - [ ] Test GitHub OAuth provider configuration
- - [ ] Test provider registry lookup
- - [ ] Test invalid provider handling
+- [x] **base.py - Email Backend Protocol**
+  - [x] `EmailBackend` protocol with `send()` and `send_sync()` methods
+  - [x] `EmailMessage` dataclass: `to`, `subject`, `html`, `text`, `from_addr`, `reply_to`, `cc`, `bcc`, `attachments`, `headers`, `tags`
+  - [x] `EmailResult` dataclass: `message_id`, `provider`, `status`, `error`
+  - [x] `EmailError` base exception with subclasses: `ConfigurationError`, `DeliveryError`, `RateLimitError`, `InvalidRecipientError`
 
-- [ ] **test_auth_cookies.py** (target: +14 lines covered)
- - [ ] Test `set_auth_cookie` with secure flags
- - [ ] Test `clear_auth_cookie` functionality
- - [ ] Test cookie extraction from request
+- [x] **settings.py - Email Configuration**
+  - [x] `EmailSettings(BaseSettings)` with `EMAIL_*` env prefix
+  - [x] `EMAIL_BACKEND`: console, smtp, resend, sendgrid, ses, postmark
+  - [x] `EMAIL_FROM`: default sender address
+  - [x] `EMAIL_REPLY_TO`: optional default reply-to
+  - [x] Provider-specific settings (lazy-loaded based on backend)
 
-- [ ] **test_auth_sender.py** (target: +31 lines covered)
- - [ ] Test email sender interface
- - [ ] Test mock email sender
- - [ ] Test verification email generation
- - [ ] Test password reset email generation
+- [x] **add.py - FastAPI Integration**
+  - [x] `add_email(app, backend=None)` - add email to FastAPI app state
+  - [x] `get_email() -> EmailBackend` - FastAPI dependency
+  - [x] `health_check_email()` - health check probe
+  - [x] Lifespan integration for async backends
 
----
+- [x] **easy.py - Zero-Config Setup**
+  - [x] `easy_email(backend=None, **kwargs)` - auto-detect from env
+  - [x] Auto-detect provider from available env vars
+  - [x] Sensible defaults (console in dev, warning in prod if not configured)
 
-### 0.3 MFA Module Tests (~10% -> 60% coverage)
+- [x] **__init__.py - Public API**
+  - [x] Export: `add_email`, `easy_email`, `get_email`, `EmailBackend`, `EmailMessage`, `EmailResult`, `EmailSettings`, `EmailError`
 
-> MFA is critical for security but has minimal test coverage.
-
-- [ ] **test_mfa_router.py** (target: +176 lines covered)
- - [ ] Test TOTP enrollment endpoint
- - [ ] Test TOTP verification endpoint
- - [ ] Test TOTP disable endpoint
- - [ ] Test backup codes generation
- - [ ] Test backup code redemption
- - [ ] Test MFA required middleware
- - [ ] Test invalid TOTP code rejection
- - [ ] Test rate limiting on verification attempts
-
-- [ ] **test_mfa_pre_auth.py** (target: +20 lines covered)
- - [ ] Test pre-auth token generation
- - [ ] Test pre-auth token validation
- - [ ] Test pre-auth token expiry
-
-- [ ] **test_mfa_verify.py** (target: +33 lines covered)
- - [ ] Test TOTP code verification
- - [ ] Test backup code verification
- - [ ] Test verification with invalid codes
- - [ ] Test verification rate limiting
-
-- [ ] **test_mfa_security.py** (target: +9 lines covered)
- - [ ] Test TOTP secret generation
- - [ ] Test TOTP secret encryption
- - [ ] Test QR code URL generation
+**Bonus (completed early):**
+- [x] `backends/__init__.py` - Backend module structure
+- [x] `backends/console.py` - Console backend for development
 
 ---
 
-### 0.4 OAuth Router Tests (~29% -> 60% coverage)
+### 0.2 Console & SMTP Backends
 
-> OAuth flows are complex and need comprehensive testing.
+> Built-in backends that require no external dependencies.
 
-- [ ] **test_oauth_router.py** (target: +150 lines covered)
- - [ ] Test OAuth authorization URL generation
- - [ ] Test OAuth callback with valid code
- - [ ] Test OAuth callback with invalid state
- - [ ] Test OAuth token exchange
- - [ ] Test OAuth user info retrieval
- - [ ] Test OAuth account linking
- - [ ] Test OAuth account unlinking
- - [ ] Test PKCE flow
- - [ ] Test refresh token rotation
+**Files to create:**
+- `src/svc_infra/email/backends/__init__.py`
+- `src/svc_infra/email/backends/console.py`
+- `src/svc_infra/email/backends/smtp.py`
 
----
+- [x] **console.py - Development Backend**
+  - [x] `ConsoleBackend` - prints emails to stdout/logger
+  - [x] Pretty-print with sender, recipient, subject, truncated body
+  - [x] Configurable log level
+  - [x] Always returns success
 
-### 0.5 Payments Module Tests (~25% -> 50% coverage)
-
-> Payments are business-critical. Focus on core flows.
-
-- [ ] **test_stripe_provider.py** (target: +100 lines covered)
- - [ ] Test customer creation
- - [ ] Test payment method attachment
- - [ ] Test subscription creation
- - [ ] Test invoice generation
- - [ ] Test webhook signature verification
- - [ ] Test refund processing
- - [ ] Test payment intent creation
-
-- [ ] **test_apf_payments_service.py** (target: +100 lines covered)
- - [ ] Test usage metering
- - [ ] Test billing cycle management
- - [ ] Test invoice calculation
- - [ ] Test subscription state transitions
- - [ ] Test payment failure handling
+- [x] **smtp.py - Standard SMTP Backend**
+  - [x] `SMTPBackend` - async SMTP via `aiosmtplib`
+  - [x] Settings: `EMAIL_SMTP_HOST`, `EMAIL_SMTP_PORT`, `EMAIL_SMTP_USERNAME`, `EMAIL_SMTP_PASSWORD`, `EMAIL_SMTP_USE_TLS`
+  - [x] Connection pooling for high-volume (via aiosmtplib)
+  - [x] Sync fallback via `smtplib`
+  - [x] StartTLS and SSL/TLS support
 
 ---
 
-### 0.6 Validation & Final Gate
+### 0.3 Modern Provider Backends
 
-> Ensure all checks pass before closing Phase 0.
+> Integration with modern transactional email providers.
 
-- [ ] **Run full test suite**
- - [ ] `poetry run pytest -q` - all tests pass
- - [ ] Coverage >= 60%
+**Files to create:**
+- `src/svc_infra/email/backends/resend.py`
+- `src/svc_infra/email/backends/sendgrid.py`
+- `src/svc_infra/email/backends/ses.py`
+- `src/svc_infra/email/backends/postmark.py`
 
-- [ ] **Run production readiness gate**
- - [ ] `make report` shows 9/11 pts (82%+)
- - [ ] No critical failures
+- [x] **resend.py - Resend Backend**
+  - [x] `ResendBackend` using httpx (no SDK dependency)
+  - [x] Settings: `EMAIL_RESEND_API_KEY`
+  - [x] Async HTTP via httpx
+  - [x] Tag and metadata support
+  - [x] Attachment support with base64 encoding
 
-- [ ] **Update documentation**
- - [ ] Update CHANGELOG.md with Phase 0 completion
- - [ ] Update README.md production readiness badge
+- [x] **sendgrid.py - SendGrid Backend**
+  - [x] `SendGridBackend` using httpx (no SDK dependency)
+  - [x] Settings: `EMAIL_SENDGRID_API_KEY`
+  - [x] Dynamic template support via `send_template()`
+  - [x] Category and custom args
+  - [x] Sandbox mode for testing
+
+- [x] **ses.py - AWS SES Backend**
+  - [x] `SESBackend` using boto3/aioboto3
+  - [x] Settings: `EMAIL_SES_REGION`, `EMAIL_SES_ACCESS_KEY`, `EMAIL_SES_SECRET_KEY`
+  - [x] Falls back to default AWS credentials chain
+  - [x] Configuration set support
+  - [x] Raw MIME email support for attachments
+
+- [x] **postmark.py - Postmark Backend**
+  - [x] `PostmarkBackend` using httpx
+  - [x] Settings: `EMAIL_POSTMARK_API_TOKEN`, `EMAIL_POSTMARK_MESSAGE_STREAM`
+  - [x] Template support via `send_template()`
+  - [x] Track opens/clicks configuration
 
 ---
 
-### Phase 0 Success Criteria
+### 0.4 Template System
 
-| Metric | Before | Target | Status |
-|--------|--------|--------|--------|
-| Test Coverage | 52.84% | >=60% | [ ] |
-| Tests Passing | [OK] | [OK] | [ ] |
-| Vulnerability Scan | [!] SKIP | [OK] PASS | [ ] |
-| Production Readiness | 45% (5/11) | 82% (9/11) | [ ] |
+> Built-in email templating with Jinja2.
+
+**Files to create:**
+- `src/svc_infra/email/templates/__init__.py`
+- `src/svc_infra/email/templates/loader.py`
+- `src/svc_infra/email/templates/base.html`
+
+- [x] **loader.py - Template Engine**
+  - [x] `EmailTemplateLoader` class
+  - [x] Load templates from package resources or custom path
+  - [x] `render(template_name, **context) -> tuple[str, str]` returns (html, text)
+  - [x] Auto-generate text from HTML if not provided
+  - [x] Base template with unsubscribe footer, branding
+
+- [x] **Built-in Templates**
+  - [x] `base.html` - responsive email base layout
+  - [x] `verification.html` - email verification
+  - [x] `password_reset.html` - password reset
+  - [x] `invitation.html` - workspace/team invitation
+  - [x] `welcome.html` - welcome email
+
+---
+
+### 0.5 High-Level Send API
+
+> Unified send method that works across all backends.
+
+**Files created:**
+- `src/svc_infra/email/sender.py` - EmailSender class with high-level API
+
+**Files updated:**
+- `src/svc_infra/email/__init__.py` - exports EmailSender, easy_sender, add_sender, get_sender
+- `src/svc_infra/email/easy.py` - added easy_sender() function
+- `src/svc_infra/email/add.py` - added add_sender() and get_sender() for FastAPI
+
+- [x] **Unified send() method**
+  ```python
+  async def send(
+      to: str | list[str],
+      subject: str,
+      *,
+      html: str | None = None,
+      text: str | None = None,
+      template: str | None = None,
+      context: dict | None = None,
+      from_addr: str | None = None,
+      reply_to: str | None = None,
+      cc: list[str] | None = None,
+      bcc: list[str] | None = None,
+      attachments: list[Attachment] | None = None,
+      tags: list[str] | None = None,
+      metadata: dict | None = None,
+  ) -> EmailResult:
+  ```
+  - [x] Validate recipient addresses
+  - [x] Load template if specified
+  - [x] Fall back to settings for from_addr
+  - [x] Return consistent `EmailResult`
+
+- [x] **Convenience Methods**
+  - [x] `send_verification(to, code, verification_url, user_name)` - uses verification template
+  - [x] `send_password_reset(to, reset_url, user_name)` - uses password_reset template
+  - [x] `send_invitation(to, invitation_url, inviter_name, workspace_name, role)` - uses invitation template
+  - [x] `send_welcome(to, user_name, features)` - uses welcome template
+
+---
+
+### 0.6 Auth Module Migration
+
+> Migrate existing auth sender to use new email infrastructure.
+
+**Files updated:**
+- `src/svc_infra/api/fastapi/auth/sender.py` - Now wraps new email module
+- `tests/unit/api/fastapi/auth/test_sender_coverage.py` - Updated tests
+
+**Note:** `users.py` and `mfa/router.py` require no changes - they use the same
+`get_sender().send()` interface which is now backed by the new email infrastructure.
+
+- [x] **Replace old sender.py**
+  - [x] Update `sender.py` to use new `svc_infra.email` module via `_EmailSenderAdapter`
+  - [x] Keep `Sender` protocol for backward compatibility
+  - [x] Keep `SMTPSender` and `ConsoleSender` classes for legacy usage
+
+- [x] **Update auth consumers**
+  - [x] `users.py`: No changes needed - same interface
+  - [x] `mfa/router.py`: No changes needed - same interface
+  - [x] Support both `AUTH_SMTP_*` and `EMAIL_*` env vars via `_sync_auth_env_to_email_env()`
+
+---
+
+### 0.7 Testing & Documentation ✅
+
+> Comprehensive tests and documentation.
+
+**Files created:**
+- `tests/unit/email/test_email_backends.py` ✅
+- `tests/unit/email/test_email_templates.py` ✅
+- `tests/unit/email/test_email_send.py` ✅
+- `tests/unit/email/test_email_integration.py` ✅
+- `docs/email.md` ✅
+
+- [x] **Unit Tests**
+  - [x] Test ConsoleBackend output format
+  - [x] Test SMTPBackend connection and send
+  - [x] Test each provider backend with mocked responses
+  - [x] Test template rendering
+  - [x] Test email validation
+  - [x] Test error handling
+
+- [x] **Integration Tests**
+  - [x] Test `add_email()` FastAPI integration
+  - [x] Test `get_email()` dependency injection
+  - [x] Test health check endpoint
+
+- [x] **Documentation**
+  - [x] Quick start guide
+  - [x] Provider configuration reference
+  - [x] Template customization guide
+  - [x] Migration guide from old sender
+
+---
+
+### 0.8 Examples ✅
+
+> Working examples for common use cases.
+
+**Files created:**
+- `examples/email/basic_send.py` ✅
+- `examples/email/with_templates.py` ✅
+- `examples/email/fastapi_integration.py` ✅
+- `examples/email/README.md` ✅
+
+- [x] **basic_send.py** - Simple HTML email sending with auto-detection
+- [x] **with_templates.py** - Template-based emails (verification, password reset, invitation, welcome)
+- [x] **fastapi_integration.py** - Full FastAPI app with health check, auth endpoints, team invitations
+
+---
+
+### Phase 0 Success Criteria ✅
+
+| Deliverable | Status |
+|-------------|--------|
+| `svc_infra.email` module created | [x] |
+| Console + SMTP backends | [x] |
+| Resend backend | [x] |
+| SendGrid backend | [x] |
+| AWS SES backend | [x] |
+| Postmark backend | [x] |
+| Template system | [x] |
+| Unified `send()` API | [x] |
+| Auth module migrated | [x] |
+| Tests (>80% coverage for email module) | [x] |
+| Documentation complete | [x] |
+| Examples working | [x] |
+
+---
+
+### Environment Variables Reference
+
+```bash
+# Backend selection (auto-detected if not set)
+EMAIL_BACKEND=resend  # console, smtp, resend, sendgrid, ses, postmark
+
+# Common settings
+EMAIL_FROM=noreply@example.com
+EMAIL_REPLY_TO=support@example.com
+
+# SMTP
+EMAIL_SMTP_HOST=smtp.gmail.com
+EMAIL_SMTP_PORT=587
+EMAIL_SMTP_USERNAME=user@gmail.com
+EMAIL_SMTP_PASSWORD=app-password
+EMAIL_SMTP_USE_TLS=true
+
+# Resend
+EMAIL_RESEND_API_KEY=re_xxxxx
+
+# SendGrid
+EMAIL_SENDGRID_API_KEY=SG.xxxxx
+
+# AWS SES
+EMAIL_SES_REGION=us-east-1
+EMAIL_SES_ACCESS_KEY=AKIA...
+EMAIL_SES_SECRET_KEY=xxxxx
+
+# Postmark
+EMAIL_POSTMARK_API_TOKEN=xxxxx
+EMAIL_POSTMARK_MESSAGE_STREAM=outbound
+
+# Templates
+EMAIL_TEMPLATES_PATH=/app/templates/email  # Optional custom path
+```
 
 ---
 
