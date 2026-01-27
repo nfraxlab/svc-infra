@@ -43,10 +43,12 @@ def easy_email(
         2. EMAIL_BACKEND environment variable
         3. EMAIL_RESEND_API_KEY → Resend
         4. EMAIL_SENDGRID_API_KEY → SendGrid
-        5. EMAIL_POSTMARK_API_TOKEN → Postmark
-        6. AWS credentials → SES
-        7. EMAIL_SMTP_HOST → SMTP
-        8. Default: Console (with warning in production)
+        5. EMAIL_MAILGUN_API_KEY → Mailgun
+        6. EMAIL_BREVO_API_KEY → Brevo
+        7. EMAIL_POSTMARK_API_TOKEN → Postmark
+        8. AWS credentials → SES
+        9. EMAIL_SMTP_HOST → SMTP
+        10. Default: Console (with warning in production)
 
     Examples:
         >>> # Auto-detect backend from environment
@@ -210,6 +212,59 @@ def easy_email(
         return PostmarkBackend(
             api_token=api_token,
             message_stream=kwargs.get("message_stream", settings.postmark_message_stream),
+            from_addr=kwargs.get("from_addr", settings.from_addr),
+        )
+
+    elif backend_type == "mailgun":
+        # Mailgun backend
+        try:
+            from .backends.mailgun import MailgunBackend
+        except ImportError as e:
+            raise ImportError(
+                "Mailgun backend requires httpx. Install with: pip install httpx"
+            ) from e
+
+        api_key = kwargs.get(
+            "api_key",
+            settings.mailgun_api_key.get_secret_value() if settings.mailgun_api_key else None,
+        )
+        domain = kwargs.get("domain", settings.mailgun_domain)
+        if not api_key:
+            raise ConfigurationError(
+                "Mailgun backend requires EMAIL_MAILGUN_API_KEY environment variable"
+            )
+        if not domain:
+            raise ConfigurationError(
+                "Mailgun backend requires EMAIL_MAILGUN_DOMAIN environment variable"
+            )
+
+        return MailgunBackend(
+            api_key=api_key,
+            domain=domain,
+            region=kwargs.get("region", settings.mailgun_region),
+            from_addr=kwargs.get("from_addr", settings.from_addr),
+        )
+
+    elif backend_type == "brevo":
+        # Brevo backend (formerly Sendinblue)
+        try:
+            from .backends.brevo import BrevoBackend
+        except ImportError as e:
+            raise ImportError(
+                "Brevo backend requires httpx. Install with: pip install httpx"
+            ) from e
+
+        api_key = kwargs.get(
+            "api_key",
+            settings.brevo_api_key.get_secret_value() if settings.brevo_api_key else None,
+        )
+        if not api_key:
+            raise ConfigurationError(
+                "Brevo backend requires EMAIL_BREVO_API_KEY environment variable"
+            )
+
+        return BrevoBackend(
+            api_key=api_key,
             from_addr=kwargs.get("from_addr", settings.from_addr),
         )
 

@@ -107,7 +107,7 @@ class EmailTemplateLoader:
             ]
             from jinja2 import ChoiceLoader
 
-            loader = ChoiceLoader(loaders)
+            loader: FileSystemLoader | ChoiceLoader = ChoiceLoader(loaders)
         else:
             # Use built-in templates only
             loader = FileSystemLoader(str(self._get_builtin_path()))
@@ -131,9 +131,10 @@ class EmailTemplateLoader:
         """Get path to built-in templates."""
         # Use importlib.resources for package resources
         try:
-            # Python 3.9+
-            with resources.files("svc_infra.email.templates") as path:
-                return Path(path)
+            # Python 3.9+ - resources.files returns a Traversable
+            files = resources.files("svc_infra.email.templates")
+            # Use as_file for proper context management with Traversable
+            return Path(str(files))
         except (TypeError, AttributeError):
             # Fallback for older Python
             import svc_infra.email.templates as templates_module

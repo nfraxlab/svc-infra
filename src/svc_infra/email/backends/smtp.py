@@ -216,6 +216,7 @@ class SMTPBackend:
         message_id = mime_message["Message-ID"]
 
         try:
+            smtp: smtplib.SMTP | smtplib.SMTP_SSL
             if self.use_ssl:
                 # SSL/TLS connection (port 465)
                 smtp = smtplib.SMTP_SSL(

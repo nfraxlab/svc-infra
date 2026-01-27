@@ -21,7 +21,7 @@ class EmailSettings(BaseSettings):
     Supports multiple backends with auto-detection from environment variables.
 
     Environment Variables:
-        EMAIL_BACKEND: Explicit backend selection ("console", "smtp", "resend", "sendgrid", "ses", "postmark")
+        EMAIL_BACKEND: Explicit backend selection ("console", "smtp", "resend", "sendgrid", "ses", "postmark", "mailgun", "brevo")
         EMAIL_FROM: Default sender email address
         EMAIL_REPLY_TO: Default reply-to address
 
@@ -48,6 +48,14 @@ class EmailSettings(BaseSettings):
             EMAIL_POSTMARK_API_TOKEN: Postmark server API token
             EMAIL_POSTMARK_MESSAGE_STREAM: Message stream (default: outbound)
 
+        Mailgun Backend:
+            EMAIL_MAILGUN_API_KEY: Mailgun API key
+            EMAIL_MAILGUN_DOMAIN: Sending domain (e.g., mg.example.com)
+            EMAIL_MAILGUN_REGION: API region - "us" or "eu" (default: us)
+
+        Brevo Backend (formerly Sendinblue):
+            EMAIL_BREVO_API_KEY: Brevo API key
+
         Templates:
             EMAIL_TEMPLATES_PATH: Custom templates directory (optional)
 
@@ -68,7 +76,10 @@ class EmailSettings(BaseSettings):
     )
 
     # Backend selection
-    backend: Literal["console", "smtp", "resend", "sendgrid", "ses", "postmark"] | None = Field(
+    backend: (
+        Literal["console", "smtp", "resend", "sendgrid", "ses", "postmark", "mailgun", "brevo"]
+        | None
+    ) = Field(
         default=None,
         description="Email backend type (auto-detected if not set)",
     )
@@ -147,6 +158,26 @@ class EmailSettings(BaseSettings):
         description="Postmark message stream",
     )
 
+    # Mailgun backend settings
+    mailgun_api_key: SecretStr | None = Field(
+        default=None,
+        description="Mailgun API key",
+    )
+    mailgun_domain: str | None = Field(
+        default=None,
+        description="Mailgun sending domain (e.g., mg.example.com)",
+    )
+    mailgun_region: str = Field(
+        default="us",
+        description="Mailgun API region - 'us' or 'eu'",
+    )
+
+    # Brevo backend settings (formerly Sendinblue)
+    brevo_api_key: SecretStr | None = Field(
+        default=None,
+        description="Brevo API key",
+    )
+
     # Template settings
     templates_path: str | None = Field(
         default=None,
@@ -161,10 +192,12 @@ class EmailSettings(BaseSettings):
             1. Explicit EMAIL_BACKEND setting
             2. EMAIL_RESEND_API_KEY → resend
             3. EMAIL_SENDGRID_API_KEY → sendgrid
-            4. EMAIL_SES_REGION or AWS credentials → ses
-            5. EMAIL_POSTMARK_API_TOKEN → postmark
-            6. EMAIL_SMTP_HOST → smtp
-            7. Default: console (development)
+            4. EMAIL_MAILGUN_API_KEY → mailgun
+            5. EMAIL_BREVO_API_KEY → brevo
+            6. EMAIL_POSTMARK_API_TOKEN → postmark
+            7. AWS credentials → ses
+            8. EMAIL_SMTP_HOST → smtp
+            9. Default: console (development)
 
         Returns:
             Backend type string
@@ -185,6 +218,12 @@ class EmailSettings(BaseSettings):
 
         if self.sendgrid_api_key:
             return "sendgrid"
+
+        if self.mailgun_api_key and self.mailgun_domain:
+            return "mailgun"
+
+        if self.brevo_api_key:
+            return "brevo"
 
         if self.postmark_api_token:
             return "postmark"

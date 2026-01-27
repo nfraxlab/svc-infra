@@ -431,6 +431,128 @@ class TestPostmarkBackend:
             assert result.provider == "postmark"
 
 
+# ─── MailgunBackend Tests ──────────────────────────────────────────────────
+
+
+class TestMailgunBackend:
+    """Tests for MailgunBackend."""
+
+    def test_init(self) -> None:
+        """Test MailgunBackend initialization."""
+        from svc_infra.email.backends.mailgun import MailgunBackend
+
+        backend = MailgunBackend(
+            api_key="key-test",
+            domain="mg.example.com",
+        )
+        assert backend.api_key == "key-test"
+        assert backend.domain == "mg.example.com"
+        assert backend.region == "us"
+
+    def test_init_eu_region(self) -> None:
+        """Test MailgunBackend initialization with EU region."""
+        from svc_infra.email.backends.mailgun import MailgunBackend
+
+        backend = MailgunBackend(
+            api_key="key-test",
+            domain="mg.example.com",
+            region="eu",
+        )
+        assert backend.region == "eu"
+        assert "eu.mailgun.net" in backend.api_base
+
+    def test_provider_name(self) -> None:
+        """Test provider_name property."""
+        from svc_infra.email.backends.mailgun import MailgunBackend
+
+        backend = MailgunBackend(api_key="key-test", domain="mg.example.com")
+        assert backend.provider_name == "mailgun"
+
+    @pytest.mark.asyncio
+    async def test_send_with_mock(self) -> None:
+        """Test send with mocked HTTP client."""
+        from svc_infra.email.backends.mailgun import MailgunBackend
+
+        backend = MailgunBackend(
+            api_key="key-test",
+            domain="mg.example.com",
+            from_addr="noreply@example.com",
+        )
+
+        message = EmailMessage(
+            to="user@example.com",
+            subject="Test",
+            html="<p>Hello</p>",
+            from_addr="noreply@example.com",
+        )
+
+        with patch("httpx.AsyncClient") as mock_client_class:
+            mock_client = AsyncMock()
+            mock_client_class.return_value.__aenter__.return_value = mock_client
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {"id": "<mg_msg_123@mg.example.com>"}
+            mock_client.post.return_value = mock_response
+
+            result = await backend.send(message)
+
+            assert result.status == EmailStatus.SENT
+            assert result.message_id == "<mg_msg_123@mg.example.com>"
+            assert result.provider == "mailgun"
+
+
+# ─── BrevoBackend Tests ────────────────────────────────────────────────────
+
+
+class TestBrevoBackend:
+    """Tests for BrevoBackend."""
+
+    def test_init(self) -> None:
+        """Test BrevoBackend initialization."""
+        from svc_infra.email.backends.brevo import BrevoBackend
+
+        backend = BrevoBackend(api_key="xkeysib-test")
+        assert backend.api_key == "xkeysib-test"
+
+    def test_provider_name(self) -> None:
+        """Test provider_name property."""
+        from svc_infra.email.backends.brevo import BrevoBackend
+
+        backend = BrevoBackend(api_key="xkeysib-test")
+        assert backend.provider_name == "brevo"
+
+    @pytest.mark.asyncio
+    async def test_send_with_mock(self) -> None:
+        """Test send with mocked HTTP client."""
+        from svc_infra.email.backends.brevo import BrevoBackend
+
+        backend = BrevoBackend(
+            api_key="xkeysib-test",
+            from_addr="noreply@example.com",
+        )
+
+        message = EmailMessage(
+            to="user@example.com",
+            subject="Test",
+            html="<p>Hello</p>",
+            from_addr="noreply@example.com",
+        )
+
+        with patch("httpx.AsyncClient") as mock_client_class:
+            mock_client = AsyncMock()
+            mock_client_class.return_value.__aenter__.return_value = mock_client
+            mock_response = MagicMock()
+            mock_response.status_code = 201
+            mock_response.json.return_value = {"messageId": "<brevo_msg_123>"}
+            mock_client.post.return_value = mock_response
+
+            result = await backend.send(message)
+
+            assert result.status == EmailStatus.SENT
+            assert result.message_id == "<brevo_msg_123>"
+            assert result.provider == "brevo"
+
+
 # ─── EmailMessage Tests ────────────────────────────────────────────────────
 
 

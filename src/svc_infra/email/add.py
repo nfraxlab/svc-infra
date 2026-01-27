@@ -111,7 +111,7 @@ def get_email_from_request(request: Request) -> EmailBackend:
     Raises:
         ConfigurationError: If email not configured via add_email()
     """
-    email = getattr(request.app.state, "email", None)
+    email: EmailBackend | None = getattr(request.app.state, "email", None)
     if email is None:
         raise ConfigurationError(
             "Email backend not configured. Call add_email(app) during startup."
