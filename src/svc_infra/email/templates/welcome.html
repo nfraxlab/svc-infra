@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to {{ app_name }}!{% endblock %}
+
+{% block content %}
+<h1>Welcome to {{ app_name }}!</h1>
+
+<p>Hi {{ user_name | default("there") }},</p>
+
+<p>
+    Thank you for joining {{ app_name }}! We're excited to have you on board.
+    {% if is_verified %}
+    Your account is now fully set up and ready to use.
+    {% else %}
+    Your account has been created successfully.
+    {% endif %}
+</p>
+
+{% if app_url %}
+<p style="text-align: center;">
+    <a href="{{ app_url }}" class="button">Get Started</a>
+</p>
+{% endif %}
+
+<div class="divider"></div>
+
+<h2>What's Next?</h2>
+
+{% if getting_started_steps %}
+<ol style="color: #52525b; padding-left: 24px;">
+    {% for step in getting_started_steps %}
+    <li style="margin-bottom: 12px;">{{ step }}</li>
+    {% endfor %}
+</ol>
+{% else %}
+<ul style="color: #52525b; padding-left: 24px;">
+    <li style="margin-bottom: 12px;">
+        <strong>Complete your profile</strong> - Add your details to personalize your experience
+    </li>
+    <li style="margin-bottom: 12px;">
+        <strong>Explore features</strong> - Take a tour of what {{ app_name }} has to offer
+    </li>
+    <li style="margin-bottom: 12px;">
+        <strong>Invite your team</strong> - Collaborate with colleagues and friends
+    </li>
+    {% if docs_url %}
+    <li style="margin-bottom: 12px;">
+        <strong>Read the docs</strong> - Check out our <a href="{{ docs_url }}">documentation</a> for tips and guides
+    </li>
+    {% endif %}
+</ul>
+{% endif %}
+
+{% if features %}
+<div class="divider"></div>
+
+<h2>Key Features</h2>
+<ul style="color: #52525b; padding-left: 24px;">
+    {% for feature in features %}
+    <li style="margin-bottom: 8px;">{{ feature }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<div class="divider"></div>
+
+<div class="info-box">
+    <p>
+        <strong>Need help getting started?</strong><br>
+        {% if support_email %}
+        Our team is here to help! Reach out to us at
+        <a href="mailto:{{ support_email }}">{{ support_email }}</a>
+        {% elif docs_url %}
+        Check out our <a href="{{ docs_url }}">documentation</a> for guides and tutorials.
+        {% else %}
+        Check out our documentation for guides and tutorials.
+        {% endif %}
+    </p>
+</div>
+
+<p style="text-align: center; margin-top: 32px;">
+    We're thrilled to have you with us!<br>
+    <strong>The {{ app_name }} Team</strong>
+</p>
+{% endblock %}

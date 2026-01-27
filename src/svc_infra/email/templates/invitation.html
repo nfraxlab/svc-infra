@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}You're Invited to {{ workspace_name | default(app_name) }}{% endblock %}
+
+{% block content %}
+<h1>You're Invited!</h1>
+
+<p>Hi{{ " " + user_name if user_name else "" }},</p>
+
+<p>
+    <strong>{{ inviter_name | default("A team member") }}</strong> has invited you to join
+    {% if workspace_name %}
+    <strong>{{ workspace_name }}</strong> on {{ app_name }}.
+    {% else %}
+    <strong>{{ app_name }}</strong>.
+    {% endif %}
+</p>
+
+{% if role %}
+<p>
+    You've been invited as: <strong>{{ role }}</strong>
+</p>
+{% endif %}
+
+{% if message %}
+<div class="info-box">
+    <p><strong>Message from {{ inviter_name | default("the inviter") }}:</strong></p>
+    <p style="margin-top: 8px;">{{ message }}</p>
+</div>
+{% endif %}
+
+<p style="text-align: center;">
+    <a href="{{ invitation_url }}" class="button">Accept Invitation</a>
+</p>
+
+<p style="text-align: center; font-size: 14px; color: #71717a;">
+    Or copy and paste this link into your browser:<br>
+    <a href="{{ invitation_url }}">{{ invitation_url }}</a>
+</p>
+
+<div class="warning-box">
+    <p>
+        This invitation will expire in {{ expires_in | default("7 days") }}.
+    </p>
+</div>
+
+<div class="divider"></div>
+
+{% if workspace_name %}
+<h2>About {{ workspace_name }}</h2>
+{% if workspace_description %}
+<p>{{ workspace_description }}</p>
+{% else %}
+<p>
+    {{ workspace_name }} uses {{ app_name }} to collaborate and work together.
+    Accept this invitation to join the team!
+</p>
+{% endif %}
+
+<div class="divider"></div>
+{% endif %}
+
+<p style="color: #71717a; font-size: 14px;">
+    If you were not expecting this invitation or do not wish to join,
+    you can safely ignore this email. The invitation will expire automatically.
+</p>
+{% endblock %}
