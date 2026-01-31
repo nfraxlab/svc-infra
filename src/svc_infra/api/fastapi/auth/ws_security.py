@@ -123,7 +123,9 @@ def _decode_jwt(token: str) -> dict:
                 token,
                 s,
                 algorithms=["HS256"],
-                options={"require": ["sub", "exp"]},
+                # Accept fastapi-users tokens which have aud: ["fastapi-users:auth"]
+                # We don't enforce audience for WS since we just need to verify the user
+                options={"require": ["sub", "exp"], "verify_aud": False},
             )
             return cast("dict[Any, Any]", payload)
         except jwt.ExpiredSignatureError:

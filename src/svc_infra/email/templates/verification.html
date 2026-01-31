@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Your Email - {{ app_name }}{% endblock %}
+
+{% block content %}
+<h1>Verify Your Email Address</h1>
+
+<p>Hi{{ " " + user_name if user_name else "" }},</p>
+
+<p>
+    Thank you for signing up for {{ app_name }}! To complete your registration
+    and activate your account, please verify your email address.
+</p>
+
+{% if verification_url %}
+<p style="text-align: center;">
+    <a href="{{ verification_url }}" class="button">Verify Email Address</a>
+</p>
+<p style="text-align: center; font-size: 14px; color: #71717a;">
+    Or copy and paste this link into your browser:<br>
+    <a href="{{ verification_url }}">{{ verification_url }}</a>
+</p>
+{% endif %}
+
+{% if code %}
+<p>Your verification code is:</p>
+<p style="text-align: center;">
+    <span class="code-block">{{ code }}</span>
+</p>
+<p style="text-align: center; font-size: 14px; color: #71717a;">
+    Enter this code in the app to verify your email.
+</p>
+{% endif %}
+
+<div class="info-box">
+    <p>
+        This {{ "link" if verification_url else "code" }} will expire in
+        {{ expires_in | default("24 hours") }}.
+    </p>
+</div>
+
+<div class="divider"></div>
+
+<p style="color: #71717a; font-size: 14px;">
+    If you did not create an account with {{ app_name }}, you can safely ignore
+    this email. Someone may have entered your email address by mistake.
+</p>
+{% endblock %}
