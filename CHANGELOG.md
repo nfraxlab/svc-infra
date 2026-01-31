@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.11.0 (2026-01-31)
+
+### Features
+
+- **auth**: Fallback to CORS_ORIGINS for redirect validation
+  ([#95](https://github.com/nfraxlab/svc-infra/pull/95),
+  [`e718b30`](https://github.com/nfraxlab/svc-infra/commit/e718b30eb22a3aa6828e481950ebffc770a5af83))
+
+
 ## v1.10.0 (2026-01-31)
 
 ### Features
