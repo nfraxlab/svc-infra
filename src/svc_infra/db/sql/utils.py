@@ -880,7 +880,8 @@ def repair_alembic_state_if_needed(cfg: Config) -> None:
                 continue
             for line in txt.splitlines():
                 line = line.strip()
-                if line.startswith("revision ="):
+                # Handle both 'revision = "..."' and 'revision: str = "..."'
+                if line.startswith("revision =") or line.startswith("revision: str ="):
                     rid = line.split("=", 1)[1].strip().strip("'\"")
                     local_ids.add(rid)
                     break
