@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+from urllib.parse import urlparse
 
 from pydantic import AnyHttpUrl, BaseModel, Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -100,14 +102,43 @@ def get_auth_settings() -> AuthSettings:
 
 
 def parse_redirect_allow_hosts(raw: str | None) -> list[str]:
-    if not raw:
-        return ["localhost", "127.0.0.1"]
-    s = raw.strip()
-    if s.startswith("["):
-        try:
-            val = json.loads(s)
-            if isinstance(val, list):
-                return [str(x).strip() for x in val if str(x).strip()]
-        except Exception:
-            pass
-    return [h.strip() for h in s.split(",") if h.strip()]
+    """
+    Parse allowed hosts for OAuth redirects.
+
+    Priority:
+    1. AUTH_REDIRECT_ALLOW_HOSTS_RAW if explicitly set
+    2. Extract hosts from CORS_ORIGINS / CORS_ALLOW_ORIGINS (shared config)
+    3. Default to localhost only
+
+    This allows reusing CORS origins for redirect validation, avoiding
+    the need to configure both separately.
+    """
+    base_hosts = ["localhost", "127.0.0.1"]
+
+    # 1. Explicit redirect hosts take priority
+    if raw and raw.strip():
+        s = raw.strip()
+        if s.startswith("["):
+            try:
+                val = json.loads(s)
+                if isinstance(val, list):
+                    return base_hosts + [str(x).strip() for x in val if str(x).strip()]
+            except Exception:
+                pass
+        return base_hosts + [h.strip() for h in s.split(",") if h.strip()]
+
+    # 2. Fallback to CORS origins (extract hostnames from URLs)
+    cors_raw = os.getenv("CORS_ORIGINS") or os.getenv("CORS_ALLOW_ORIGINS") or ""
+    if cors_raw.strip():
+        cors_hosts: list[str] = []
+        for origin in cors_raw.split(","):
+            origin = origin.strip()
+            if origin and origin != "*":
+                parsed = urlparse(origin)
+                if parsed.hostname:
+                    cors_hosts.append(parsed.hostname)
+        if cors_hosts:
+            return base_hosts + cors_hosts
+
+    # 3. Default: localhost only
+    return base_hosts
