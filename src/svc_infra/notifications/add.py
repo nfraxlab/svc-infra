@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
+from .channels.base import NotificationChannel
 from .channels.email import EmailChannel
 from .channels.in_app import InAppChannel
 from .channels.realtime import RealtimeChannel
@@ -54,7 +55,7 @@ def add_notifications(
         )
     """
     # Create channels
-    channels = [InAppChannel()]
+    channels: list[NotificationChannel] = [InAppChannel()]
 
     if ws_manager:
         channels.append(RealtimeChannel(ws_manager))
@@ -104,4 +105,4 @@ def get_notifier(app_or_request: FastAPI | Request) -> NotificationService:
         raise RuntimeError(
             "Notifications not configured. Call add_notifications() during app startup."
         )
-    return notifier
+    return cast(NotificationService, notifier)

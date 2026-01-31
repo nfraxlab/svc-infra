@@ -7,10 +7,10 @@ import logging
 from collections.abc import AsyncIterator, Callable
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 from uuid import UUID, uuid4
 
-from sqlalchemy import and_, func, select, update
+from sqlalchemy import CursorResult, and_, func, select, update
 from sqlalchemy import delete as delete_stmt
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -77,7 +77,7 @@ class NotificationService:
     def __init__(
         self,
         session_factory: SessionFactory,
-        notification_model: type,
+        notification_model: type[Any],
         channels: list[NotificationChannel] | None = None,
     ) -> None:
         """Initialize notification service.
@@ -95,7 +95,7 @@ class NotificationService:
             )
         else:
             self.session_factory = session_factory  # type: ignore[assignment]
-        self.model = notification_model
+        self.model: Any = notification_model
         self._channels: dict[str, NotificationChannel] = {}
 
         for channel in channels or []:
@@ -119,7 +119,7 @@ class NotificationService:
         data: dict[str, Any] | None = None,
         action_url: str | None = None,
         channels: list[str] | None = None,
-    ) -> UUID | None:
+    ) -> UUID:
         """Create and deliver a notification.
 
         Args:
@@ -133,16 +133,15 @@ class NotificationService:
                       If 'in_app' is NOT in channels, no database record is created.
 
         Returns:
-            UUID of the created notification, or None if no database record created.
+            UUID of the created notification (always generated, even for ephemeral).
         """
         channels = channels or ["in_app"]
         data = data or {}
 
         # Only create database record if in_app channel is requested
         # Other channels (email, push, realtime) are ephemeral and don't need storage
-        notification_id: UUID | None = None
+        notification_id: UUID = uuid4()
         if "in_app" in channels:
-            notification_id = uuid4()
             async with self.session_factory() as session:
                 notification = self.model(
                     id=notification_id,
@@ -157,8 +156,6 @@ class NotificationService:
                 await session.commit()
             logger.debug(f"Created notification {notification_id} for user {user_id}")
         else:
-            # Generate a temporary ID for channel delivery tracking
-            notification_id = uuid4()
             logger.debug(
                 f"Ephemeral notification {notification_id} for user {user_id} (no db record)"
             )
@@ -301,7 +298,7 @@ class NotificationService:
                 )
                 .values(read_at=datetime.now(UTC))
             )
-            result = await session.execute(query)
+            result = cast(CursorResult[Any], await session.execute(query))
             await session.commit()
             return result.rowcount > 0
 
@@ -325,7 +322,7 @@ class NotificationService:
                 )
                 .values(read_at=datetime.now(UTC))
             )
-            result = await session.execute(query)
+            result = cast(CursorResult[Any], await session.execute(query))
             await session.commit()
             return result.rowcount
 
@@ -405,6 +402,6 @@ class NotificationService:
         """
         async with self.session_factory() as session:
             query = delete_stmt(self.model).where(self.model.user_id == user_id)
-            result = await session.execute(query)
+            result = cast(CursorResult[Any], await session.execute(query))
             await session.commit()
             return result.rowcount

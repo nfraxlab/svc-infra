@@ -62,10 +62,10 @@ class EmailChannel(NotificationChannel):
             from svc_infra.email import get_sender
 
             sender = get_sender()
-            sender.send(
+            await sender.send(
                 to=email_address,
                 subject=title,
-                html_body=html_body,
+                html=html_body,
             )
             logger.debug(f"Sent notification email to {email_address}")
             return True
