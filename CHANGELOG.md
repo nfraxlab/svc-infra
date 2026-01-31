@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.10.0 (2026-01-31)
+
+### Features
+
+- Add email module with multi-provider backend support
+  ([#94](https://github.com/nfraxlab/svc-infra/pull/94),
+  [`4cf8ae8`](https://github.com/nfraxlab/svc-infra/commit/4cf8ae87d8bae303c3c15c7295403b4bff551467))
+
+
 ## v1.9.0 (2026-01-26)
 
 ### Features
