@@ -7,3 +7,9 @@
 
 CVE-2025-49794
 CVE-2025-49796
+
+# Context: python:3.12-slim (debian 13.3) ships OpenSSL 3.5.4-1~deb13u1 with CVE-2025-15467
+# Fixed in OpenSSL 3.5.4-1~deb13u2 - waiting for base image update
+# Date added: 2026-01-31
+# Review by: 2026-02-28 (remove once base images are patched)
+CVE-2025-15467
