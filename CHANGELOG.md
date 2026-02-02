@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.11.1 (2026-02-02)
+
+### Bug Fixes
+
+- **auth**: Change redirect_allow_hosts_raw default to empty for CORS fallback
+  ([#96](https://github.com/nfraxlab/svc-infra/pull/96),
+  [`012f418`](https://github.com/nfraxlab/svc-infra/commit/012f4183a2a86a6627452136e0db13c028fd3204))
+
+
 ## v1.11.0 (2026-01-31)
 
 ### Features
