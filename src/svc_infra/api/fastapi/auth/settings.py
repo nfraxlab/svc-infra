@@ -74,7 +74,8 @@ class AuthSettings(BaseSettings):
 
     # ---- Redirect + cookie settings ----
     post_login_redirect: AnyHttpUrl | str = "http://localhost:3000/app"
-    redirect_allow_hosts_raw: str = "localhost,127.0.0.1"
+    # Empty default allows CORS_ORIGINS fallback; set explicitly to override
+    redirect_allow_hosts_raw: str = ""
 
     session_cookie_name: str = "svc_session"
     auth_cookie_name: str = "svc_auth"
