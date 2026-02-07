@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.12.1 (2026-02-07)
+
+### Bug Fixes
+
+- Resolve JWT secret from AUTH_JWT_SECRET / JWT_SECRET env vars
+  ([#98](https://github.com/nfraxlab/svc-infra/pull/98),
+  [`05d42fd`](https://github.com/nfraxlab/svc-infra/commit/05d42fd51b93d72fa29bbf4c0b7e27160332e722))
+
+
 ## v1.12.0 (2026-02-07)
 
 ### Features
