@@ -23,6 +23,7 @@ from svc_infra.api.fastapi.auth.policy import AuthPolicy, DefaultAuthPolicy
 from svc_infra.api.fastapi.auth.settings import (
     get_auth_settings,
     parse_redirect_allow_hosts,
+    resolve_jwt_secret,
 )
 from svc_infra.api.fastapi.db.sql.session import SqlSessionDep
 from svc_infra.api.fastapi.dual.public import public_router
@@ -31,7 +32,6 @@ from svc_infra.api.fastapi.paths.auth import (
     OAUTH_LOGIN_PATH,
     OAUTH_REFRESH_PATH,
 )
-from svc_infra.app.env import require_secret
 from svc_infra.security.models import RefreshToken
 from svc_infra.security.session import (
     issue_session_and_refresh,
@@ -464,17 +464,7 @@ async def _process_user_authentication(
 
 async def _validate_and_decode_jwt_token(raw_token: str) -> str:
     """Validate and decode JWT token to extract user ID."""
-    st = get_auth_settings()
-    jwt_settings = getattr(st, "jwt", None)
-    jwt_secret = getattr(jwt_settings, "secret", None) if jwt_settings is not None else None
-    if jwt_secret:
-        secret = jwt_secret.get_secret_value()
-    else:
-        secret = require_secret(
-            None,
-            "JWT_SECRET (via auth settings jwt.secret for token validation)",
-            dev_default="dev-only-jwt-validation-secret-not-for-production",
-        )
+    secret = resolve_jwt_secret(dev_default="dev-only-jwt-validation-secret-not-for-production")
 
     try:
         payload = jwt.decode(

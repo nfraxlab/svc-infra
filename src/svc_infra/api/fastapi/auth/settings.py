@@ -102,6 +102,30 @@ def get_auth_settings() -> AuthSettings:
     return _settings
 
 
+def resolve_jwt_secret(*, dev_default: str = "dev-only-jwt-secret-not-for-production") -> str:
+    """Return the JWT secret, checking multiple sources.
+
+    Resolution order:
+      1. ``AuthSettings.jwt.secret``  (``AUTH_JWT__SECRET`` with double-underscore)
+      2. ``AUTH_JWT_SECRET`` env var   (single-underscore — common user expectation)
+      3. ``JWT_SECRET`` env var        (bare name)
+      4. ``require_secret`` (raises in production, returns *dev_default* otherwise)
+    """
+    from svc_infra.app.env import require_secret  # deferred to avoid circular import
+
+    st = get_auth_settings()
+    jwt_block = getattr(st, "jwt", None)
+    if jwt_block and getattr(jwt_block, "secret", None):
+        return jwt_block.secret.get_secret_value()
+
+    env_secret = os.getenv("AUTH_JWT_SECRET") or os.getenv("JWT_SECRET")
+    return require_secret(
+        env_secret,
+        "JWT_SECRET (via auth settings jwt.secret)",
+        dev_default=dev_default,
+    )
+
+
 def parse_redirect_allow_hosts(raw: str | None) -> list[str]:
     """
     Parse allowed hosts for OAuth redirects.
