@@ -35,12 +35,13 @@ class CatchAllExceptionMiddleware:
                 except Exception:
                     pass
             else:
+                detail = str(exc) or f"{type(exc).__name__}: (no message)"
                 body = json.dumps(
                     {
                         "type": "about:blank",
                         "title": "Internal Server Error",
                         "status": 500,
-                        "detail": str(exc),
+                        "detail": detail,
                         "instance": scope.get("path", "/"),
                         "code": "INTERNAL_ERROR",
                     }
