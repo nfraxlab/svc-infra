@@ -116,13 +116,15 @@ def resolve_jwt_secret(*, dev_default: str = "dev-only-jwt-secret-not-for-produc
     st = get_auth_settings()
     jwt_block = getattr(st, "jwt", None)
     if jwt_block and getattr(jwt_block, "secret", None):
-        return jwt_block.secret.get_secret_value()
+        return str(jwt_block.secret.get_secret_value())
 
     env_secret = os.getenv("AUTH_JWT_SECRET") or os.getenv("JWT_SECRET")
-    return require_secret(
-        env_secret,
-        "JWT_SECRET (via auth settings jwt.secret)",
-        dev_default=dev_default,
+    return str(
+        require_secret(
+            env_secret,
+            "JWT_SECRET (via auth settings jwt.secret)",
+            dev_default=dev_default,
+        )
     )
 
 
