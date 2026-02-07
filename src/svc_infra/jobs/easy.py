@@ -24,7 +24,9 @@ def easy_jobs(*, driver: str | None = None) -> tuple[JobQueue, InMemoryScheduler
     # Choose backend
     queue: JobQueue
     if cfg.driver == "redis":
-        url: str = os.getenv("JOBS_REDIS_URL") or os.getenv("REDIS_URL") or "redis://localhost:6379/0"
+        url: str = (
+            os.getenv("JOBS_REDIS_URL") or os.getenv("REDIS_URL") or "redis://localhost:6379/0"
+        )
         client = Redis.from_url(url)
         queue = RedisJobQueue(client)
     else:
