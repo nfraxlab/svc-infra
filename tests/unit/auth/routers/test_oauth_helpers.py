@@ -561,12 +561,9 @@ class TestValidateAndDecodeJwtToken:
         )
 
         with patch(
-            "svc_infra.api.fastapi.auth.routers.oauth_router.get_auth_settings"
-        ) as mock_settings:
-            mock_jwt = MagicMock()
-            mock_jwt.secret.get_secret_value.return_value = secret
-            mock_settings.return_value.jwt = mock_jwt
-
+            "svc_infra.api.fastapi.auth.routers.oauth_router.resolve_jwt_secret",
+            return_value=secret,
+        ):
             result = await _validate_and_decode_jwt_token(token)
 
         assert result == "user-123"
@@ -575,12 +572,9 @@ class TestValidateAndDecodeJwtToken:
     async def test_rejects_invalid_token(self) -> None:
         """Should raise for invalid token."""
         with patch(
-            "svc_infra.api.fastapi.auth.routers.oauth_router.get_auth_settings"
-        ) as mock_settings:
-            mock_jwt = MagicMock()
-            mock_jwt.secret.get_secret_value.return_value = "secret"
-            mock_settings.return_value.jwt = mock_jwt
-
+            "svc_infra.api.fastapi.auth.routers.oauth_router.resolve_jwt_secret",
+            return_value="secret",
+        ):
             with pytest.raises(HTTPException) as exc_info:
                 await _validate_and_decode_jwt_token("invalid-token")
 
