@@ -44,6 +44,21 @@ def emit_suspect_payload(path: str | None, size: int) -> None:
             pass
 
 
+# Lazy submodule access so that dotted-path patching
+# (e.g. ``mocker.patch("svc_infra.obs.metrics.sqlalchemy.bind...")``)
+# resolves without an explicit prior import, while avoiding an eager
+# dependency on prometheus_client for lightweight imports.
+_SUBMODULES = frozenset({"asgi", "http", "sqlalchemy"})
+
+
+def __getattr__(name: str) -> object:
+    if name in _SUBMODULES:
+        import importlib
+
+        return importlib.import_module(f".{name}", __name__)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
 __all__ = [
     "emit_rate_limited",
     "emit_suspect_payload",

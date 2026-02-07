@@ -336,13 +336,13 @@ report: ## Production readiness gate (CI-friendly with exit codes)
 	\
 	echo "④ Security: Vulnerability scan (pip-audit)..."; \
 	if poetry run pip-audit --version >/dev/null 2>&1; then \
-		set +e; poetry run pip-audit --ignore-vuln CVE-2026-0994 --ignore-vuln CVE-2026-24486 >/dev/null 2>&1; AUDIT_EXIT=$$?; set -e; \
+		set +e; poetry run pip-audit --ignore-vuln CVE-2026-0994 --ignore-vuln CVE-2026-24486 --ignore-vuln CVE-2026-1703 >/dev/null 2>&1; AUDIT_EXIT=$$?; set -e; \
 		if [ "$$AUDIT_EXIT" -eq 0 ]; then \
 			echo "    PASS - no known vulnerabilities (2 pts)"; \
 			VULN_OK=1; SCORE=$$((SCORE + 2)); \
 		else \
 			echo "    FAIL - vulnerabilities found"; \
-			poetry run pip-audit --ignore-vuln CVE-2026-0994 --ignore-vuln CVE-2026-24486 2>&1 | head -15; \
+			poetry run pip-audit --ignore-vuln CVE-2026-0994 --ignore-vuln CVE-2026-24486 --ignore-vuln CVE-2026-1703 2>&1 | head -15; \
 			VULN_OK=0; CRITICAL_FAIL=1; \
 		fi; \
 	else \

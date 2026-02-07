@@ -1,18 +1,30 @@
 import base64
 import hashlib
+import io
 import os
 from datetime import UTC
 
 import pyotp
+import segno
 
 
 def _qr_svg_from_uri(uri: str) -> str:
-    # Placeholder SVG; most frontends will render their own QR
-    return (
-        "<svg xmlns='http://www.w3.org/2000/svg' width='280' height='280'>"
-        "<rect width='100%' height='100%' fill='#fff'/>"
-        f"<text x='10' y='20' font-size='10'>{uri}</text></svg>"
-    )
+    """Generate an SVG QR code from an otpauth:// URI."""
+    import re
+
+    qr = segno.make(uri)
+    buf = io.BytesIO()
+    qr.save(buf, kind="svg", scale=5, border=2, xmldecl=False, svgns=False)
+    svg = buf.getvalue().decode("utf-8")
+    # Add viewBox so the SVG scales with CSS instead of using fixed dimensions
+    m = re.search(r'width="(\d+)"\s+height="(\d+)"', svg)
+    if m:
+        w, h = m.group(1), m.group(2)
+        svg = svg.replace(
+            f'width="{w}" height="{h}"',
+            f'viewBox="0 0 {w} {h}"',
+        )
+    return svg
 
 
 def _random_base32() -> str:

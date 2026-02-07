@@ -6,9 +6,14 @@ from __future__ import annotations
 
 from unittest.mock import Mock
 
+import pytest
 from fastapi import FastAPI
 
 from svc_infra.obs.add import add_observability
+
+# These tests mock prometheus-backed submodules; resolving the mock target
+# triggers module-level metric creation which requires prometheus_client.
+_prom = pytest.importorskip("prometheus_client", reason="prometheus_client required")
 
 
 def create_settings(*, enabled: bool, path: str = "/metrics"):
