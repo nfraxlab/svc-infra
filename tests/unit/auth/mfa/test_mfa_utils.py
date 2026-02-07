@@ -46,17 +46,18 @@ class TestQrSvgFromUri:
         assert "</svg>" in svg
 
     def test_includes_uri_in_svg(self) -> None:
-        """Should include the URI in the SVG (placeholder behavior)."""
+        """Should generate a valid QR code path (segno encodes the URI into path data)."""
         uri = "otpauth://totp/MyApp:test@test.com?secret=TESTSECRET"
         svg = _qr_svg_from_uri(uri)
-        assert "otpauth://" in svg
+        assert "<path" in svg
 
     def test_sets_svg_dimensions(self) -> None:
-        """Should set SVG dimensions."""
+        """Should set a responsive viewBox instead of fixed dimensions."""
         uri = "test-uri"
         svg = _qr_svg_from_uri(uri)
-        assert "width='280'" in svg
-        assert "height='280'" in svg
+        assert "viewBox=" in svg
+        # Fixed width/height are replaced by viewBox for CSS scalability
+        assert 'width="' not in svg
 
 
 class TestGenRecoveryCodes:

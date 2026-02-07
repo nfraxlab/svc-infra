@@ -44,9 +44,19 @@ def emit_suspect_payload(path: str | None, size: int) -> None:
             pass
 
 
+# Re-export submodules so that dotted-path patching
+# (e.g. ``mocker.patch("svc_infra.obs.metrics.sqlalchemy.bind...")``)
+# resolves without an explicit prior import.
+from svc_infra.obs.metrics import asgi as asgi  # noqa: E402
+from svc_infra.obs.metrics import http as http  # noqa: E402
+from svc_infra.obs.metrics import sqlalchemy as sqlalchemy  # noqa: E402
+
 __all__ = [
+    "asgi",
     "emit_rate_limited",
     "emit_suspect_payload",
+    "http",
     "on_rate_limit_exceeded",
     "on_suspect_payload",
+    "sqlalchemy",
 ]
