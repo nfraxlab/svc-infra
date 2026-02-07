@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.12.0 (2026-02-07)
+
+### Features
+
+- Generate real QR codes for MFA TOTP setup using segno
+  ([#97](https://github.com/nfraxlab/svc-infra/pull/97),
+  [`1655007`](https://github.com/nfraxlab/svc-infra/commit/1655007030d077cc99246b40bf01500e81d1f296))
+
+
 ## v1.11.1 (2026-02-02)
 
 ### Bug Fixes
