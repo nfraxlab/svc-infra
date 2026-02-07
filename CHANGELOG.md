@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.12.2 (2026-02-07)
+
+### Bug Fixes
+
+- Include exception class name in catchall error detail when message is empty
+  ([#99](https://github.com/nfraxlab/svc-infra/pull/99),
+  [`2a7b596`](https://github.com/nfraxlab/svc-infra/commit/2a7b5963601075a652c244a72b3b23153cd6b342))
+
+
 ## v1.12.1 (2026-02-07)
 
 ### Bug Fixes
