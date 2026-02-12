@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.14.0 (2026-02-12)
+
+### Features
+
+- Make test_expiration deterministic to avoid CI flakiness
+  ([#102](https://github.com/nfraxlab/svc-infra/pull/102),
+  [`5b1b0d1`](https://github.com/nfraxlab/svc-infra/commit/5b1b0d12fa3230ae177c568c41f8b574640ab670))
+
+
 ## v1.13.0 (2026-02-12)
 
 ### Documentation
