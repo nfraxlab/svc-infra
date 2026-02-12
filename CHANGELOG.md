@@ -1,6 +1,20 @@
 # CHANGELOG
 
 
+## v1.13.0 (2026-02-12)
+
+### Documentation
+
+- Switch to fork-based contribution model ([#100](https://github.com/nfraxlab/svc-infra/pull/100),
+  [`d0e535d`](https://github.com/nfraxlab/svc-infra/commit/d0e535d3160b63ac26ba8feff3e644c8410bed19))
+
+### Features
+
+- Auto-mount /status endpoint for non-production environments
+  ([#101](https://github.com/nfraxlab/svc-infra/pull/101),
+  [`c37183f`](https://github.com/nfraxlab/svc-infra/commit/c37183fde0711dec68741b51ba286ca82ac65e29))
+
+
 ## v1.12.2 (2026-02-07)
 
 ### Bug Fixes
