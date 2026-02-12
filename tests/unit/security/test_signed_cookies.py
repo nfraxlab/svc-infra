@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import time
-
+import svc_infra.security.signed_cookies as _mod
 from svc_infra.security.signed_cookies import sign_cookie, verify_cookie
 
 
@@ -31,10 +30,18 @@ def test_old_key_rotation():
     assert ok2
 
 
-def test_expiration():
-    val = sign_cookie({"a": 1}, key="k", expires_in=1)
+def test_expiration(monkeypatch: object):
+    """Use deterministic time to avoid CI flakiness (expires_in=1 can race at second boundary)."""
+    fake_now = 1_000_000
+
+    monkeypatch.setattr(_mod, "_now", lambda: fake_now)  # type: ignore[attr-defined]
+    val = sign_cookie({"a": 1}, key="k", expires_in=10)
+
+    # Still within window
     ok, _ = verify_cookie(val, key="k")
     assert ok
-    time.sleep(1.1)
+
+    # Advance past expiration
+    monkeypatch.setattr(_mod, "_now", lambda: fake_now + 11)  # type: ignore[attr-defined]
     ok2, _ = verify_cookie(val, key="k")
     assert not ok2
