@@ -17,9 +17,12 @@ Be respectful, inclusive, and constructive. We're all here to build great softwa
 ### Development Setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/nfraxlab/svc-infra.git
+# Fork the repository on GitHub, then clone your fork
+git clone https://github.com/<your-username>/svc-infra.git
 cd svc-infra
+
+# Add upstream remote
+git remote add upstream https://github.com/nfraxlab/svc-infra.git
 
 # Install dependencies
 poetry install
@@ -113,27 +116,32 @@ make pr m="feat: complete caching support"
 If you prefer manual git commands:
 
 ```bash
-# 1. Create a branch
+# 1. Sync your fork with upstream
+git fetch upstream
+git checkout main
+git merge upstream/main
+
+# 2. Create a branch
 git checkout -b feature/your-feature-name
 
-# 2. Make your changes
+# 3. Make your changes
 # - Follow the existing code style
 # - Add type hints to all functions
 # - Write docstrings for public APIs
 # - Add tests for new functionality
 
-# 3. Run quality checks
+# 4. Run quality checks
 ruff format
 ruff check
 mypy src
 pytest -q
 
-# 4. Commit and push
+# 5. Commit and push to your fork
 git add -A
 git commit -m "feat: your feature"
 git push origin feature/your-feature-name
 
-# 5. Open a PR on GitHub
+# 6. Open a PR from your fork to nfraxlab/svc-infra on GitHub
 ```
 
 ### Batching Multiple Commits
