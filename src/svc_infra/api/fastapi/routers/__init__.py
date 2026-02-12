@@ -197,14 +197,14 @@ def _process_router_module(
         return False
     if not _is_router_included_by_environment(module, environment, module_name):
         return False
-    if _should_never_include_in_schema(module):
-        return False
 
-    app.include_router(
-        router,
-        prefix=prefix,
-        include_in_schema=True if force_include else router.include_in_schema,
-    )
+    include_kwargs = _build_include_kwargs(module, prefix, force_include)
+
+    # ROUTER_NEVER_IN_SCHEMA: mount the router but force-hide from OpenAPI
+    if _should_never_include_in_schema(module):
+        include_kwargs["include_in_schema"] = False
+
+    app.include_router(router, **include_kwargs)
     return True
 
 
