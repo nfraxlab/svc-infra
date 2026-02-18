@@ -10,12 +10,17 @@ concurrency:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   release:
     # Skip if commit is from bot (prevents loops)
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+
+    outputs:
+      released: ${{ steps.semrel.outputs.released }}
+      tag: ${{ steps.semrel.outputs.tag }}
 
     steps:
       # Use RELEASE_TOKEN (PAT with bypass branch protection) for pushing
@@ -46,7 +51,7 @@ jobs:
       # python-semantic-release handles:
       # - Version bump in pyproject.toml (based on commit messages)
       # - Changelog update
-      # - Commit + tag + push
+      # - Commit + tag (--no-push: we push ourselves for reliable event delivery)
       # - GitHub Release creation
       #
       # RELEASE_TOKEN must be a PAT (Fine-grained) with:
@@ -54,9 +59,38 @@ jobs:
       # - Permissions: Contents (Read and write)
       # - Settings: "Bypass branch protections" enabled
       - name: Semantic Release
+        id: semrel
         env:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
-          poetry run semantic-release version
-          git push origin main --tags
-          poetry run semantic-release publish
+          # Bump version locally without pushing (we control the push)
+          NEW_VERSION=$(poetry run semantic-release version --no-push 2>&1 | tail -1)
+
+          # Check if a new version was actually created
+          TAG="v${NEW_VERSION}"
+          if git tag -l "$TAG" | grep -q "$TAG"; then
+            echo "released=true" >> "$GITHUB_OUTPUT"
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+            # Push branch first, then tag separately for reliable event delivery
+            git push origin main
+            git push origin "$TAG"
+
+            # Create GitHub Release
+            poetry run semantic-release publish
+          else
+            echo "released=false" >> "$GITHUB_OUTPUT"
+            echo "tag=" >> "$GITHUB_OUTPUT"
+            echo "No new version to release"
+          fi
+
+  # Publish to PyPI directly after a successful release.
+  # This is the primary publish trigger — the tag-based trigger in
+  # publish-pypi.yml serves only as a backup/manual fallback.
+  publish:
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    uses: ./.github/workflows/publish-pypi.yml
+    permissions:
+      contents: read
+      id-token: write

@@ -1,9 +1,16 @@
 name: Publish to PyPI
 
 on:
+  # Primary trigger: called directly by release.yml after version bump
+  workflow_call:
+
+  # Backup trigger: tag push (may fire from RELEASE_TOKEN push)
   push:
     tags:
       - "v*"
+
+  # Manual fallback for re-publishing if something goes wrong
+  workflow_dispatch:
 
 concurrency:
   group: publish-pypi
