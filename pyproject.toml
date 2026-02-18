@@ -161,6 +161,7 @@ markers = [
     "dx: Developer experience and quality gates tests",
     "admin: Admin scope and impersonation tests",
     "storage: File storage system tests",
+    "commerce: Commerce integration tests",
 ]
 filterwarnings = [
     "ignore:The `route` decorator is deprecated:DeprecationWarning:starlette.*",
