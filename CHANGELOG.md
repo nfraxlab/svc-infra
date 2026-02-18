@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v1.15.0 (2026-02-18)
+
+### Features
+
+- Add commerce module with Shopify provider ([#103](https://github.com/nfraxlab/svc-infra/pull/103),
+  [`6b2f806`](https://github.com/nfraxlab/svc-infra/commit/6b2f8063b66331fa17fb19c14dca0fb769e9b853))
+
+
 ## v1.14.0 (2026-02-12)
 
 ### Features
