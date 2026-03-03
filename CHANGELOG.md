@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+## v1.15.1 (2026-03-03)
+
+### Bug Fixes
+
+- Detect semantic-release version via git tag instead of parsing stdout
+  ([#105](https://github.com/nfraxlab/svc-infra/pull/105),
+  [`d9f45de`](https://github.com/nfraxlab/svc-infra/commit/d9f45deaeb98f8962c4fe224f2cd1fa61742eed8))
+
+### Continuous Integration
+
+- Fix PyPI publish by calling workflow directly instead of relying on tag event delivery
+  ([#104](https://github.com/nfraxlab/svc-infra/pull/104),
+  [`bdddd00`](https://github.com/nfraxlab/svc-infra/commit/bdddd00c92eb42c5d964516d57f611e8907c7418))
+
+
 ## v1.15.0 (2026-02-18)
 
 ### Features
