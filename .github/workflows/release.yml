@@ -64,11 +64,13 @@ jobs:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           # Bump version locally without pushing (we control the push)
-          NEW_VERSION=$(poetry run semantic-release version --no-push 2>&1 | tail -1)
+          # Note: do not parse stdout — the last line is not always the version
+          # (e.g. "No build command specified, skipping" appears after the version)
+          poetry run semantic-release version --no-push 2>&1
 
-          # Check if a new version was actually created
-          TAG="v${NEW_VERSION}"
-          if git tag -l "$TAG" | grep -q "$TAG"; then
+          # Check if HEAD is now tagged (semantic-release creates the tag locally)
+          TAG=$(git describe --exact-match HEAD 2>/dev/null || echo "")
+          if [[ -n "$TAG" ]]; then
             echo "released=true" >> "$GITHUB_OUTPUT"
             echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
