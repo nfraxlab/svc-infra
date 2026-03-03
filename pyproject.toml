@@ -249,7 +249,7 @@ branch = "main"
 tag_format = "v{version}"
 changelog_file = "CHANGELOG.md"
 upload_to_pypi = false
-upload_to_release = false
+upload_to_vcs_release = true  # create GitHub Release and upload artifacts
 
 [tool.semantic_release.commit_parser_options]
 allowed_tags = ["feat", "fix", "perf", "refactor", "docs", "chore", "test", "build", "ci"]
