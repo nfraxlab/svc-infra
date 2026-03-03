@@ -64,21 +64,19 @@ jobs:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           # Bump version locally without pushing (we control the push)
-          # Note: do not parse stdout — the last line is not always the version
-          # (e.g. "No build command specified, skipping" appears after the version)
-          poetry run semantic-release version --no-push 2>&1
+          # Bump version, commit, tag, push, and create GitHub Release in one step.
+          # semantic-release version (without --no-push) handles all of this using
+          # GH_TOKEN for auth. upload_to_vcs_release=true (default) creates the
+          # GitHub Release automatically.
+          poetry run semantic-release version 2>&1
 
-          # Check if HEAD is now tagged (semantic-release creates the tag locally)
+          # Check if HEAD is now tagged by semantic-release
           TAG=$(git describe --exact-match HEAD 2>/dev/null || echo "")
           if [[ -n "$TAG" ]]; then
             echo "released=true" >> "$GITHUB_OUTPUT"
             echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-            # Push branch first, then tag separately for reliable event delivery
-            git push origin main
-            git push origin "$TAG"
-
-            # Create GitHub Release
+            # Upload built artifacts to the GitHub Release
             poetry run semantic-release publish
           else
             echo "released=false" >> "$GITHUB_OUTPUT"
