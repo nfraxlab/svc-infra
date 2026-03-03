@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.15.2 (2026-03-03)
+
+### Bug Fixes
+
+- Let semantic-release version handle push and github release creation
+  ([#106](https://github.com/nfraxlab/svc-infra/pull/106),
+  [`f038e40`](https://github.com/nfraxlab/svc-infra/commit/f038e40b04a4f83ef736958636875e518c58c43d))
+
+
 ## v1.15.1 (2026-03-03)
 
 ### Bug Fixes
