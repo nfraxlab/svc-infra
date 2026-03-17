@@ -324,6 +324,145 @@ class TestProvidersFromSettings:
         assert result["okta"]["issuer"] == "https://dev-12345.okta.com"  # trailing slash stripped
 
 
+class TestProvidersFromSettingsRegistryPath:
+    """Tests for the primary connect-registry path in providers_from_settings."""
+
+    def _patch_registry(self, fake_registry):
+        """Return a context manager that replaces the module-level registry instance.
+
+        Uses sys.modules to avoid the attribute-shadowing problem: the connect
+        package re-exports 'registry' so ``import svc_infra.connect.registry as m``
+        via dotted lookup returns the ConnectRegistry *instance*, not the module.
+        """
+        import sys
+        from unittest.mock import patch as _patch
+
+        return _patch.object(sys.modules["svc_infra.connect.registry"], "registry", fake_registry)
+
+    def test_registry_login_enabled_provider_is_included(self) -> None:
+        """A login_enabled provider in the connect registry appears in result."""
+        from svc_infra.api.fastapi.auth.providers import providers_from_settings
+        from svc_infra.connect.registry import ConnectRegistry, OAuthProvider
+
+        fake_registry = ConnectRegistry()
+        fake_registry.register(
+            OAuthProvider(
+                name="discord",
+                client_id="discord-id",
+                client_secret="discord-sec",
+                authorize_url="https://discord.com/api/oauth2/authorize",
+                token_url="https://discord.com/api/oauth2/token",
+                default_scopes=["identify", "email"],
+                login_enabled=True,
+                userinfo_kind="standard",
+                userinfo_url="https://discord.com/api/users/@me",
+            )
+        )
+
+        with self._patch_registry(fake_registry):
+            result = providers_from_settings(object())
+
+        assert "discord" in result
+        assert result["discord"]["kind"] == "oauth2"
+        assert result["discord"]["authorize_url"] == "https://discord.com/api/oauth2/authorize"
+
+    def test_registry_non_login_enabled_provider_is_excluded(self) -> None:
+        """A provider with login_enabled=False is NOT included for auth."""
+        from svc_infra.api.fastapi.auth.providers import providers_from_settings
+        from svc_infra.connect.registry import ConnectRegistry, OAuthProvider
+
+        fake_registry = ConnectRegistry()
+        fake_registry.register(
+            OAuthProvider(
+                name="figma",
+                client_id="figma-id",
+                client_secret="figma-sec",
+                authorize_url="https://www.figma.com/oauth",
+                token_url="https://www.figma.com/api/oauth/token",
+                default_scopes=["files:read"],
+                login_enabled=False,
+            )
+        )
+
+        with self._patch_registry(fake_registry):
+            result = providers_from_settings(object())
+
+        assert "figma" not in result
+
+    def test_registry_oidc_provider_produces_oidc_kind(self) -> None:
+        """A connect provider with oidc_discovery_url produces kind=oidc in auth config."""
+        from svc_infra.api.fastapi.auth.providers import providers_from_settings
+        from svc_infra.connect.registry import ConnectRegistry, OAuthProvider
+
+        fake_registry = ConnectRegistry()
+        fake_registry.register(
+            OAuthProvider(
+                name="google",
+                client_id="g-id",
+                client_secret="g-sec",
+                authorize_url="https://accounts.google.com/o/oauth2/v2/auth",
+                token_url="https://oauth2.googleapis.com/token",
+                default_scopes=[],
+                login_enabled=True,
+                oidc_discovery_url="https://accounts.google.com",
+                userinfo_kind="oidc",
+            )
+        )
+
+        with self._patch_registry(fake_registry):
+            result = providers_from_settings(object())
+
+        assert result["google"]["kind"] == "oidc"
+        assert result["google"]["issuer"] == "https://accounts.google.com"
+
+    def test_registry_takes_precedence_over_fallback(self) -> None:
+        """A provider from the registry prevents the AUTH_* fallback from overwriting it."""
+        from svc_infra.api.fastapi.auth.providers import providers_from_settings
+        from svc_infra.connect.registry import ConnectRegistry, OAuthProvider
+
+        fake_registry = ConnectRegistry()
+        fake_registry.register(
+            OAuthProvider(
+                name="github",
+                client_id="connect-gh-id",
+                client_secret="connect-gh-sec",
+                authorize_url="https://github.com/login/oauth/authorize",
+                token_url="https://github.com/login/oauth/access_token",
+                default_scopes=["user:email"],
+                login_enabled=True,
+                userinfo_kind="github",
+            )
+        )
+
+        class Settings:
+            github_client_id = "settings-gh-id"
+            github_client_secret = Mock(get_secret_value=lambda: "settings-gh-sec")
+
+        with self._patch_registry(fake_registry):
+            result = providers_from_settings(Settings())
+
+        # Registry value wins — settings fallback does not overwrite
+        assert result["github"]["client_id"] == "connect-gh-id"
+
+    def test_fallback_adds_provider_absent_from_registry(self) -> None:
+        """AUTH_* fallback adds a provider that the registry does not have."""
+        from svc_infra.api.fastapi.auth.providers import providers_from_settings
+        from svc_infra.connect.registry import ConnectRegistry
+
+        # Empty registry — no login-enabled providers
+        fake_registry = ConnectRegistry()
+
+        class Settings:
+            google_client_id = "settings-g-id"
+            google_client_secret = Mock(get_secret_value=lambda: "settings-g-sec")
+
+        with self._patch_registry(fake_registry):
+            result = providers_from_settings(Settings())
+
+        assert "google" in result
+        assert result["google"]["kind"] == "oidc"
+
+
 class TestCookieConfiguration:
     """Tests for OAuth cookie configuration."""
 

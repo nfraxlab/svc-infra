@@ -6108,4 +6108,4 @@ stripe = ["stripe"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "1e8c3aa470f1688324e2560dd9f165cb0c4c7c3e369423bc72d839b096aefccf"
+content-hash = "45cf3e426efb11cec31cfbaebb96de5c7091f18b4536ce3121fcdf5ae37654cf"

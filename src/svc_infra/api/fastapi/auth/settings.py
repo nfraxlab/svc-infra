@@ -61,6 +61,10 @@ class AuthSettings(BaseSettings):
     auto_verify_in_dev: bool = True
 
     # ---- Built-in provider creds (optional) ----
+    # Each field is loaded from AUTH_<FIELD> env var first (the explicit pattern).
+    # When not set, get_auth_settings() falls back to the unprefixed env var so a
+    # single credential set (e.g. GITHUB_CLIENT_ID) works for both auth login and
+    # svc_infra.connect workspace connections without duplicating configuration.
     google_client_id: str | None = None
     google_client_secret: SecretStr | None = None
     github_client_id: str | None = None
@@ -99,6 +103,25 @@ def get_auth_settings() -> AuthSettings:
     global _settings
     if _settings is None:
         _settings = AuthSettings()
+        # Fallback: if AUTH_<PROVIDER>_CLIENT_* env vars are not set, read the
+        # unprefixed versions (GITHUB_CLIENT_ID, GOOGLE_CLIENT_ID, etc.) so a
+        # single credential config works for both auth login and connect tokens.
+        _fallbacks: list[tuple[str, str, str]] = [
+            # (field_name, fallback_env_var, secret_field)
+            ("github_client_id", "GITHUB_CLIENT_ID", "github_client_secret"),
+            ("google_client_id", "GOOGLE_CLIENT_ID", "google_client_secret"),
+            ("ms_client_id", "MICROSOFT_CLIENT_ID", "ms_client_secret"),
+        ]
+        for id_field, id_env, secret_field in _fallbacks:
+            if getattr(_settings, id_field) is None:
+                val = os.getenv(id_env)
+                if val:
+                    object.__setattr__(_settings, id_field, val)
+            if getattr(_settings, secret_field) is None:
+                secret_env = id_env.replace("_CLIENT_ID", "_CLIENT_SECRET")
+                val = os.getenv(secret_env)
+                if val:
+                    object.__setattr__(_settings, secret_field, SecretStr(val))
     return _settings
 
 
