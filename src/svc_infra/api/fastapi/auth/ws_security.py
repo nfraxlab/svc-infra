@@ -27,7 +27,7 @@ from typing import Annotated, Any, cast
 import jwt
 from fastapi import Depends, WebSocket, WebSocketException, status
 
-from svc_infra.api.fastapi.auth.settings import get_auth_settings
+from svc_infra.api.fastapi.auth.settings import get_auth_settings, resolve_jwt_secret
 
 
 # ---------- WSPrincipal ----------
@@ -105,15 +105,11 @@ def _decode_jwt(token: str) -> dict:
     """
     settings = get_auth_settings()
 
-    if not settings.jwt:
-        raise WebSocketException(
-            code=status.WS_1008_POLICY_VIOLATION,
-            reason="JWT not configured",
-        )
-
-    secret = settings.jwt.secret.get_secret_value()
-    old_secrets = [s.get_secret_value() for s in (settings.jwt.old_secrets or [])]
-    all_secrets = [secret, *old_secrets]
+    # Use resolve_jwt_secret with no dev_default argument so it matches the
+    # default used by get_jwt_strategy() when signing tokens ("dev-only-jwt-secret-not-for-production").
+    primary_secret = resolve_jwt_secret()
+    old_secrets = [s.get_secret_value() for s in (settings.jwt.old_secrets if settings.jwt else [])]
+    all_secrets = [primary_secret, *old_secrets]
 
     last_error: Exception | None = None
 

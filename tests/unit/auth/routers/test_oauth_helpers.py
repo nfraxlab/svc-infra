@@ -13,6 +13,7 @@ from svc_infra.api.fastapi.auth.routers.oauth_router import (
     _extract_user_info_github,
     _extract_user_info_linkedin,
     _extract_user_info_oidc,
+    _extract_user_info_standard,
     _find_or_create_user,
     _find_user_by_provider_link,
     _handle_mfa_redirect,
@@ -380,6 +381,118 @@ class TestExtractUserInfoFromProvider:
             await _extract_user_info_from_provider(request, client, {}, "unknown", cfg)
 
         assert exc_info.value.status_code == 400
+
+    @pytest.mark.asyncio
+    async def test_routes_to_oauth2(self) -> None:
+        """Should route to standard extraction for oauth2 kind providers."""
+        request = MagicMock()
+        client = AsyncMock()
+        resp = MagicMock()
+        resp.json.return_value = {"email": "u@discord.com", "username": "TestUser", "id": "987"}
+        client.get = AsyncMock(return_value=resp)
+        cfg = {"kind": "oauth2", "userinfo_url": "https://discord.com/api/users/@me"}
+
+        email, name, uid, _, _ = await _extract_user_info_from_provider(
+            request, client, {}, "discord", cfg
+        )
+
+        assert email == "u@discord.com"
+        assert name == "TestUser"
+        assert uid == "987"
+
+
+class TestExtractUserInfoStandard:
+    """Tests for generic OAuth2 userinfo extraction via _extract_user_info_standard."""
+
+    @pytest.mark.asyncio
+    async def test_extracts_standard_user_info(self) -> None:
+        """Should extract email, name, and uid from a standard JSON userinfo response."""
+        client = AsyncMock()
+        resp = MagicMock()
+        resp.json.return_value = {"email": "user@zoom.com", "name": "Zoom User", "id": "zoom-42"}
+        client.get = AsyncMock(return_value=resp)
+        cfg = {"userinfo_url": "https://api.zoom.us/v2/users/me"}
+
+        email, name, uid, verified, raw = await _extract_user_info_standard(client, {}, cfg)
+
+        assert email == "user@zoom.com"
+        assert name == "Zoom User"
+        assert uid == "zoom-42"
+        assert verified is True
+        assert raw["id"] == "zoom-42"
+
+    @pytest.mark.asyncio
+    async def test_missing_userinfo_url_raises_400(self) -> None:
+        """Should raise HTTPException 400 when userinfo_url is absent."""
+        client = AsyncMock()
+        cfg = {}  # no userinfo_url key
+
+        with pytest.raises(HTTPException) as exc_info:
+            await _extract_user_info_standard(client, {}, cfg)
+
+        assert exc_info.value.status_code == 400
+        assert exc_info.value.detail == "no_userinfo_url"
+
+    @pytest.mark.asyncio
+    async def test_fetch_exception_raises_400(self) -> None:
+        """Should raise HTTPException 400 when the userinfo request fails."""
+        client = AsyncMock()
+        client.get = AsyncMock(side_effect=RuntimeError("connection refused"))
+        cfg = {"userinfo_url": "https://api.example.com/me"}
+
+        with pytest.raises(HTTPException) as exc_info:
+            await _extract_user_info_standard(client, {}, cfg)
+
+        assert exc_info.value.status_code == 400
+        assert exc_info.value.detail == "userinfo_fetch_failed"
+
+    @pytest.mark.asyncio
+    async def test_non_dict_response_raises_400(self) -> None:
+        """Should raise HTTPException 400 when userinfo response is not a dict."""
+        client = AsyncMock()
+        resp = MagicMock()
+        resp.json.return_value = ["unexpected", "list"]
+        client.get = AsyncMock(return_value=resp)
+        cfg = {"userinfo_url": "https://api.example.com/me"}
+
+        with pytest.raises(HTTPException) as exc_info:
+            await _extract_user_info_standard(client, {}, cfg)
+
+        assert exc_info.value.status_code == 400
+        assert exc_info.value.detail == "userinfo_invalid_response"
+
+    @pytest.mark.asyncio
+    async def test_twitter_nested_data_id(self) -> None:
+        """Should extract Twitter v2 user ID from nested data.id field."""
+        client = AsyncMock()
+        resp = MagicMock()
+        # Twitter v2: top-level fields are absent; only data.id is present
+        resp.json.return_value = {"data": {"id": "tw-999"}}
+        client.get = AsyncMock(return_value=resp)
+        cfg = {"userinfo_url": "https://api.twitter.com/2/users/me"}
+
+        email, name, uid, _, _ = await _extract_user_info_standard(client, {}, cfg)
+
+        assert uid == "tw-999"
+        assert email is None  # Twitter v2 does not return email by default
+
+    @pytest.mark.asyncio
+    async def test_display_name_fallback(self) -> None:
+        """Should fall back to display_name when name field is absent."""
+        client = AsyncMock()
+        resp = MagicMock()
+        resp.json.return_value = {
+            "email": "r@reddit.com",
+            "display_name": "redditor",
+            "id": "t2_abc",
+        }
+        client.get = AsyncMock(return_value=resp)
+        cfg = {"userinfo_url": "https://oauth.reddit.com/api/v1/me"}
+
+        email, name, uid, _, _ = await _extract_user_info_standard(client, {}, cfg)
+
+        assert name == "redditor"
+        assert uid == "t2_abc"
 
 
 class TestFindOrCreateUser:

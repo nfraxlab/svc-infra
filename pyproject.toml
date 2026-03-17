@@ -53,7 +53,8 @@ alembic = ">=1.13.0"
 greenlet = ">=3.0"
 fastapi-users = { extras = ["oauth"], version = ">=14.0.0" }
 fastapi-users-db-sqlalchemy = ">=7.0.0"
-authlib = ">=1.0.0"
+authlib = ">=1.6.9"
+pyjwt = ">=2.12.0"
 httpx-oauth = ">=0.15.0"
 passlib = { extras = ["bcrypt"], version = ">=1.7.4" }
 email-validator = ">=2.0.0"
@@ -95,6 +96,7 @@ stripe = { version = ">=7.0.0", optional = true }
 adyen = { version = ">=10.0.0", optional = true }
 psycopg2-binary = { version = ">=2.9.0", optional = true }
 segno = "^1.6.6"
+cryptography = ">=41.0.0"
 
 [tool.poetry.extras]
 # Postgres v3 (recommended)

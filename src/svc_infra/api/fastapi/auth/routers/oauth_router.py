@@ -121,6 +121,16 @@ def _register_oauth_providers(oauth: OAuth, providers: dict[str, dict[str, Any]]
                 api_base_url=cfg["api_base_url"],
                 client_kwargs={"scope": cfg.get("scope", "")},
             )
+        elif kind == "oauth2":
+            # Generic OAuth2 provider with a userinfo endpoint (discord, twitter, etc.)
+            oauth.register(
+                name,
+                client_id=cfg["client_id"],
+                client_secret=cfg["client_secret"],
+                authorize_url=cfg["authorize_url"],
+                access_token_url=cfg["access_token_url"],
+                client_kwargs={"scope": cfg.get("scope", "")},
+            )
 
 
 def _handle_oauth_error(
@@ -239,6 +249,46 @@ async def _extract_user_info_linkedin(
     return email, full_name, provider_user_id, email_verified, {"me": me}
 
 
+async def _extract_user_info_standard(
+    client, token: dict, cfg: dict
+) -> tuple[str | None, str | None, str | None, bool | None, dict]:
+    """Extract user information from a generic OAuth2 provider via userinfo URL.
+
+    Used for providers like Discord, Twitter/X, Zoom, Reddit, etc. that expose
+    a standard JSON userinfo endpoint but do not support OIDC discovery.
+    """
+    userinfo_url = cfg.get("userinfo_url") or ""
+    if not userinfo_url:
+        raise HTTPException(400, "no_userinfo_url")
+
+    try:
+        resp = (await client.get(userinfo_url, token=token)).json()
+    except Exception:
+        raise HTTPException(400, "userinfo_fetch_failed")
+
+    if not isinstance(resp, dict):
+        raise HTTPException(400, "userinfo_invalid_response")
+
+    email = resp.get("email")
+    full_name = (
+        resp.get("name")
+        or resp.get("display_name")
+        or resp.get("username")
+        or resp.get("login")
+        or resp.get("global_name")
+    )
+    uid = (
+        resp.get("id")
+        or resp.get("sub")
+        or resp.get("user_id")
+        or resp.get("data", {}).get("id")  # Twitter v2 wraps in data{}
+    )
+    provider_user_id = str(uid) if uid is not None else None
+    email_verified = bool(resp.get("email_verified", bool(email)))
+
+    return email, full_name, provider_user_id, email_verified, resp
+
+
 async def _extract_user_info_from_provider(
     request: Request,
     client,
@@ -256,6 +306,8 @@ async def _extract_user_info_from_provider(
         return await _extract_user_info_github(client, token)
     elif kind == "linkedin":
         return await _extract_user_info_linkedin(client, token)
+    elif kind == "oauth2":
+        return await _extract_user_info_standard(client, token, cfg)
     else:
         raise HTTPException(400, "Unsupported provider kind")
 
