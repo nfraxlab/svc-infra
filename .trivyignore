@@ -13,3 +13,9 @@ CVE-2025-49796
 # Date added: 2026-01-31
 # Review by: 2026-02-28 (remove once base images are patched)
 CVE-2025-15467
+
+# Context: postgres:16-alpine on Alpine 3.23.3 ships zlib 1.3.1-r2 with CVE-2026-22184
+# Fixed in zlib 1.3.2-r0 - waiting for base image update
+# Date added: 2026-03-17
+# Review by: 2026-04-17 (remove once base image is patched)
+CVE-2026-22184
