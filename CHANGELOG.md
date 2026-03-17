@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.16.0 (2026-03-17)
+
+### Features
+
+- Add connect OAuth module with 60+ providers and unify auth provider system
+  ([#107](https://github.com/nfraxlab/svc-infra/pull/107),
+  [`2e0b2fa`](https://github.com/nfraxlab/svc-infra/commit/2e0b2fa560855b4fed5c0cb20df253bac23d1c5b))
+
+
 ## v1.15.2 (2026-03-03)
 
 ### Bug Fixes
