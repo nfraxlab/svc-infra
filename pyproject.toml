@@ -53,7 +53,8 @@ alembic = ">=1.13.0"
 greenlet = ">=3.0"
 fastapi-users = { extras = ["oauth"], version = ">=14.0.0" }
 fastapi-users-db-sqlalchemy = ">=7.0.0"
-authlib = ">=1.0.0"
+authlib = ">=1.6.9"
+pyjwt = ">=2.12.0"
 httpx-oauth = ">=0.15.0"
 passlib = { extras = ["bcrypt"], version = ">=1.7.4" }
 email-validator = ">=2.0.0"
