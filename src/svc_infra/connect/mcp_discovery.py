@@ -5,6 +5,7 @@ import time
 from typing import Any
 
 import httpx
+from pydantic import SecretStr
 
 from svc_infra.connect.registry import OAuthProvider
 
@@ -119,7 +120,7 @@ class MCPOAuthDiscovery:
         servers = resource_meta.get("authorization_servers")
         if not servers or not isinstance(servers, list):
             raise MCPOAuthNotSupported("Resource metadata contains no authorization_servers field")
-        return servers[0].rstrip("/")
+        return str(servers[0]).rstrip("/")
 
     async def _fetch_auth_server_metadata(self, auth_server_url: str) -> dict[str, Any]:
         url = auth_server_url + "/.well-known/oauth-authorization-server"
@@ -159,7 +160,7 @@ class MCPOAuthDiscovery:
         return _OAuthProvider(
             name=f"mcp:{mcp_server_url}",
             client_id="",
-            client_secret="",
+            client_secret=SecretStr(""),
             authorize_url=authorize_url,
             token_url=token_url,
             revoke_url=auth_meta.get("revocation_endpoint"),

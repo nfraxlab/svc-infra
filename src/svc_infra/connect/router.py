@@ -66,9 +66,10 @@ async def authorize(
         except MCPOAuthNotSupported as exc:
             raise HTTPException(422, f"MCP OAuth not supported by this server: {exc}") from exc
     else:
-        resolved_provider = _default_registry.get(provider)  # type: ignore[arg-type]
-        if resolved_provider is None:
+        _rp = _default_registry.get(provider)  # type: ignore[arg-type]
+        if _rp is None:
             raise HTTPException(404, f"Provider '{provider}' not registered")
+        resolved_provider = _rp
 
     pkce_verifier, pkce_challenge = generate_pkce_pair()
     state_value = generate_state()
@@ -167,6 +168,7 @@ async def callback(
 
     connection_id = oauth_state.connection_id
     user_id = oauth_state.user_id
+    assert connection_id is not None
 
     await db.delete(oauth_state)
     await token_manager.store(

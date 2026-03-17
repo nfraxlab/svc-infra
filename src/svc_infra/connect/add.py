@@ -43,7 +43,7 @@ def add_connect(app: FastAPI, *, prefix: str = "/connect") -> None:
     @asynccontextmanager
     async def connect_lifespan(_app: FastAPI):
         try:
-            settings = ConnectSettings()
+            settings = ConnectSettings()  # type: ignore[call-arg]
         except Exception as exc:
             raise RuntimeError(
                 "CONNECT_TOKEN_ENCRYPTION_KEY is missing or invalid. "
@@ -84,7 +84,7 @@ def add_connect(app: FastAPI, *, prefix: str = "/connect") -> None:
                         delete(OAuthState).where(OAuthState.expires_at <= datetime.now(UTC))
                     )
                     await db.commit()
-                    deleted = result.rowcount
+                    deleted = result.rowcount  # type: ignore[attr-defined]
                     if deleted:
                         logger.debug("connect: purged %d expired OAuthState rows", deleted)
             except Exception as exc:

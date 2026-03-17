@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, cast
 from uuid import UUID
 
 import httpx
@@ -48,7 +48,7 @@ class ConnectionTokenManager:
         return self._encrypt(json.dumps(value))
 
     def _decrypt_json(self, value: str) -> dict[str, Any]:
-        return json.loads(self._decrypt(value))
+        return cast(dict[str, Any], json.loads(self._decrypt(value)))
 
     # ------------------------------------------------------------------
     # Public API
@@ -101,7 +101,7 @@ class ConnectionTokenManager:
             updated = await self._repo.update(db, existing.id, update_data)
             return updated  # type: ignore[return-value]
 
-        return await self._repo.create(db, data)  # type: ignore[return-value]
+        return await self._repo.create(db, data)  # type: ignore[return-value, no-any-return]
 
     async def get(
         self,

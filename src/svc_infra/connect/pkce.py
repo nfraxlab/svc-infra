@@ -4,6 +4,7 @@ import base64
 import hashlib
 import secrets
 from datetime import UTC, datetime, timedelta
+from typing import Any, cast
 from urllib.parse import urlencode, urlparse
 
 import httpx
@@ -146,7 +147,7 @@ async def exchange_code(
             f"Token exchange error: {data['error']} — {data.get('error_description', '')}"
         )
 
-    return data
+    return cast(dict[str, Any], data)
 
 
 async def exchange_refresh(
@@ -183,4 +184,4 @@ async def exchange_refresh(
     if "access_token" not in data:
         raise OAuthRefreshError("No access_token in refresh response")
 
-    return data
+    return cast(dict[str, Any], data)

@@ -58,6 +58,8 @@ import os
 from collections.abc import Callable
 from typing import Any
 
+from pydantic import SecretStr
+
 from svc_infra.connect.registry import OAuthProvider
 
 # ---------------------------------------------------------------------------
@@ -801,7 +803,7 @@ def _load_known_provider(name: str) -> OAuthProvider | None:
     if login_val is not None:
         cfg["login_enabled"] = login_val.lower() in ("true", "1", "yes")
 
-    return OAuthProvider(name=name, client_id=cid, client_secret=csecret, **cfg)
+    return OAuthProvider(name=name, client_id=cid, client_secret=SecretStr(csecret), **cfg)
 
 
 def load_all_connect_providers() -> list[OAuthProvider]:
@@ -878,7 +880,7 @@ def _load_generic_providers() -> list[OAuthProvider]:
             OAuthProvider(
                 name=name,
                 client_id=client_id,
-                client_secret=client_secret,
+                client_secret=SecretStr(client_secret),
                 authorize_url=authorize_url,
                 token_url=token_url,
                 revoke_url=revoke_url,
