@@ -207,7 +207,9 @@ class TestMCPOAuthDiscovery:
         mock_client.post = AsyncMock(return_value=mock_resp)
 
         discovery = self._make_discovery()
-        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient", return_value=mock_client):
+        with patch(
+            "svc_infra.connect.mcp_discovery.new_async_httpx_client", return_value=mock_client
+        ):
             result = await discovery.is_mcp_oauth_supported("https://mcp.example.com")
         assert result is True
 
@@ -221,7 +223,9 @@ class TestMCPOAuthDiscovery:
         mock_client.post = AsyncMock(return_value=mock_resp)
 
         discovery = self._make_discovery()
-        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient", return_value=mock_client):
+        with patch(
+            "svc_infra.connect.mcp_discovery.new_async_httpx_client", return_value=mock_client
+        ):
             result = await discovery.is_mcp_oauth_supported("https://mcp.example.com")
         assert result is False
 
@@ -234,7 +238,9 @@ class TestMCPOAuthDiscovery:
         mock_client.post = AsyncMock(side_effect=httpx.ConnectError("connection refused"))
 
         discovery = self._make_discovery()
-        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient", return_value=mock_client):
+        with patch(
+            "svc_infra.connect.mcp_discovery.new_async_httpx_client", return_value=mock_client
+        ):
             result = await discovery.is_mcp_oauth_supported("https://mcp.example.com")
         assert result is False
 
@@ -255,7 +261,9 @@ class TestMCPOAuthDiscovery:
                 new_callable=AsyncMock,
                 return_value="https://mcp.example.com/.well-known/oauth-protected-resource",
             ),
-            patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient", return_value=mock_client),
+            patch(
+                "svc_infra.connect.mcp_discovery.new_async_httpx_client", return_value=mock_client
+            ),
         ):
             with pytest.raises(MCPOAuthNotSupported, match="RFC 9728"):
                 await discovery._fetch_resource_metadata("https://mcp.example.com")
@@ -276,7 +284,9 @@ class TestMCPOAuthDiscovery:
                 new_callable=AsyncMock,
                 return_value="https://mcp.example.com/.well-known/oauth-protected-resource",
             ),
-            patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient", return_value=mock_client),
+            patch(
+                "svc_infra.connect.mcp_discovery.new_async_httpx_client", return_value=mock_client
+            ),
         ):
             with pytest.raises(MCPOAuthNotSupported, match="resource metadata"):
                 await discovery._fetch_resource_metadata("https://mcp.example.com")
@@ -297,7 +307,9 @@ class TestMCPOAuthDiscovery:
         mock_client.post = AsyncMock(return_value=mock_resp)
 
         discovery = self._make_discovery()
-        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient", return_value=mock_client):
+        with patch(
+            "svc_infra.connect.mcp_discovery.new_async_httpx_client", return_value=mock_client
+        ):
             url = await discovery._probe_resource_metadata_url("https://api.example.com/mcp/")
 
         assert url == "https://api.example.com/.well-known/oauth-protected-resource/mcp/"
@@ -312,7 +324,9 @@ class TestMCPOAuthDiscovery:
         mock_client.post = AsyncMock(return_value=mock_resp)
 
         discovery = self._make_discovery()
-        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient", return_value=mock_client):
+        with patch(
+            "svc_infra.connect.mcp_discovery.new_async_httpx_client", return_value=mock_client
+        ):
             url = await discovery._probe_resource_metadata_url("https://mcp.example.com/")
 
         assert url == "https://mcp.example.com/.well-known/oauth-protected-resource"
@@ -326,7 +340,9 @@ class TestMCPOAuthDiscovery:
         mock_client.post = AsyncMock(side_effect=httpx.ConnectError("refused"))
 
         discovery = self._make_discovery()
-        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient", return_value=mock_client):
+        with patch(
+            "svc_infra.connect.mcp_discovery.new_async_httpx_client", return_value=mock_client
+        ):
             url = await discovery._probe_resource_metadata_url("https://mcp.example.com/")
 
         assert url == "https://mcp.example.com/.well-known/oauth-protected-resource"
@@ -467,7 +483,7 @@ class TestWellKnownFallback:
             "authorization_servers": ["https://mcp.notion.com"],
         }
 
-        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient") as MockClient:
+        with patch("svc_infra.connect.mcp_discovery.new_async_httpx_client") as MockClient:
             client_instance = AsyncMock()
             client_instance.post.return_value = mock_post_resp
             client_instance.get.return_value = mock_wellknown_resp
@@ -492,7 +508,7 @@ class TestWellKnownFallback:
         mock_wellknown_resp = MagicMock()
         mock_wellknown_resp.status_code = 404
 
-        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient") as MockClient:
+        with patch("svc_infra.connect.mcp_discovery.new_async_httpx_client") as MockClient:
             client_instance = AsyncMock()
             client_instance.post.return_value = mock_post_resp
             client_instance.get.return_value = mock_wellknown_resp
@@ -542,7 +558,7 @@ class TestDynamicClientRegistration:
                 new_callable=AsyncMock,
                 return_value=auth_meta,
             ),
-            patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient") as MockClient,
+            patch("svc_infra.connect.mcp_discovery.new_async_httpx_client") as MockClient,
         ):
             mock_resp = MagicMock()
             mock_resp.status_code = 201
@@ -638,7 +654,9 @@ class TestOriginUrlInWellKnown:
         mock_client.post = AsyncMock(return_value=mock_resp)
 
         discovery = MCPOAuthDiscovery()
-        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient", return_value=mock_client):
+        with patch(
+            "svc_infra.connect.mcp_discovery.new_async_httpx_client", return_value=mock_client
+        ):
             url = await discovery._probe_resource_metadata_url("https://mcp.notion.com/mcp")
 
         assert url == "https://mcp.notion.com/.well-known/oauth-protected-resource"
@@ -653,7 +671,7 @@ class TestOriginUrlInWellKnown:
             "authorization_servers": ["https://mcp.notion.com"],
         }
 
-        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient") as MockClient:
+        with patch("svc_infra.connect.mcp_discovery.new_async_httpx_client") as MockClient:
             client_instance = AsyncMock()
             client_instance.get.return_value = mock_wellknown_resp
             MockClient.return_value.__aenter__ = AsyncMock(return_value=client_instance)
@@ -684,7 +702,7 @@ class TestOriginUrlInWellKnown:
             "authorization_servers": ["https://mcp.notion.com"],
         }
 
-        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient") as MockClient:
+        with patch("svc_infra.connect.mcp_discovery.new_async_httpx_client") as MockClient:
             client_instance = AsyncMock()
             client_instance.post.return_value = mock_post_resp
             client_instance.get.return_value = mock_wellknown_resp

@@ -73,14 +73,15 @@ def add_connect(app: FastAPI, *, prefix: str = "/connect") -> None:
 
         _, scheduler = easy_jobs()
 
-        from svc_infra.api.fastapi.db.sql.session import _SessionLocal
+        from svc_infra.api.fastapi.db.sql import get_session_factory
 
         async def _refresh_task() -> None:
-            if _SessionLocal is None:
+            session_factory = get_session_factory()
+            if session_factory is None:
                 logger.warning("connect: DB not initialised, skipping token refresh")
                 return
             try:
-                async with _SessionLocal() as db:
+                async with session_factory() as db:
                     count = await token_manager.refresh_expiring_tokens(db)
                     await db.commit()
                     if count:
@@ -89,11 +90,12 @@ def add_connect(app: FastAPI, *, prefix: str = "/connect") -> None:
                 logger.error("connect: token refresh background task failed: %s", exc)
 
         async def _cleanup_expired_states() -> None:
-            if _SessionLocal is None:
+            session_factory = get_session_factory()
+            if session_factory is None:
                 logger.warning("connect: DB not initialised, skipping state cleanup")
                 return
             try:
-                async with _SessionLocal() as db:
+                async with session_factory() as db:
                     result = await db.execute(
                         delete(OAuthState).where(OAuthState.expires_at <= datetime.now(UTC))
                     )
@@ -104,8 +106,23 @@ def add_connect(app: FastAPI, *, prefix: str = "/connect") -> None:
             except Exception as exc:
                 logger.error("connect: OAuthState cleanup task failed: %s", exc)
 
+        async def _cleanup_expired_tokens() -> None:
+            session_factory = get_session_factory()
+            if session_factory is None:
+                logger.warning("connect: DB not initialised, skipping token cleanup")
+                return
+            try:
+                async with session_factory() as db:
+                    count = await token_manager.cleanup_expired_tokens(db)
+                    await db.commit()
+                    if count:
+                        logger.debug("connect: purged %d expired token rows", count)
+            except Exception as exc:
+                logger.error("connect: token cleanup task failed: %s", exc)
+
         scheduler.add_task("connect:refresh_tokens", 300, _refresh_task)
         scheduler.add_task("connect:cleanup_states", 600, _cleanup_expired_states)
+        scheduler.add_task("connect:cleanup_tokens", 3600, _cleanup_expired_tokens)
         scheduler_task = asyncio.create_task(scheduler.run())
 
         if existing_lifespan is not None:

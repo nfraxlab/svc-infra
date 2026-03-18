@@ -14,6 +14,7 @@ Stop rebuilding auth, billing, webhooks, and background jobs for every project.
 ### Key Features
 
 - **Auth** - JWT, sessions, OAuth/OIDC, MFA, API keys
+- **Connect** - Third-party OAuth, MCP server discovery, token management
 - **Billing** - Usage tracking, subscriptions, invoices, Stripe sync
 - **Database** - PostgreSQL + MongoDB, migrations, inbox/outbox
 - **Jobs** - Background tasks, scheduling, retries, DLQ
@@ -47,6 +48,7 @@ pip install svc-infra
 | Feature | What You Get | One-liner |
 |---------|-------------|-----------|
 | **Auth** | JWT, sessions, OAuth/OIDC, MFA, API keys | `add_auth_users(app)` |
+| **Connect** | Third-party OAuth, MCP server discovery, token management | `add_connect(app)` |
 | **Billing** | Usage tracking, subscriptions, invoices, Stripe sync | `add_billing(app)` |
 | **Database** | PostgreSQL + MongoDB, migrations, inbox/outbox | `add_sql_db(app)` |
 | **Jobs** | Background tasks, scheduling, retries, DLQ | `easy_jobs()` |

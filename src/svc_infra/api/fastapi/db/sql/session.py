@@ -80,4 +80,15 @@ async def get_session() -> AsyncIterator[AsyncSession]:
 
 SqlSessionDep = Annotated[AsyncSession, Depends(get_session)]
 
-__all__ = ["SqlSessionDep", "initialize_session", "dispose_session"]
+
+def get_session_factory() -> async_sessionmaker[AsyncSession] | None:
+    """Return the module-level async session factory, or None if not initialised.
+
+    This is the public API for code that needs to create sessions outside of a
+    FastAPI request context (e.g. background jobs, closures).  Prefer
+    ``SqlSessionDep`` inside request handlers.
+    """
+    return _SessionLocal
+
+
+__all__ = ["SqlSessionDep", "initialize_session", "dispose_session", "get_session_factory"]

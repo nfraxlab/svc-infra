@@ -25,6 +25,25 @@ from svc_infra.connect.state import get_connect_settings, get_connect_token_mana
 logger = logging.getLogger(__name__)
 _mcp_discovery = MCPOAuthDiscovery()
 
+# Simple in-memory rate limiter for authorize/callback endpoints.
+_RATE_LIMIT_WINDOW = 60  # seconds
+_RATE_LIMIT_MAX_REQUESTS = 30  # per window per user
+_rate_limit_store: dict[str, list[float]] = {}
+
+
+def _check_rate_limit(key: str) -> None:
+    """Raise 429 if the key has exceeded the rate limit."""
+    import time
+
+    now = time.monotonic()
+    entries = _rate_limit_store.get(key, [])
+    entries = [t for t in entries if now - t < _RATE_LIMIT_WINDOW]
+    if len(entries) >= _RATE_LIMIT_MAX_REQUESTS:
+        raise HTTPException(429, "Too many requests. Please try again later.")
+    entries.append(now)
+    _rate_limit_store[key] = entries
+
+
 connect_router = APIRouter(tags=["connect"])
 
 
@@ -45,6 +64,7 @@ async def authorize(
     does not redirect directly to avoid CORS issues with API-first applications.
     """
     settings = get_connect_settings()
+    _check_rate_limit(f"authorize:{principal.user.id}")
 
     if provider is None and mcp_server_url is None:
         raise HTTPException(400, "Either 'provider' or 'mcp_server_url' is required")
@@ -77,9 +97,10 @@ async def authorize(
     state_value = generate_state()
     expires_at = datetime.now(UTC) + timedelta(seconds=settings.connect_state_ttl_seconds)
 
+    token_manager = get_connect_token_manager()
     oauth_state = OAuthState(
         state=state_value,
-        pkce_verifier=pkce_verifier,
+        pkce_verifier=token_manager._encrypt(pkce_verifier),
         provider=provider,
         connection_id=connection_id,
         user_id=principal.user.id,
@@ -118,6 +139,8 @@ async def callback(
     settings = get_connect_settings()
     token_manager = get_connect_token_manager()
     fallback_redirect = settings.connect_default_redirect_uri
+
+    _check_rate_limit(f"callback:{provider}")
 
     logger.info(
         "OAuth callback received: provider=%s query=%s",
@@ -194,10 +217,11 @@ async def callback(
         )
 
     try:
+        decrypted_verifier = token_manager._decrypt(oauth_state.pkce_verifier)
         token_response = await exchange_code(
             resolved_provider,
             code=code,
-            pkce_verifier=oauth_state.pkce_verifier,
+            pkce_verifier=decrypted_verifier,
             redirect_uri=f"{settings.connect_api_base}/connect/callback/{provider}",
         )
     except OAuthExchangeError as exc:
@@ -224,7 +248,11 @@ async def callback(
         provider=provider,
         token_response=token_response,
     )
-    await db.flush()
+    # Explicit commit so the token is guaranteed to be persisted before the
+    # redirect reaches the client.  Relying solely on the session middleware's
+    # auto-commit could race with the deep-link handler that triggers an
+    # immediate sync (which needs the token to be visible in a new session).
+    await db.commit()
 
     return RedirectResponse(
         url=f"{fallback_redirect}?success=true&connection_id={connection_id}",

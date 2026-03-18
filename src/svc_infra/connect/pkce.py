@@ -7,10 +7,10 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 from urllib.parse import urlencode, urlparse
 
-import httpx
 from fastapi import HTTPException
 
 from svc_infra.connect.registry import OAuthProvider
+from svc_infra.http import new_async_httpx_client
 
 
 class OAuthExchangeError(Exception):
@@ -133,7 +133,7 @@ async def exchange_code(
     if provider.pkce_required:
         payload["code_verifier"] = pkce_verifier
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with new_async_httpx_client(timeout_seconds=30.0) as client:
         response = await client.post(
             provider.token_url,
             data=payload,
@@ -169,7 +169,7 @@ async def exchange_refresh(
     if secret:
         payload["client_secret"] = secret
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with new_async_httpx_client(timeout_seconds=30.0) as client:
         response = await client.post(
             provider.token_url,
             data=payload,

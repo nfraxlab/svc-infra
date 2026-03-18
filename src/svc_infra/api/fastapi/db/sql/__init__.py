@@ -3,11 +3,12 @@ from svc_infra.api.fastapi.db.sql.add import (
     add_sql_health,
     add_sql_resources,
 )
-from svc_infra.api.fastapi.db.sql.session import SqlSessionDep
+from svc_infra.api.fastapi.db.sql.session import SqlSessionDep, get_session_factory
 
 __all__ = [
     "SqlSessionDep",
     "add_sql_health",
     "add_sql_db",
     "add_sql_resources",
+    "get_session_factory",
 ]
