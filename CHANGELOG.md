@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.17.0 (2026-03-18)
+
+### Features
+
+- Complete MCP OAuth flow with RFC 9728 well-known fallback, dynamic registration, and public client
+  support ([#109](https://github.com/nfraxlab/svc-infra/pull/109),
+  [`e716eea`](https://github.com/nfraxlab/svc-infra/commit/e716eea48c46cf20d1765f1b3cfde3f40534443f))
+
+
 ## v1.16.1 (2026-03-18)
 
 ### Bug Fixes
