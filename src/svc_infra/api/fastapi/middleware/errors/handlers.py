@@ -120,6 +120,24 @@ def register_error_handlers(app):
     @app.exception_handler(HTTPException)
     async def handle_http_exception(request: Request, exc: HTTPException):
         trace_id = _trace_id_from_request(request)
+        # Preserve headers set on the exception (e.g., Retry-After for rate limits)
+        hdrs: dict[str, str] | None = None
+        try:
+            exc_headers = getattr(exc, "headers", None)
+            if exc_headers is not None:
+                # FastAPI/Starlette exceptions store headers as a dict[str, str]
+                hdrs = dict(exc_headers)
+        except Exception:
+            hdrs = None
+        # When detail is intentionally structured (dict/list), preserve
+        # FastAPI's default JSON format.  Converting to problem+json would
+        # stringify the structured data, breaking clients that parse it.
+        if isinstance(exc.detail, (dict, list)):
+            return JSONResponse(
+                status_code=exc.status_code,
+                content={"detail": exc.detail},
+                headers=hdrs,
+            )
         title = {
             401: "Unauthorized",
             403: "Forbidden",
@@ -131,19 +149,10 @@ def register_error_handlers(app):
             if not IS_PROD or exc.status_code < 500
             else "Something went wrong. Please contact support."
         )
-        # Preserve headers set on the exception (e.g., Retry-After for rate limits)
-        hdrs: dict[str, str] | None = None
-        try:
-            exc_headers = getattr(exc, "headers", None)
-            if exc_headers is not None:
-                # FastAPI/Starlette exceptions store headers as a dict[str, str]
-                hdrs = dict(exc_headers)
-        except Exception:
-            hdrs = None
         return problem_response(
             status=exc.status_code,
             title=title,
-            detail=str(detail) if isinstance(detail, (dict, list)) else detail,
+            detail=detail,
             code=title.replace(" ", "_").upper(),
             instance=str(request.url),
             trace_id=trace_id,
@@ -152,6 +161,20 @@ def register_error_handlers(app):
 
     @app.exception_handler(StarletteHTTPException)
     async def handle_starlette_http_exception(request: Request, exc: StarletteHTTPException):
+        hdrs: dict[str, str] | None = None
+        try:
+            exc_headers = getattr(exc, "headers", None)
+            if exc_headers is not None:
+                hdrs = dict(exc_headers)
+        except Exception:
+            hdrs = None
+        # Structured dict/list details: preserve FastAPI's default format.
+        if isinstance(exc.detail, (dict, list)):
+            return JSONResponse(
+                status_code=exc.status_code,
+                content={"detail": exc.detail},
+                headers=hdrs,
+            )
         trace_id = _trace_id_from_request(request)
         title = {
             401: "Unauthorized",
@@ -164,17 +187,10 @@ def register_error_handlers(app):
             if not IS_PROD or exc.status_code < 500
             else "Something went wrong. Please contact support."
         )
-        hdrs: dict[str, str] | None = None
-        try:
-            exc_headers = getattr(exc, "headers", None)
-            if exc_headers is not None:
-                hdrs = dict(exc_headers)
-        except Exception:
-            hdrs = None
         return problem_response(
             status=exc.status_code,
             title=title,
-            detail=str(detail) if isinstance(detail, (dict, list)) else detail,
+            detail=detail,
             code=title.replace(" ", "_").upper(),
             instance=str(request.url),
             trace_id=trace_id,

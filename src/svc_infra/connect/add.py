@@ -57,6 +57,20 @@ def add_connect(app: FastAPI, *, prefix: str = "/connect") -> None:
         )
         set_connect_state(settings, token_manager)
 
+        # Populate the OAuth provider registry from environment variables.
+        # Must happen inside the lifespan (after env vars are set) so that
+        # credentials like GITHUB_CLIENT_ID are visible.
+        from svc_infra.connect.providers.generic import load_all_connect_providers
+
+        for _provider in load_all_connect_providers():
+            _default_registry.register(_provider)
+
+        _loaded = len(_default_registry.list())
+        if _loaded:
+            logger.info("connect: loaded %d OAuth provider(s) from environment", _loaded)
+        else:
+            logger.warning("connect: no OAuth providers found in environment")
+
         _, scheduler = easy_jobs()
 
         from svc_infra.api.fastapi.db.sql.session import _SessionLocal

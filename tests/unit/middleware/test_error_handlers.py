@@ -170,3 +170,83 @@ class TestProblemMediaType:
     def test_correct_media_type(self) -> None:
         """Media type is application/problem+json."""
         assert PROBLEM_MT == "application/problem+json"
+
+
+class TestHTTPExceptionHandlerDictDetail:
+    """Verify that HTTPException with dict/list detail is preserved, not stringified."""
+
+    def test_dict_detail_preserved_in_json_response(self) -> None:
+        """Dict detail is returned as structured JSON, not str(detail)."""
+        from fastapi import FastAPI
+        from fastapi import HTTPException as _HTTPException
+        from fastapi.testclient import TestClient
+
+        from svc_infra.api.fastapi.middleware.errors.handlers import register_error_handlers
+
+        app = FastAPI()
+        register_error_handlers(app)
+
+        @app.get("/oauth-502")
+        async def oauth_trigger():
+            raise _HTTPException(
+                status_code=502,
+                detail={
+                    "error": "Unauthorized",
+                    "oauth_supported": True,
+                    "authorize_url": "https://github.com/login/oauth/authorize?client_id=abc",
+                },
+            )
+
+        client = TestClient(app, raise_server_exceptions=False)
+        resp = client.get("/oauth-502")
+        assert resp.status_code == 502
+        body = resp.json()
+        # detail must be a dict, not a stringified repr
+        assert isinstance(body["detail"], dict)
+        assert body["detail"]["oauth_supported"] is True
+        assert body["detail"]["authorize_url"].startswith("https://github.com/")
+
+    def test_list_detail_preserved_in_json_response(self) -> None:
+        """List detail is returned as structured JSON, not str(detail)."""
+        from fastapi import FastAPI
+        from fastapi import HTTPException as _HTTPException
+        from fastapi.testclient import TestClient
+
+        from svc_infra.api.fastapi.middleware.errors.handlers import register_error_handlers
+
+        app = FastAPI()
+        register_error_handlers(app)
+
+        @app.get("/list-detail")
+        async def list_trigger():
+            raise _HTTPException(status_code=400, detail=[{"field": "email", "error": "required"}])
+
+        client = TestClient(app, raise_server_exceptions=False)
+        resp = client.get("/list-detail")
+        assert resp.status_code == 400
+        body = resp.json()
+        assert isinstance(body["detail"], list)
+        assert body["detail"][0]["field"] == "email"
+
+    def test_string_detail_uses_problem_json(self) -> None:
+        """String detail still returns RFC 7807 problem+json."""
+        from fastapi import FastAPI
+        from fastapi import HTTPException as _HTTPException
+        from fastapi.testclient import TestClient
+
+        from svc_infra.api.fastapi.middleware.errors.handlers import register_error_handlers
+
+        app = FastAPI()
+        register_error_handlers(app)
+
+        @app.get("/string-detail")
+        async def string_trigger():
+            raise _HTTPException(status_code=404, detail="Resource not found")
+
+        client = TestClient(app, raise_server_exceptions=False)
+        resp = client.get("/string-detail")
+        assert resp.status_code == 404
+        body = resp.json()
+        assert body["detail"] == "Resource not found"
+        assert body["title"] == "Not Found"
+        assert resp.headers["content-type"].startswith("application/problem+json")
