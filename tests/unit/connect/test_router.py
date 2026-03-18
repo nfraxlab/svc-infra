@@ -128,7 +128,7 @@ class TestAuthorizeEndpoint:
 
     async def test_mcp_discovery_path(self, connect_client):
         """mcp_server_url triggers MCPOAuthDiscovery.discover() and resolves provider."""
-        client, _, _, reg = connect_client
+        client, _, _, _reg = connect_client
 
         mock_provider = _make_provider()
         mock_provider = mock_provider.model_copy(update={"name": "mcp:https://mcp.example.com"})
@@ -170,7 +170,7 @@ class TestCallbackEndpoint:
         state = MagicMock(spec=OAuthState)
         state.state = "valid_state"
         state.provider = provider
-        state.pkce_verifier = "verifier"
+        state.pkce_verifier = manager._encrypt("verifier")
         state.user_id = _USER_ID
         state.connection_id = _CONN_ID
         state.redirect_uri = "http://app.example.com/callback"
@@ -307,7 +307,7 @@ class TestCallbackEndpoint:
 
     async def test_callback_provider_rediscovery(self, connect_client):
         """When provider is not in registry, callback attempts re-discovery for MCP providers."""
-        client, mock_db, token_manager, reg = connect_client
+        client, mock_db, token_manager, _reg = connect_client
         oauth_state = self._make_oauth_state(token_manager, provider="mcp-mcp.example.com")
 
         async def _execute(_stmt):

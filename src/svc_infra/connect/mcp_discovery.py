@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
+import threading
 import time
 from typing import Any
 from urllib.parse import urlparse
@@ -11,6 +12,7 @@ from pydantic import SecretStr
 
 from svc_infra.connect.registry import OAuthProvider
 from svc_infra.connect.registry import registry as _registry
+from svc_infra.http import new_async_httpx_client
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +25,7 @@ class MCPOAuthNotSupported(Exception):
 
 
 _DISCOVERY_CACHE: dict[str, tuple[OAuthProvider, float]] = {}
+_CACHE_LOCK = threading.Lock()
 _CACHE_TTL_SECONDS = 3600  # MCP server metadata rarely changes
 
 
@@ -82,7 +85,8 @@ class MCPOAuthDiscovery:
         - The authorization server metadata is unreachable or malformed
         """
         now = time.monotonic()
-        cached = _DISCOVERY_CACHE.get(mcp_server_url)
+        with _CACHE_LOCK:
+            cached = _DISCOVERY_CACHE.get(mcp_server_url)
         if cached is not None:
             provider, ts = cached
             if now - ts < _CACHE_TTL_SECONDS:
@@ -113,7 +117,8 @@ class MCPOAuthDiscovery:
                     existing.name,
                     extra={"url": mcp_server_url},
                 )
-                _DISCOVERY_CACHE[mcp_server_url] = (existing, now)
+                with _CACHE_LOCK:
+                    _DISCOVERY_CACHE[mcp_server_url] = (existing, now)
                 return existing
 
         logger.info(
@@ -134,7 +139,8 @@ class MCPOAuthDiscovery:
                 provider, registration_endpoint, redirect_uri
             )
 
-        _DISCOVERY_CACHE[mcp_server_url] = (provider, now)
+        with _CACHE_LOCK:
+            _DISCOVERY_CACHE[mcp_server_url] = (provider, now)
         return provider
 
     async def is_mcp_oauth_supported(self, mcp_server_url: str) -> bool:
@@ -146,7 +152,7 @@ class MCPOAuthDiscovery:
         checking the well-known resource metadata endpoint directly.
         """
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            async with new_async_httpx_client(timeout_seconds=10.0) as client:
                 response = await client.post(
                     mcp_server_url,
                     json={"jsonrpc": "2.0", "method": "initialize", "id": 1, "params": {}},
@@ -199,7 +205,7 @@ class MCPOAuthDiscovery:
         """GET the well-known resource metadata URL and check for authorization_servers."""
         url = _origin_url(mcp_server_url) + "/.well-known/oauth-protected-resource"
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            async with new_async_httpx_client(timeout_seconds=10.0) as client:
                 response = await client.get(url, headers={"Accept": "application/json"})
         except httpx.RequestError as exc:
             logger.debug(
@@ -234,7 +240,7 @@ class MCPOAuthDiscovery:
         # first so we can use the canonical URL rather than constructing a guess.
         url = await self._probe_resource_metadata_url(mcp_server_url)
         try:
-            async with httpx.AsyncClient(timeout=15.0) as client:
+            async with new_async_httpx_client(timeout_seconds=15.0) as client:
                 response = await client.get(url, headers={"Accept": "application/json"})
         except httpx.RequestError as exc:
             raise MCPOAuthNotSupported(
@@ -267,7 +273,7 @@ class MCPOAuthDiscovery:
         """
         default = _origin_url(mcp_server_url) + "/.well-known/oauth-protected-resource"
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            async with new_async_httpx_client(timeout_seconds=10.0) as client:
                 response = await client.post(
                     mcp_server_url,
                     json={"jsonrpc": "2.0", "method": "initialize", "id": 1, "params": {}},
@@ -296,7 +302,7 @@ class MCPOAuthDiscovery:
     async def _fetch_auth_server_metadata(self, auth_server_url: str) -> dict[str, Any]:
         url = auth_server_url + "/.well-known/oauth-authorization-server"
         try:
-            async with httpx.AsyncClient(timeout=15.0) as client:
+            async with new_async_httpx_client(timeout_seconds=15.0) as client:
                 response = await client.get(url, headers={"Accept": "application/json"})
         except httpx.RequestError as exc:
             raise MCPOAuthNotSupported(
@@ -368,7 +374,7 @@ class MCPOAuthDiscovery:
             "token_endpoint_auth_method": "none",
         }
         try:
-            async with httpx.AsyncClient(timeout=15.0) as client:
+            async with new_async_httpx_client(timeout_seconds=15.0) as client:
                 response = await client.post(
                     registration_endpoint,
                     json=body,

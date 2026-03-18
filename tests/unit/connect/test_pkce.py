@@ -208,7 +208,7 @@ class TestExchangeCode:
         mock_client.__aexit__ = AsyncMock(return_value=False)
         mock_client.post = AsyncMock(return_value=mock_resp)
 
-        with patch("svc_infra.connect.pkce.httpx.AsyncClient", return_value=mock_client):
+        with patch("svc_infra.connect.pkce.new_async_httpx_client", return_value=mock_client):
             result = await exchange_code(
                 provider,
                 code="code123",
@@ -225,7 +225,7 @@ class TestExchangeCode:
         mock_client.__aexit__ = AsyncMock(return_value=False)
         mock_client.post = AsyncMock(return_value=mock_resp)
 
-        with patch("svc_infra.connect.pkce.httpx.AsyncClient", return_value=mock_client):
+        with patch("svc_infra.connect.pkce.new_async_httpx_client", return_value=mock_client):
             with pytest.raises(OAuthExchangeError):
                 await exchange_code(
                     provider, code="code", pkce_verifier="v", redirect_uri="https://x.com"
@@ -239,7 +239,7 @@ class TestExchangeCode:
         mock_client.__aexit__ = AsyncMock(return_value=False)
         mock_client.post = AsyncMock(return_value=mock_resp)
 
-        with patch("svc_infra.connect.pkce.httpx.AsyncClient", return_value=mock_client):
+        with patch("svc_infra.connect.pkce.new_async_httpx_client", return_value=mock_client):
             with pytest.raises(OAuthExchangeError):
                 await exchange_code(
                     provider, code="code", pkce_verifier="v", redirect_uri="https://x.com"
@@ -256,7 +256,7 @@ class TestExchangeRefresh:
         mock_client.__aexit__ = AsyncMock(return_value=False)
         mock_client.post = AsyncMock(return_value=mock_resp)
 
-        with patch("svc_infra.connect.pkce.httpx.AsyncClient", return_value=mock_client):
+        with patch("svc_infra.connect.pkce.new_async_httpx_client", return_value=mock_client):
             result = await exchange_refresh(provider, "refresh_token_value")
         assert result["access_token"] == "new_tok"
 
@@ -268,7 +268,7 @@ class TestExchangeRefresh:
         mock_client.__aexit__ = AsyncMock(return_value=False)
         mock_client.post = AsyncMock(return_value=mock_resp)
 
-        with patch("svc_infra.connect.pkce.httpx.AsyncClient", return_value=mock_client):
+        with patch("svc_infra.connect.pkce.new_async_httpx_client", return_value=mock_client):
             with pytest.raises(OAuthRefreshError):
                 await exchange_refresh(provider, "bad_refresh")
 
@@ -280,6 +280,6 @@ class TestExchangeRefresh:
         mock_client.__aexit__ = AsyncMock(return_value=False)
         mock_client.post = AsyncMock(return_value=mock_resp)
 
-        with patch("svc_infra.connect.pkce.httpx.AsyncClient", return_value=mock_client):
+        with patch("svc_infra.connect.pkce.new_async_httpx_client", return_value=mock_client):
             with pytest.raises(OAuthRefreshError):
                 await exchange_refresh(provider, "refresh")

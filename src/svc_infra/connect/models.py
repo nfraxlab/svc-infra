@@ -92,7 +92,7 @@ class OAuthState(ModelBase):
     pkce_verifier: Mapped[str] = mapped_column(
         Text,
         nullable=False,
-        comment="Stored server-side; sent to token endpoint on callback",
+        comment="Fernet-encrypted; decrypted only at token exchange time",
     )
     provider: Mapped[str] = mapped_column(String(255), nullable=False)
     connection_id: Mapped[uuid.UUID | None] = mapped_column(
@@ -103,6 +103,7 @@ class OAuthState(ModelBase):
         GUID(),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
+        index=True,
     )
     redirect_uri: Mapped[str] = mapped_column(
         Text,

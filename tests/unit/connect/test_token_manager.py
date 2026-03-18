@@ -226,16 +226,16 @@ class TestGetValidToken:
         )
         assert token is None
 
-    async def test_does_not_raise_on_exception(self):
-        """get_valid_token must never raise; return None instead."""
+    async def test_propagates_non_token_exceptions(self):
+        """get_valid_token propagates DB/network errors instead of swallowing them."""
         manager = _make_manager()
         db = MagicMock()
         db.execute = AsyncMock(side_effect=RuntimeError("db error"))
 
-        token = await manager.get_valid_token(
-            db, connection_id=_CONN_ID, user_id=_USER_ID, provider=_PROVIDER
-        )
-        assert token is None
+        with pytest.raises(RuntimeError, match="db error"):
+            await manager.get_valid_token(
+                db, connection_id=_CONN_ID, user_id=_USER_ID, provider=_PROVIDER
+            )
 
 
 @pytest.mark.asyncio
@@ -262,7 +262,9 @@ class TestRevoke:
         mock_client.__aexit__ = AsyncMock(return_value=False)
         mock_client.post = AsyncMock(return_value=MagicMock(status_code=200))
 
-        with patch("svc_infra.connect.token_manager.httpx.AsyncClient", return_value=mock_client):
+        with patch(
+            "svc_infra.connect.token_manager.new_async_httpx_client", return_value=mock_client
+        ):
             await manager.revoke(db, connection_id=_CONN_ID, user_id=_USER_ID, provider=_PROVIDER)
 
         mock_client.post.assert_awaited_once()

@@ -1,20 +1,21 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 from uuid import UUID
 
-import httpx
 from cryptography.fernet import Fernet, InvalidToken
-from sqlalchemy import and_, select
+from sqlalchemy import and_, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from svc_infra.connect.models import ConnectionToken
 from svc_infra.connect.pkce import OAuthRefreshError, coerce_expires_at, exchange_refresh
 from svc_infra.connect.registry import ConnectRegistry
 from svc_infra.db.sql.repository import SqlRepository
+from svc_infra.http import new_async_httpx_client
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,8 @@ class ConnectionTokenManager:
         self._fernet = Fernet(key_bytes)
         self._repo = SqlRepository(model=ConnectionToken)
         self._registry = registry
+        # Guards concurrent refresh attempts for the same token.
+        self._refresh_locks: dict[UUID, asyncio.Lock] = {}
 
     # ------------------------------------------------------------------
     # Encryption helpers
@@ -132,36 +135,36 @@ class ConnectionTokenManager:
     ) -> str | None:
         """Return a decrypted, valid access token; auto-refresh if within 5 minutes of expiry.
 
-        Returns None if no token is stored or refresh fails. Never raises.
+        Returns None if no token is stored or decryption fails.
+        Raises on unexpected DB/network errors so callers can distinguish
+        "no token" from "infrastructure failure".
         """
+        row = await self.get(db, connection_id=connection_id, user_id=user_id, provider=provider)
+        if row is None:
+            return None
+
+        now = datetime.now(UTC)
+        expires_at = row.expires_at
+        if expires_at is not None and expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=UTC)
+        needs_refresh = expires_at is not None and expires_at <= now + timedelta(
+            seconds=_REFRESH_AHEAD_SECONDS
+        )
+
+        if needs_refresh and row.refresh_token:
+            row = await self._refresh_token(db, row)
+
+        if row is None:
+            return None
+
         try:
-            row = await self.get(
-                db, connection_id=connection_id, user_id=user_id, provider=provider
-            )
-            if row is None:
-                return None
-
-            now = datetime.now(UTC)
-            expires_at = row.expires_at
-            if expires_at is not None and expires_at.tzinfo is None:
-                expires_at = expires_at.replace(tzinfo=UTC)
-            needs_refresh = expires_at is not None and expires_at <= now + timedelta(
-                seconds=_REFRESH_AHEAD_SECONDS
-            )
-
-            if needs_refresh and row.refresh_token:
-                row = await self._refresh_token(db, row)
-
-            if row is None:
-                return None
-
             return self._decrypt(row.access_token)
-        except (InvalidToken, Exception) as exc:
+        except InvalidToken:
             logger.warning(
-                "get_valid_token failed for connection_id=%s provider=%s: %s",
+                "get_valid_token: decryption failed for connection_id=%s provider=%s "
+                "(encryption key may have rotated)",
                 connection_id,
                 provider,
-                exc,
             )
             return None
 
@@ -183,7 +186,7 @@ class ConnectionTokenManager:
             if prov and prov.revoke_url:
                 try:
                     access_token = self._decrypt(row.access_token)
-                    async with httpx.AsyncClient(timeout=10.0) as client:
+                    async with new_async_httpx_client(timeout_seconds=10.0) as client:
                         await client.post(
                             prov.revoke_url,
                             data={"token": access_token, "client_id": prov.client_id},
@@ -236,6 +239,27 @@ class ConnectionTokenManager:
                 )
         return refreshed
 
+    async def cleanup_expired_tokens(self, db: AsyncSession) -> int:
+        """Delete ConnectionToken rows whose expires_at is in the past and have no refresh_token.
+
+        Tokens with a refresh_token are kept because the background refresh job
+        may still be able to renew them.  Returns the number of deleted rows.
+        """
+        now = datetime.now(UTC)
+        stmt = delete(ConnectionToken).where(
+            and_(
+                ConnectionToken.expires_at.is_not(None),
+                ConnectionToken.expires_at <= now,
+                ConnectionToken.refresh_token.is_(None),
+            )
+        )
+        result = await db.execute(stmt)
+        deleted: int = result.rowcount  # type: ignore[attr-defined]
+        if deleted:
+            await db.flush()
+            logger.info("cleanup_expired_tokens: purged %d expired token rows", deleted)
+        return deleted
+
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
@@ -245,6 +269,30 @@ class ConnectionTokenManager:
         db: AsyncSession,
         row: ConnectionToken,
     ) -> ConnectionToken | None:
+        # Per-connection lock prevents two concurrent callers from both
+        # refreshing the same token simultaneously.
+        lock = self._refresh_locks.setdefault(row.connection_id, asyncio.Lock())
+        async with lock:
+            # Re-read the row inside the lock — another coroutine may have
+            # already refreshed it while we were waiting.
+            fresh_row = await self.get(
+                db,
+                connection_id=row.connection_id,
+                user_id=row.user_id,
+                provider=row.provider,
+            )
+            if fresh_row is not None and fresh_row.updated_at > row.updated_at:
+                return fresh_row
+            row = fresh_row if fresh_row is not None else row
+
+            return await self._do_refresh(db, row)
+
+    async def _do_refresh(
+        self,
+        db: AsyncSession,
+        row: ConnectionToken,
+    ) -> ConnectionToken | None:
+        """Execute the actual token refresh exchange (always called under lock)."""
         if self._registry is None:
             logger.warning("Cannot refresh token: no registry attached to ConnectionTokenManager")
             return row
