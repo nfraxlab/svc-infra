@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.16.1 (2026-03-18)
+
+### Bug Fixes
+
+- Preserve dict/list detail in HTTPException error handlers and enhance MCP OAuth discovery
+  ([#108](https://github.com/nfraxlab/svc-infra/pull/108),
+  [`b503193`](https://github.com/nfraxlab/svc-infra/commit/b5031937d3433312d868126038dfa0b7179138ea))
+
+
 ## v1.16.0 (2026-03-17)
 
 ### Features
