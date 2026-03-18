@@ -248,7 +248,15 @@ class TestMCPOAuthDiscovery:
         mock_client.get = AsyncMock(return_value=mock_resp)
 
         discovery = self._make_discovery()
-        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient", return_value=mock_client):
+        with (
+            patch.object(
+                discovery,
+                "_probe_resource_metadata_url",
+                new_callable=AsyncMock,
+                return_value="https://mcp.example.com/.well-known/oauth-protected-resource",
+            ),
+            patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient", return_value=mock_client),
+        ):
             with pytest.raises(MCPOAuthNotSupported, match="RFC 9728"):
                 await discovery._fetch_resource_metadata("https://mcp.example.com")
 
@@ -261,6 +269,176 @@ class TestMCPOAuthDiscovery:
         mock_client.get = AsyncMock(side_effect=httpx.ConnectError("refused"))
 
         discovery = self._make_discovery()
-        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient", return_value=mock_client):
+        with (
+            patch.object(
+                discovery,
+                "_probe_resource_metadata_url",
+                new_callable=AsyncMock,
+                return_value="https://mcp.example.com/.well-known/oauth-protected-resource",
+            ),
+            patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient", return_value=mock_client),
+        ):
             with pytest.raises(MCPOAuthNotSupported, match="resource metadata"):
                 await discovery._fetch_resource_metadata("https://mcp.example.com")
+
+    @pytest.mark.asyncio
+    async def test_probe_resource_metadata_url_returns_header_url(self):
+        """When server returns 401 with resource_metadata in WWW-Authenticate, use that URL."""
+        mock_resp = _mock_http_response(
+            401,
+            {},
+            headers={
+                "www-authenticate": 'Bearer resource_metadata="https://api.example.com/.well-known/oauth-protected-resource/mcp/"'
+            },
+        )
+        mock_client = AsyncMock()
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client.post = AsyncMock(return_value=mock_resp)
+
+        discovery = self._make_discovery()
+        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient", return_value=mock_client):
+            url = await discovery._probe_resource_metadata_url("https://api.example.com/mcp/")
+
+        assert url == "https://api.example.com/.well-known/oauth-protected-resource/mcp/"
+
+    @pytest.mark.asyncio
+    async def test_probe_resource_metadata_url_falls_back_on_200(self):
+        """When server returns 200 (no auth), fall back to default URL construction."""
+        mock_resp = _mock_http_response(200, {}, headers={})
+        mock_client = AsyncMock()
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client.post = AsyncMock(return_value=mock_resp)
+
+        discovery = self._make_discovery()
+        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient", return_value=mock_client):
+            url = await discovery._probe_resource_metadata_url("https://mcp.example.com/")
+
+        assert url == "https://mcp.example.com/.well-known/oauth-protected-resource"
+
+    @pytest.mark.asyncio
+    async def test_probe_resource_metadata_url_falls_back_on_network_error(self):
+        """Network error probing server falls back to default URL construction."""
+        mock_client = AsyncMock()
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client.post = AsyncMock(side_effect=httpx.ConnectError("refused"))
+
+        discovery = self._make_discovery()
+        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient", return_value=mock_client):
+            url = await discovery._probe_resource_metadata_url("https://mcp.example.com/")
+
+        assert url == "https://mcp.example.com/.well-known/oauth-protected-resource"
+
+    def test_build_provider_reuses_registered_provider_on_matching_auth_url(self):
+        """When a registered provider's authorize_url matches the discovered
+        authorization_endpoint, _build_provider returns that provider so its
+        client_id/secret are preserved (needed for GitHub which has no dynamic
+        client registration)."""
+        from pydantic import SecretStr as _SecretStr
+
+        from svc_infra.connect.registry import OAuthProvider
+
+        github_provider = OAuthProvider(
+            name="github",
+            client_id="test-client-id",
+            client_secret=_SecretStr("test-client-secret"),
+            authorize_url="https://github.com/login/oauth/authorize",
+            token_url="https://github.com/login/oauth/access_token",
+            default_scopes=["repo", "user:email"],
+        )
+
+        discovery = self._make_discovery()
+        auth_meta = {
+            "authorization_endpoint": "https://github.com/login/oauth/authorize",
+            "token_endpoint": "https://github.com/login/oauth/access_token",
+            "code_challenge_methods_supported": ["S256"],
+        }
+
+        with patch("svc_infra.connect.mcp_discovery._registry") as mock_reg:
+            mock_reg.list.return_value = [github_provider]
+            result = discovery._build_provider("https://api.githubcopilot.com/mcp/", auth_meta)
+
+        assert result is github_provider
+        assert result.client_id == "test-client-id"
+
+    def test_build_provider_creates_new_provider_when_no_match(self):
+        """When no registered provider matches, _build_provider builds a new
+        one with empty client_id (standard MCP dynamic registration path)."""
+        discovery = self._make_discovery()
+        auth_meta = {
+            "authorization_endpoint": "https://auth.example.com/oauth/authorize",
+            "token_endpoint": "https://auth.example.com/oauth/token",
+            "code_challenge_methods_supported": ["S256"],
+        }
+
+        with patch("svc_infra.connect.mcp_discovery._registry") as mock_reg:
+            mock_reg.list.return_value = []
+            result = discovery._build_provider("https://mcp.example.com/", auth_meta)
+
+        assert result.client_id == ""
+        assert result.name == "mcp:https://mcp.example.com/"
+
+    @pytest.mark.asyncio
+    async def test_discover_uses_registry_shortcut_for_providers_without_rfc8414(self):
+        """discover() skips the RFC 8414 metadata fetch when a registered
+        provider's authorize_url starts with the extracted auth_server_url.
+        This is the critical path for GitHub, which does not publish
+        /.well-known/oauth-authorization-server."""
+        from pydantic import SecretStr as _SecretStr
+
+        from svc_infra.connect.registry import OAuthProvider
+
+        github_provider = OAuthProvider(
+            name="github",
+            client_id="real-client-id",
+            client_secret=_SecretStr("real-client-secret"),
+            authorize_url="https://github.com/login/oauth/authorize",
+            token_url="https://github.com/login/oauth/access_token",
+            default_scopes=["repo"],
+        )
+
+        resource_meta_response = _mock_http_response(
+            200,
+            {"authorization_servers": ["https://github.com/login/oauth"]},
+        )
+        www_auth_header = 'Bearer resource_metadata="https://api.githubcopilot.com/.well-known/oauth-protected-resource/mcp/"'
+        probe_401_response = _mock_http_response(
+            401,
+            {},
+            {"www-authenticate": www_auth_header, "content-type": "text/plain"},
+        )
+
+        discovery = self._make_discovery()
+
+        async def fake_post(*args, **kwargs):
+            return probe_401_response
+
+        async def fake_get(url, **kwargs):
+            return resource_meta_response
+
+        with (
+            patch("svc_infra.connect.mcp_discovery._registry") as mock_reg,
+            patch.object(
+                discovery,
+                "_probe_resource_metadata_url",
+                return_value="https://api.githubcopilot.com/.well-known/oauth-protected-resource/mcp/",
+            ),
+            patch.object(
+                discovery,
+                "_fetch_resource_metadata",
+                return_value={"authorization_servers": ["https://github.com/login/oauth"]},
+            ),
+        ):
+            mock_reg.list.return_value = [github_provider]
+            # _fetch_auth_server_metadata must NOT be called for this path
+            with patch.object(
+                discovery,
+                "_fetch_auth_server_metadata",
+                side_effect=AssertionError("should not be called"),
+            ):
+                result = await discovery.discover("https://api.githubcopilot.com/mcp/")
+
+        assert result is github_provider
+        assert result.client_id == "real-client-id"
