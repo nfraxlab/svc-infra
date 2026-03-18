@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.18.0 (2026-03-18)
+
+### Features
+
+- **connect**: Harden OAuth module with security, resilience and SDK reuse
+  ([#110](https://github.com/nfraxlab/svc-infra/pull/110),
+  [`4589aea`](https://github.com/nfraxlab/svc-infra/commit/4589aea7c04a21878aeb5008fefe480c807f9cd3))
+
+
 ## v1.17.0 (2026-03-18)
 
 ### Features
