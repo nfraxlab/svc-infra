@@ -254,7 +254,7 @@ class ConnectionTokenManager:
             )
         )
         result = await db.execute(stmt)
-        deleted: int = result.rowcount  # type: ignore[assignment]
+        deleted: int = result.rowcount  # type: ignore[attr-defined]
         if deleted:
             await db.flush()
             logger.info("cleanup_expired_tokens: purged %d expired token rows", deleted)
