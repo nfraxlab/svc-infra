@@ -281,6 +281,68 @@ class TestCallbackEndpoint:
         assert resp.status_code == 302
         assert "exchange_failed" in resp.headers["location"]
 
+    async def test_callback_missing_code_redirects_with_error(self, connect_client):
+        client, _, _, _ = connect_client
+
+        resp = await client.get(
+            "/connect/callback/github",
+            params={"state": "some_state"},
+            follow_redirects=False,
+        )
+
+        assert resp.status_code == 302
+        assert "error=missing_params" in resp.headers["location"]
+
+    async def test_callback_missing_state_redirects_with_error(self, connect_client):
+        client, _, _, _ = connect_client
+
+        resp = await client.get(
+            "/connect/callback/github",
+            params={"code": "some_code"},
+            follow_redirects=False,
+        )
+
+        assert resp.status_code == 302
+        assert "error=missing_params" in resp.headers["location"]
+
+    async def test_callback_provider_rediscovery(self, connect_client):
+        """When provider is not in registry, callback attempts re-discovery for MCP providers."""
+        client, mock_db, token_manager, reg = connect_client
+        oauth_state = self._make_oauth_state(token_manager, provider="mcp-mcp.example.com")
+
+        async def _execute(_stmt):
+            result = MagicMock()
+            scalars = MagicMock()
+            scalars.first = MagicMock(return_value=oauth_state)
+            result.scalars = MagicMock(return_value=scalars)
+            return result
+
+        mock_db.execute = _execute
+
+        mock_provider = _make_provider()
+        mock_provider = mock_provider.model_copy(update={"name": "mcp-mcp.example.com"})
+
+        with (
+            patch("svc_infra.connect.router._mcp_discovery") as mock_disc,
+            patch(
+                "svc_infra.connect.router.exchange_code",
+                new_callable=AsyncMock,
+                return_value={"access_token": "tok", "token_type": "Bearer"},
+            ),
+            patch.object(token_manager, "store", new_callable=AsyncMock, return_value=MagicMock()),
+        ):
+            mock_disc.discover = AsyncMock(return_value=mock_provider)
+
+            resp = await client.get(
+                "/connect/callback/mcp-mcp.example.com",
+                params={"code": "auth_code_123", "state": "valid_state"},
+                follow_redirects=False,
+            )
+
+        assert resp.status_code == 302
+        assert "success=true" in resp.headers["location"]
+        mock_disc.discover.assert_awaited_once()
+
 
 @pytest.mark.asyncio
 class TestGetTokenEndpoint:
