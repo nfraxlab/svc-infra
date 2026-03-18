@@ -82,7 +82,7 @@ class TestMCPOAuthDiscovery:
         ):
             provider = await discovery.discover("https://mcp.example.com")
 
-        assert provider.name == "mcp:https://mcp.example.com"
+        assert provider.name == "mcp-mcp.example.com"
         assert provider.authorize_url == "https://auth.example.com/authorize"
         assert provider.token_url == "https://auth.example.com/token"
 
@@ -378,7 +378,7 @@ class TestMCPOAuthDiscovery:
             result = discovery._build_provider("https://mcp.example.com/", auth_meta)
 
         assert result.client_id == ""
-        assert result.name == "mcp:https://mcp.example.com/"
+        assert result.name == "mcp-mcp.example.com"
 
     @pytest.mark.asyncio
     async def test_discover_uses_registry_shortcut_for_providers_without_rfc8414(self):
@@ -442,3 +442,256 @@ class TestMCPOAuthDiscovery:
 
         assert result is github_provider
         assert result.client_id == "real-client-id"
+
+
+class TestWellKnownFallback:
+    """Tests for the .well-known/oauth-protected-resource fallback."""
+
+    @pytest.mark.asyncio
+    async def test_wellknown_fallback_when_server_returns_404(self):
+        """OAuth is detected when the server returns 404 (not 401) but publishes .well-known."""
+        from svc_infra.connect.mcp_discovery import MCPOAuthDiscovery
+
+        discovery = MCPOAuthDiscovery()
+
+        # Server returns 404 for POST (like Notion)
+        mock_post_resp = MagicMock()
+        mock_post_resp.status_code = 404
+        mock_post_resp.headers = {}
+
+        # .well-known returns valid metadata
+        mock_wellknown_resp = MagicMock()
+        mock_wellknown_resp.status_code = 200
+        mock_wellknown_resp.json.return_value = {
+            "resource": "https://mcp.notion.com",
+            "authorization_servers": ["https://mcp.notion.com"],
+        }
+
+        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient") as MockClient:
+            client_instance = AsyncMock()
+            client_instance.post.return_value = mock_post_resp
+            client_instance.get.return_value = mock_wellknown_resp
+            MockClient.return_value.__aenter__ = AsyncMock(return_value=client_instance)
+            MockClient.return_value.__aexit__ = AsyncMock(return_value=False)
+
+            result = await discovery.is_mcp_oauth_supported("https://mcp.notion.com/")
+
+        assert result is True
+
+    @pytest.mark.asyncio
+    async def test_wellknown_fallback_returns_false_when_no_metadata(self):
+        """OAuth is not detected when .well-known also fails."""
+        from svc_infra.connect.mcp_discovery import MCPOAuthDiscovery
+
+        discovery = MCPOAuthDiscovery()
+
+        mock_post_resp = MagicMock()
+        mock_post_resp.status_code = 404
+        mock_post_resp.headers = {}
+
+        mock_wellknown_resp = MagicMock()
+        mock_wellknown_resp.status_code = 404
+
+        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient") as MockClient:
+            client_instance = AsyncMock()
+            client_instance.post.return_value = mock_post_resp
+            client_instance.get.return_value = mock_wellknown_resp
+            MockClient.return_value.__aenter__ = AsyncMock(return_value=client_instance)
+            MockClient.return_value.__aexit__ = AsyncMock(return_value=False)
+
+            result = await discovery.is_mcp_oauth_supported("https://mcp.example.com/")
+
+        assert result is False
+
+
+class TestDynamicClientRegistration:
+    """Tests for RFC 7591 dynamic client registration."""
+
+    @pytest.mark.asyncio
+    async def test_dynamic_registration_populates_client_id(self):
+        """When auth server has registration_endpoint, discover() registers dynamically."""
+        from svc_infra.connect.mcp_discovery import _DISCOVERY_CACHE, MCPOAuthDiscovery
+
+        _DISCOVERY_CACHE.clear()
+        discovery = MCPOAuthDiscovery()
+
+        resource_meta = {
+            "authorization_servers": ["https://mcp.notion.com"],
+        }
+        auth_meta = {
+            "authorization_endpoint": "https://mcp.notion.com/authorize",
+            "token_endpoint": "https://mcp.notion.com/token",
+            "registration_endpoint": "https://mcp.notion.com/register",
+            "code_challenge_methods_supported": ["S256"],
+        }
+        registration_response = {
+            "client_id": "dynamic-client-abc",
+            "client_secret": "",
+        }
+
+        with (
+            patch.object(
+                discovery,
+                "_fetch_resource_metadata",
+                new_callable=AsyncMock,
+                return_value=resource_meta,
+            ),
+            patch.object(
+                discovery,
+                "_fetch_auth_server_metadata",
+                new_callable=AsyncMock,
+                return_value=auth_meta,
+            ),
+            patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient") as MockClient,
+        ):
+            mock_resp = MagicMock()
+            mock_resp.status_code = 201
+            mock_resp.json.return_value = registration_response
+            client_instance = AsyncMock()
+            client_instance.post.return_value = mock_resp
+            MockClient.return_value.__aenter__ = AsyncMock(return_value=client_instance)
+            MockClient.return_value.__aexit__ = AsyncMock(return_value=False)
+
+            provider = await discovery.discover(
+                "https://mcp.notion.com/",
+                api_base="http://127.0.0.1:8765",
+            )
+
+        assert provider.client_id == "dynamic-client-abc"
+        assert provider.name == "mcp-mcp.notion.com"
+        assert provider.authorize_url == "https://mcp.notion.com/authorize"
+
+    @pytest.mark.asyncio
+    async def test_no_registration_without_api_base(self):
+        """Without api_base, discover() skips dynamic registration."""
+        from svc_infra.connect.mcp_discovery import _DISCOVERY_CACHE, MCPOAuthDiscovery
+
+        _DISCOVERY_CACHE.clear()
+        discovery = MCPOAuthDiscovery()
+
+        resource_meta = {"authorization_servers": ["https://mcp.notion.com"]}
+        auth_meta = {
+            "authorization_endpoint": "https://mcp.notion.com/authorize",
+            "token_endpoint": "https://mcp.notion.com/token",
+            "registration_endpoint": "https://mcp.notion.com/register",
+        }
+
+        with (
+            patch.object(
+                discovery,
+                "_fetch_resource_metadata",
+                new_callable=AsyncMock,
+                return_value=resource_meta,
+            ),
+            patch.object(
+                discovery,
+                "_fetch_auth_server_metadata",
+                new_callable=AsyncMock,
+                return_value=auth_meta,
+            ),
+        ):
+            provider = await discovery.discover("https://mcp.notion.com/")
+
+        assert provider.client_id == ""  # no registration attempted
+
+
+class TestOriginUrl:
+    """Tests for _origin_url — RFC 9728 well-known endpoints live at origin level."""
+
+    def test_url_without_path(self):
+        from svc_infra.connect.mcp_discovery import _origin_url
+
+        assert _origin_url("https://mcp.example.com") == "https://mcp.example.com"
+
+    def test_url_with_path(self):
+        from svc_infra.connect.mcp_discovery import _origin_url
+
+        assert _origin_url("https://mcp.notion.com/mcp") == "https://mcp.notion.com"
+
+    def test_url_with_trailing_slash(self):
+        from svc_infra.connect.mcp_discovery import _origin_url
+
+        assert _origin_url("https://mcp.example.com/") == "https://mcp.example.com"
+
+    def test_url_with_port(self):
+        from svc_infra.connect.mcp_discovery import _origin_url
+
+        assert _origin_url("https://localhost:8080/mcp/v1") == "https://localhost:8080"
+
+    def test_url_with_deep_path(self):
+        from svc_infra.connect.mcp_discovery import _origin_url
+
+        assert _origin_url("https://api.example.com/v2/mcp/endpoint") == "https://api.example.com"
+
+
+class TestOriginUrlInWellKnown:
+    """Verify well-known URL construction uses origin, not full path."""
+
+    @pytest.mark.asyncio
+    async def test_probe_falls_back_to_origin_wellknown_for_path_url(self):
+        """For https://mcp.notion.com/mcp, default should be
+        https://mcp.notion.com/.well-known/..., NOT .../mcp/.well-known/..."""
+        mock_resp = _mock_http_response(200, {}, headers={})
+        mock_client = AsyncMock()
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+        mock_client.post = AsyncMock(return_value=mock_resp)
+
+        discovery = MCPOAuthDiscovery()
+        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient", return_value=mock_client):
+            url = await discovery._probe_resource_metadata_url("https://mcp.notion.com/mcp")
+
+        assert url == "https://mcp.notion.com/.well-known/oauth-protected-resource"
+
+    @pytest.mark.asyncio
+    async def test_wellknown_check_uses_origin_for_path_url(self):
+        """_check_wellknown_resource_metadata for a path URL hits origin."""
+        mock_wellknown_resp = MagicMock()
+        mock_wellknown_resp.status_code = 200
+        mock_wellknown_resp.json.return_value = {
+            "resource": "https://mcp.notion.com",
+            "authorization_servers": ["https://mcp.notion.com"],
+        }
+
+        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient") as MockClient:
+            client_instance = AsyncMock()
+            client_instance.get.return_value = mock_wellknown_resp
+            MockClient.return_value.__aenter__ = AsyncMock(return_value=client_instance)
+            MockClient.return_value.__aexit__ = AsyncMock(return_value=False)
+
+            discovery = MCPOAuthDiscovery()
+            result = await discovery._check_wellknown_resource_metadata(
+                "https://mcp.notion.com/mcp"
+            )
+
+        assert result is True
+        # Verify the GET was to the origin, not the path
+        call_args = client_instance.get.call_args
+        assert call_args[0][0] == "https://mcp.notion.com/.well-known/oauth-protected-resource"
+
+    @pytest.mark.asyncio
+    async def test_is_mcp_oauth_supported_401_without_resource_metadata(self):
+        """401 + Bearer but no resource_metadata field falls through to well-known check."""
+        mock_post_resp = _mock_http_response(
+            401,
+            {},
+            headers={"www-authenticate": 'Bearer realm="OAuth", error="invalid_token"'},
+        )
+        mock_wellknown_resp = MagicMock()
+        mock_wellknown_resp.status_code = 200
+        mock_wellknown_resp.json.return_value = {
+            "resource": "https://mcp.notion.com",
+            "authorization_servers": ["https://mcp.notion.com"],
+        }
+
+        with patch("svc_infra.connect.mcp_discovery.httpx.AsyncClient") as MockClient:
+            client_instance = AsyncMock()
+            client_instance.post.return_value = mock_post_resp
+            client_instance.get.return_value = mock_wellknown_resp
+            MockClient.return_value.__aenter__ = AsyncMock(return_value=client_instance)
+            MockClient.return_value.__aexit__ = AsyncMock(return_value=False)
+
+            discovery = MCPOAuthDiscovery()
+            result = await discovery.is_mcp_oauth_supported("https://mcp.notion.com/mcp")
+
+        assert result is True

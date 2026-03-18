@@ -126,8 +126,10 @@ async def exchange_code(
         "code": code,
         "redirect_uri": redirect_uri,
         "client_id": provider.client_id,
-        "client_secret": provider.client_secret.get_secret_value(),
     }
+    secret = provider.client_secret.get_secret_value()
+    if secret:
+        payload["client_secret"] = secret
     if provider.pkce_required:
         payload["code_verifier"] = pkce_verifier
 
@@ -162,8 +164,10 @@ async def exchange_refresh(
         "grant_type": "refresh_token",
         "refresh_token": refresh_token_str,
         "client_id": provider.client_id,
-        "client_secret": provider.client_secret.get_secret_value(),
     }
+    secret = provider.client_secret.get_secret_value()
+    if secret:
+        payload["client_secret"] = secret
 
     async with httpx.AsyncClient(timeout=30.0) as client:
         response = await client.post(

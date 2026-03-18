@@ -60,7 +60,9 @@ async def authorize(
 
     if mcp_server_url is not None:
         try:
-            resolved_provider = await _mcp_discovery.discover(mcp_server_url)
+            resolved_provider = await _mcp_discovery.discover(
+                mcp_server_url, api_base=settings.connect_api_base or None
+            )
             _default_registry.register(resolved_provider)
             provider = resolved_provider.name
         except MCPOAuthNotSupported as exc:
@@ -101,10 +103,11 @@ async def authorize(
 
 @connect_router.get("/callback/{provider}")
 async def callback(
+    request: Request,
     provider: str,
     db: SqlSessionDep,
-    code: str = Query(...),
-    state: str = Query(...),
+    code: str | None = Query(None),
+    state: str | None = Query(None),
     error: str | None = Query(None),
     error_description: str | None = Query(None),
 ) -> RedirectResponse:
@@ -114,6 +117,31 @@ async def callback(
     """
     settings = get_connect_settings()
     token_manager = get_connect_token_manager()
+    fallback_redirect = settings.connect_default_redirect_uri
+
+    logger.info(
+        "OAuth callback received: provider=%s query=%s",
+        provider,
+        dict(request.query_params),
+    )
+
+    if error:
+        logger.warning(
+            "OAuth callback error from provider=%s: %s (%s)",
+            provider,
+            error,
+            error_description,
+        )
+        return RedirectResponse(url=f"{fallback_redirect}?error={error}", status_code=302)
+
+    if not code or not state:
+        logger.error(
+            "OAuth callback missing required params: provider=%s code=%s state=%s",
+            provider,
+            bool(code),
+            bool(state),
+        )
+        return RedirectResponse(url=f"{fallback_redirect}?error=missing_params", status_code=302)
 
     from sqlalchemy import and_, select
 
@@ -131,21 +159,33 @@ async def callback(
     if oauth_state is None:
         logger.warning("OAuth callback: no valid state found for provider=%s", provider)
         return RedirectResponse(
-            url=f"{settings.connect_default_redirect_uri}?error=invalid_state",
+            url=f"{fallback_redirect}?error=invalid_state",
             status_code=302,
         )
 
-    fallback_redirect = oauth_state.redirect_uri or settings.connect_default_redirect_uri
-
-    if error:
-        logger.warning("OAuth callback error from provider=%s: %s", provider, error)
-        await db.delete(oauth_state)
-        await db.flush()
-        return RedirectResponse(url=f"{fallback_redirect}?error={error}", status_code=302)
+    fallback_redirect = oauth_state.redirect_uri or fallback_redirect
 
     resolved_provider = _default_registry.get(provider)
     if resolved_provider is None:
-        logger.error("OAuth callback: provider '%s' not in registry", provider)
+        # Provider not in registry — attempt re-discovery for dynamically
+        # registered MCP providers that may have been lost on restart.
+        logger.warning(
+            "OAuth callback: provider '%s' not in registry, attempting re-discovery",
+            provider,
+        )
+        if provider.startswith("mcp-") and settings.connect_api_base:
+            mcp_url = "https://" + provider.removeprefix("mcp-")
+            try:
+                resolved_provider = await _mcp_discovery.discover(
+                    mcp_url, api_base=settings.connect_api_base
+                )
+                _default_registry.register(resolved_provider)
+                logger.info("OAuth callback: re-discovered provider '%s'", provider)
+            except MCPOAuthNotSupported:
+                logger.error("OAuth callback: re-discovery failed for '%s'", provider)
+
+    if resolved_provider is None:
+        logger.error("OAuth callback: provider '%s' not found after re-discovery", provider)
         await db.delete(oauth_state)
         await db.flush()
         return RedirectResponse(
@@ -169,6 +209,12 @@ async def callback(
     connection_id = oauth_state.connection_id
     user_id = oauth_state.user_id
     assert connection_id is not None
+
+    logger.info(
+        "OAuth token exchange succeeded: provider=%s connection_id=%s",
+        provider,
+        connection_id,
+    )
 
     await db.delete(oauth_state)
     await token_manager.store(
