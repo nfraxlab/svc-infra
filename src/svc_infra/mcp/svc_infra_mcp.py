@@ -112,12 +112,15 @@ async def svc_infra_subcmd_help(subcommand: Subcommand) -> dict[Any, Any]:
 
 mcp = mcp_from_functions(
     name="svc-infra-cli-mcp",
-    functions=[
-        svc_infra_cmd_help,
-        svc_infra_subcmd_help,
-        svc_infra_docs_help,
-        # Docs listing is available via 'docs --help'; no separate MCP function needed.
-    ],
+    functions=cast(
+        "list[Any]",
+        [
+            svc_infra_cmd_help,
+            svc_infra_subcmd_help,
+            svc_infra_docs_help,
+            # Docs listing is available via 'docs --help'; no separate MCP function needed.
+        ],
+    ),
 )
 
 

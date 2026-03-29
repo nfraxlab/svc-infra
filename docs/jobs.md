@@ -11,7 +11,8 @@ svc-infra provides a flexible background job system:
 - **Retry Logic**: Exponential backoff with configurable max attempts
 - **Dead Letter Queue**: Failed jobs are moved to DLQ after max retries
 - **Visibility Timeout**: Prevents duplicate processing with automatic re-queuing
-- **Interval Scheduler**: Simple scheduling for periodic tasks
+- **Recurring Scheduler**: Interval and cron-based scheduling for periodic tasks
+- **Cloud-Safe Leadership**: Redis-backed scheduler lease for multi-replica deployments
 - **Built-in Jobs**: Webhook delivery, outbox processing
 
 ## Quick Start
@@ -63,7 +64,10 @@ svc-infra jobs run
 | `JOBS_DRIVER` | `memory` | Backend driver (`memory` or `redis`) |
 | `REDIS_URL` | `redis://localhost:6379/0` | Redis connection URL |
 | `JOB_DEFAULT_TIMEOUT_SECONDS` | — | Per-job execution timeout |
-| `JOBS_SCHEDULE_JSON` | — | JSON array of scheduled tasks |
+| `JOBS_SCHEDULE_JSON` | — | JSON array of interval and cron scheduled tasks |
+| `JOBS_SCHEDULER_COORDINATION` | `auto` | Scheduler coordination mode (`auto`, `redis`, `off`) |
+| `JOBS_SCHEDULER_LEASE_SECONDS` | `180` | Redis scheduler leadership TTL |
+| `JOBS_SCHEDULER_LEASE_KEY` | `jobs:scheduler:leader` | Redis key for scheduler leadership |
 
 ### Backend Selection
 
@@ -74,6 +78,7 @@ JOBS_DRIVER=memory
 # Production (Redis)
 JOBS_DRIVER=redis
 REDIS_URL=redis://redis.example.com:6379/0
+# In redis mode, scheduler leadership is enabled automatically
 ```
 
 ### Programmatic Configuration
@@ -387,12 +392,12 @@ async def run_workers(num_workers: int = 4):
 
 ## Scheduling
 
-### Interval-Based Scheduling
+### Recurring Scheduling
 
 ```python
-from svc_infra.jobs.scheduler import InMemoryScheduler
+from svc_infra.jobs.easy import easy_jobs
 
-scheduler = InMemoryScheduler(tick_interval=60.0)
+queue, scheduler = easy_jobs(driver="redis")
 
 # Add periodic tasks
 async def cleanup_sessions():
@@ -401,12 +406,50 @@ async def cleanup_sessions():
 async def send_daily_digest():
     await email_service.send_digest()
 
-scheduler.add_task("cleanup_sessions", 300, cleanup_sessions)  # Every 5 minutes
-scheduler.add_task("daily_digest", 86400, send_daily_digest)   # Every 24 hours
+# Interval-based tasks
+scheduler.add("cleanup_sessions", interval_seconds=300, func=cleanup_sessions)
+
+# Cron-style schedules support standard 5-field syntax and common aliases
+scheduler.add(
+    "daily_digest",
+    cron="0 9 * * mon-fri",
+    target="myapp.tasks:send_daily_digest",
+    timezone="America/New_York",
+)
+
+# Production-friendly path: emit a queue job instead of doing the work inline
+scheduler.add_job(
+    "daily_digest_job",
+    cron="0 9 * * mon-fri",
+    job_queue=queue,
+    job_name="send_daily_digest",
+    payload={"kind": "weekday"},
+)
 
 # Run scheduler (blocks indefinitely)
 await scheduler.run()
 ```
+
+`scheduler.add_task(...)` and `scheduler.add_cron(...)` are still available as
+compatibility helpers, but `scheduler.add(...)` and `scheduler.add_job(...)`
+are the recommended APIs.
+
+### Cron Syntax
+
+svc-infra supports standard 5-field cron expressions:
+
+```text
+minute hour day-of-month month day-of-week
+```
+
+Supported syntax includes:
+
+- wildcards: `*`
+- step values: `*/5`, `1-10/2`
+- lists: `0,15,30,45`
+- ranges: `9-17`
+- month and weekday names: `jan`, `mon-fri`
+- common aliases: `@hourly`, `@daily`, `@weekly`, `@monthly`, `@yearly`
 
 ### Environment-Based Schedule
 
@@ -415,25 +458,61 @@ Configure tasks via JSON environment variable:
 ```bash
 JOBS_SCHEDULE_JSON='[
   {"name": "cleanup", "interval_seconds": 300, "target": "myapp.tasks:cleanup"},
-  {"name": "health_check", "interval_seconds": 60, "target": "myapp.tasks:health_ping"}
+  {
+    "name": "weekday-digest",
+    "cron": "0 9 * * mon-fri",
+    "timezone": "America/New_York",
+    "job_name": "send_daily_digest",
+    "payload": {"kind": "weekday"}
+  }
 ]'
 ```
 
 Load and register:
 
 ```python
+from svc_infra.jobs.easy import easy_jobs
 from svc_infra.jobs.loader import schedule_from_env
-from svc_infra.jobs.scheduler import InMemoryScheduler
 
-scheduler = InMemoryScheduler()
-schedule_from_env(scheduler)  # Reads JOBS_SCHEDULE_JSON
+queue, scheduler = easy_jobs()
+schedule_from_env(scheduler, queue=queue)  # Reads JOBS_SCHEDULE_JSON
 
 await scheduler.run()
 ```
 
+### Cloud Scheduler Leadership
+
+When `JOBS_DRIVER=redis`, `easy_jobs()` automatically attaches a Redis-backed
+leadership lease to the scheduler. This means:
+
+- one replica is active for schedule emission
+- standby replicas do not double-fire scheduled automations
+- all replicas can still process queued jobs from Redis
+
+Use a real Redis transport URL here (`redis://`, `rediss://`, or `unix://`).
+REST-style Redis URLs are not supported by `redis-py`.
+
+Disable coordination explicitly if you want single-process behavior:
+
+```bash
+JOBS_SCHEDULER_COORDINATION=off
+```
+
+Or force Redis-backed leadership even if the queue driver is not Redis:
+
+```python
+from svc_infra.jobs.easy import easy_jobs
+
+queue, scheduler = easy_jobs(
+    driver="memory",
+    scheduler_coordination="redis",
+)
+```
+
 ### Target Format
 
-The `target` must be an import path in `module:function` format:
+The `target` must be an import path in `module:function` format. It works in
+both `scheduler.add(..., target="...")` and `JOBS_SCHEDULE_JSON`:
 
 ```python
 # myapp/tasks.py
@@ -451,6 +530,25 @@ def sync_task():
 {"target": "myapp.tasks:cleanup"}
 {"target": "myapp.tasks:sync_task"}
 ```
+
+### Queue-Backed Scheduled Jobs
+
+For production automations, prefer emitting jobs into the queue:
+
+```python
+queue, scheduler = easy_jobs(driver="redis")
+
+scheduler.add_job(
+    "invoice-reminders",
+    cron="0 10 * * *",
+    job_queue=queue,
+    job_name="send_invoice_reminders",
+    payload={"channel": "email"},
+)
+```
+
+That gives scheduled work the same retry, backoff, DLQ, and visibility-timeout
+behavior as any other queued job.
 
 ---
 
@@ -489,6 +587,17 @@ job.backoff_seconds = 60    # Base backoff
 # Attempt 5: 240 seconds delay (60 * 4)
 # After attempt 5: moved to DLQ
 ```
+
+### Scheduler Leadership in Cloud Deployments
+
+For cloud deployments, the recommended shape is:
+
+- Redis queue backend
+- multiple worker replicas if needed
+- one active scheduler leader at a time, coordinated automatically by Redis
+
+This lets you run multiple `svc-infra jobs run` processes safely without
+duplicate cron or interval triggers.
 
 ### Dead Letter Queue
 
@@ -634,6 +743,12 @@ svc-infra jobs run
 
 # With environment configuration
 JOBS_DRIVER=redis REDIS_URL=redis://localhost:6379/0 svc-infra jobs run
+
+# Use a JobRegistry target for real job processing
+JOBS_REGISTRY_TARGET=myapp.jobs:registry svc-infra jobs run
+
+# Disable automatic scheduler leadership if you truly want a single local scheduler
+JOBS_DRIVER=redis JOBS_SCHEDULER_COORDINATION=off svc-infra jobs run
 ```
 
 ### Docker Deployment
@@ -662,6 +777,7 @@ services:
     environment:
       - JOBS_DRIVER=redis
       - REDIS_URL=redis://redis:6379/0
+      - JOBS_SCHEDULER_COORDINATION=auto
     depends_on:
       - redis
 
@@ -694,6 +810,8 @@ spec:
           env:
             - name: JOBS_DRIVER
               value: "redis"
+            - name: JOBS_SCHEDULER_COORDINATION
+              value: "auto"
             - name: REDIS_URL
               valueFrom:
                 secretKeyRef:

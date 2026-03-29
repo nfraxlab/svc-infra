@@ -1,0 +1,260 @@
+{
+  "name": "CronSchedule",
+  "module": "svc_infra.jobs.scheduler",
+  "docstring": null,
+  "parameters": [
+    {
+      "name": "expression",
+      "type": "str",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "timezone_name",
+      "type": "str",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "timezone",
+      "type": "ZoneInfo",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "minute_values",
+      "type": "frozenset[int]",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "hour_values",
+      "type": "frozenset[int]",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "day_values",
+      "type": "frozenset[int]",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "month_values",
+      "type": "frozenset[int]",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "weekday_values",
+      "type": "frozenset[int]",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "day_is_wildcard",
+      "type": "bool",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "weekday_is_wildcard",
+      "type": "bool",
+      "default": null,
+      "description": null,
+      "required": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(expression: str, timezone_name: str, timezone: ZoneInfo, minute_values: frozenset[int], hour_values: frozenset[int], day_values: frozenset[int], month_values: frozenset[int], weekday_values: frozenset[int], day_is_wildcard: bool, weekday_is_wildcard: bool) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "expression",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "timezone_name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "timezone",
+          "type": "ZoneInfo",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "minute_values",
+          "type": "frozenset[int]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "hour_values",
+          "type": "frozenset[int]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "day_values",
+          "type": "frozenset[int]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "month_values",
+          "type": "frozenset[int]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "weekday_values",
+          "type": "frozenset[int]",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "day_is_wildcard",
+          "type": "bool",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "weekday_is_wildcard",
+          "type": "bool",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "None",
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    },
+    {
+      "name": "matches",
+      "signature": "(dt: datetime) -> bool",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "dt",
+          "type": "datetime",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "bool",
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    },
+    {
+      "name": "next_run_after",
+      "signature": "(after: datetime) -> datetime",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "after",
+          "type": "datetime",
+          "default": null,
+          "description": null,
+          "required": true
+        }
+      ],
+      "returns": "datetime",
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    },
+    {
+      "name": "parse",
+      "signature": "(expression: str, timezone: str = 'UTC') -> CronSchedule",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "cls",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "expression",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "timezone",
+          "type": "str",
+          "default": "'UTC'",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "CronSchedule",
+      "is_async": false,
+      "is_classmethod": true,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    }
+  ],
+  "bases": [],
+  "source_file": "src/svc_infra/jobs/scheduler.py",
+  "source_line": 192
+}

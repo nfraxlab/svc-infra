@@ -1,0 +1,128 @@
+{
+  "name": "RedisSchedulerLeader",
+  "module": "svc_infra.jobs.leadership",
+  "docstring": "Redis-backed leadership lease for cloud-safe scheduler coordination.",
+  "parameters": [
+    {
+      "name": "client",
+      "type": "Redis",
+      "default": null,
+      "description": null,
+      "required": true
+    },
+    {
+      "name": "key",
+      "type": "str",
+      "default": "'jobs:scheduler:leader'",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "lease_seconds",
+      "type": "int",
+      "default": "180",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "owner_id",
+      "type": "str | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "signature": "(client: Redis, key: str = 'jobs:scheduler:leader', lease_seconds: int = 180, owner_id: str | None = None)",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "client",
+          "type": "Redis",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "key",
+          "type": "str",
+          "default": "'jobs:scheduler:leader'",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "lease_seconds",
+          "type": "int",
+          "default": "180",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "owner_id",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": null,
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    },
+    {
+      "name": "ensure_leader",
+      "signature": "() -> bool",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "bool",
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    },
+    {
+      "name": "release",
+      "signature": "() -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    }
+  ],
+  "bases": [],
+  "source_file": "src/svc_infra/jobs/leadership.py",
+  "source_line": 35
+}
