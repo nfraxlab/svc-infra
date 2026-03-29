@@ -169,7 +169,7 @@ async def exchange_refresh(
     if secret:
         payload["client_secret"] = secret
 
-    async with new_async_httpx_client(timeout_seconds=30.0) as client:
+    async with new_async_httpx_client(timeout_seconds=10.0) as client:
         response = await client.post(
             provider.token_url,
             data=payload,
