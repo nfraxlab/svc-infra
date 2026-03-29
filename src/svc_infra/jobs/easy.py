@@ -22,16 +22,26 @@ class JobsConfig:
         scheduler_lease_key: str | None = None,
     ):
         # Future: support redis/sql drivers via extras
-        self.driver = driver or os.getenv("JOBS_DRIVER", "memory").lower()
-        self.scheduler_coordination = (
-            scheduler_coordination or os.getenv("JOBS_SCHEDULER_COORDINATION", "auto")
-        ).lower()
-        self.scheduler_lease_seconds = int(
-            scheduler_lease_seconds or os.getenv("JOBS_SCHEDULER_LEASE_SECONDS", "180")
+        driver_value = driver if driver is not None else os.getenv("JOBS_DRIVER", "memory")
+        coordination_value = (
+            scheduler_coordination
+            if scheduler_coordination is not None
+            else os.getenv("JOBS_SCHEDULER_COORDINATION", "auto")
         )
-        self.scheduler_lease_key = scheduler_lease_key or os.getenv(
-            "JOBS_SCHEDULER_LEASE_KEY", "jobs:scheduler:leader"
+        lease_seconds_value = (
+            scheduler_lease_seconds
+            if scheduler_lease_seconds is not None
+            else int(os.getenv("JOBS_SCHEDULER_LEASE_SECONDS", "180"))
         )
+        lease_key_value = (
+            scheduler_lease_key
+            if scheduler_lease_key is not None
+            else os.getenv("JOBS_SCHEDULER_LEASE_KEY", "jobs:scheduler:leader")
+        )
+        self.driver = driver_value if driver is not None else driver_value.lower()
+        self.scheduler_coordination = coordination_value.lower()
+        self.scheduler_lease_seconds = lease_seconds_value
+        self.scheduler_lease_key = lease_key_value
 
 
 def _resolve_jobs_redis_url() -> str:

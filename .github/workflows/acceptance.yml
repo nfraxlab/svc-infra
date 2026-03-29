@@ -57,7 +57,7 @@ jobs:
           path: sbom.${{ matrix.backend }}.cdx.json
 
       - name: Set up Trivy
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@v0.35.0
         with:
           scan-type: 'image'
           image-ref: 'python:3.12-slim'
@@ -72,7 +72,7 @@ jobs:
 
       - name: Scan redis:7-alpine with Trivy (CRITICAL gate)
         if: matrix.backend == 'pg-redis'
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@v0.35.0
         with:
           scan-type: 'image'
           image-ref: 'redis:7-alpine'
@@ -88,7 +88,7 @@ jobs:
 
       - name: Scan postgres:16-alpine with Trivy (CRITICAL gate)
         if: matrix.backend == 'pg-redis'
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@v0.35.0
         with:
           scan-type: 'image'
           image-ref: 'postgres:16-alpine'

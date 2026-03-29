@@ -36,6 +36,7 @@ Example:
 from __future__ import annotations
 
 import asyncio
+import inspect
 import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
@@ -450,7 +451,11 @@ def check_redis(url: str | None) -> HealthCheckFn:
 
             client = redis_async.from_url(url, socket_connect_timeout=5.0)
             try:
-                pong = await asyncio.wait_for(client.ping(), timeout=5.0)
+                ping_result = client.ping()
+                if inspect.isawaitable(ping_result):
+                    pong = await asyncio.wait_for(ping_result, timeout=5.0)
+                else:
+                    pong = ping_result
                 if pong:
                     return HealthCheckResult(
                         name="redis",
