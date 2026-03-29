@@ -64,13 +64,13 @@ def render_index_html(*, service_name: str, release: str, cards: Iterable[CardSp
     :root {{
       --bg:#0b0f14; --fg:#e6edf3; --muted:#9aa7b3; --panel:#0f141b; --panel-2:#0d1218;
       --border:#1f2631; --border-strong:#2b3546; --btn-bg:#121a24; --btn-fg:#d7e2ee;
-      --btn-border:#223044; --btn-hover-bg:#162130; --btn-hover-border:#2a3b54; --radius:12px;
+      --btn-border:#223044; --btn-hover-bg:#162130; --btn-hover-border:#2a3b54; --chip-bg:#1c2736; --radius:12px;
     }}
     @media (prefers-color-scheme: light) {{
       :root {{
         --bg:#f7f9fc; --fg:#0b0f14; --muted:#556171; --panel:#ffffff; --panel-2:#fafbfc;
         --border:#e6ebf2; --border-strong:#d7dfeb; --btn-bg:#f6f8fc; --btn-fg:#0b1220;
-        --btn-border:#dce5f2; --btn-hover-bg:#eef3fb; --btn-hover-border:#cfdbee;
+        --btn-border:#dce5f2; --btn-hover-bg:#eef3fb; --btn-hover-border:#cfdbee; --chip-bg:#e8edf4;
       }}
     }}
     * {{ box-sizing: border-box; }}
@@ -92,7 +92,7 @@ def render_index_html(*, service_name: str, release: str, cards: Iterable[CardSp
     .card__body {{ padding: 16px; display:grid; gap:12px; }}
     .chip {{
       display:inline-block; font-size:15px; font-weight:600; color:var(--fg);
-      background:#1c2736; border:1px solid var(--border-strong);
+      background:var(--chip-bg); border:1px solid var(--border-strong);
       border-radius: 999px; padding:6px 14px; width:fit-content; letter-spacing:.3px;
     }}
     .actions {{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }}
