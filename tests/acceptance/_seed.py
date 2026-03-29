@@ -1,5 +1,7 @@
 import os
 
+from svc_infra.jobs import Job, JobRegistry, JobResult
+
 
 def acceptance_seed():
     """
@@ -22,3 +24,15 @@ def write_sentinel():
     with open(path, "w", encoding="utf-8") as f:
         f.write("ok")
     return None
+
+
+registry = JobRegistry(metric_prefix="acceptance_jobs")
+
+
+@registry.handler("write_sentinel_job")
+async def handle_write_sentinel_job(job: Job) -> JobResult:
+    path = job.payload.get("path") or os.environ.get("JOBS_SENTINEL", "/tmp/svc-infra-a10-jobs.ok")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("ok")
+    return JobResult(success=True, message="sentinel written", details={"path": path})

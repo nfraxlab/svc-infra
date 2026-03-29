@@ -4,7 +4,9 @@ This module provides a flexible background job system with multiple backends:
 
 - **InMemoryJobQueue**: Simple in-memory queue for tests and local development
 - **RedisJobQueue**: Production-ready Redis-backed queue with visibility timeout
-- **InMemoryScheduler**: Interval-based scheduler for periodic tasks
+- **InMemoryScheduler**: In-process interval and cron scheduler for recurring tasks
+- **RedisSchedulerLeader**: Redis lease for cloud-safe scheduler leadership
+- **Durable Scheduled Jobs**: Emit queue jobs from cron/interval schedules
 - **JobRegistry**: Handler registry with dispatch and metrics
 
 Example:
@@ -46,7 +48,12 @@ Environment Variables:
     JOBS_DRIVER: Backend driver ("memory" or "redis"), defaults to "memory"
     REDIS_URL: Redis connection URL for redis driver
     JOB_DEFAULT_TIMEOUT_SECONDS: Per-job execution timeout
-    JOBS_SCHEDULE_JSON: JSON array of scheduled task definitions
+    JOBS_SCHEDULE_JSON: JSON array of interval/cron scheduled task definitions
+    JOBS_SCHEDULER_COORDINATION: Scheduler coordination mode ("auto", "redis", "off")
+    JOBS_SCHEDULER_LEASE_SECONDS: Redis leadership TTL for the scheduler
+    JOBS_SCHEDULER_LEASE_KEY: Redis key used for scheduler leadership
+    JOBS_HANDLER_TARGET: module:path job handler for the CLI runner
+    JOBS_REGISTRY_TARGET: module:path JobRegistry instance or factory for the CLI runner
 
 See Also:
     - docs/jobs.md for detailed documentation
@@ -57,6 +64,9 @@ from __future__ import annotations
 
 # Easy setup function
 from .easy import easy_jobs
+
+# Cloud-safe scheduler coordination
+from .leadership import RedisSchedulerLeader, SchedulerLeadership
 
 # Loader for schedule configuration
 from .loader import schedule_from_env
@@ -74,7 +84,7 @@ from .registry import JobRegistry, JobResult, JobTimeoutError, UnknownJobError
 from .runner import WorkerRunner
 
 # Scheduler for periodic tasks
-from .scheduler import InMemoryScheduler, ScheduledTask
+from .scheduler import CronSchedule, InMemoryScheduler, ScheduledTask
 
 # Worker utilities
 from .worker import process_one
@@ -88,9 +98,12 @@ __all__ = [
     "RedisJobQueue",
     # Scheduler
     "InMemoryScheduler",
+    "CronSchedule",
     "ScheduledTask",
     # Easy setup
     "easy_jobs",
+    "RedisSchedulerLeader",
+    "SchedulerLeadership",
     # Worker utilities
     "process_one",
     "WorkerRunner",

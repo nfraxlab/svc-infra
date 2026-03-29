@@ -369,6 +369,10 @@ svc-infra jobs run --poll-interval 1.0
 
 # Limited loops for testing
 svc-infra jobs run --max-loops 100
+
+# Resolve handlers from your app
+svc-infra jobs run --registry-target myapp.jobs:registry
+svc-infra jobs run --handler-target myapp.jobs:process_job
 ```
 
 **Options:**
@@ -376,8 +380,13 @@ svc-infra jobs run --max-loops 100
 |--------|---------|-------------|
 | `--poll-interval` | `0.5` | Seconds between idle loops |
 | `--max-loops` | none | Maximum iterations (for tests) |
+| `--handler-target` | none | `module:path` handler callable taking one job |
+| `--registry-target` | none | `module:path` `JobRegistry` instance or factory |
 
-**Note:** The default handler is a no-op. Implement your own job handler for actual processing.
+**Note:** The runner loads interval and cron schedules from `JOBS_SCHEDULE_JSON`.
+With `JOBS_DRIVER=redis`, scheduler leadership is coordinated automatically so
+multiple replicas can run safely. Use `--registry-target` / `JOBS_REGISTRY_TARGET`
+or `--handler-target` / `JOBS_HANDLER_TARGET` for actual job processing.
 
 ---
 

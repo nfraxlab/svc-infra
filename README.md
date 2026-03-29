@@ -147,14 +147,19 @@ queue.enqueue("send_email", {"to": "user@example.com", "template": "welcome"})
 
 # Schedule recurring tasks
 scheduler.add("cleanup", interval_seconds=3600, target="myapp.tasks:cleanup")
+scheduler.add("weekday-digest", cron="0 9 * * mon-fri", target="myapp.tasks:digest")
+scheduler.add_job("daily-email", cron="0 9 * * *", job_queue=queue, job_name="send_email")
+
+# In Redis mode, scheduler leadership is coordinated automatically
+# so multiple replicas can run safely in the cloud.
 ```
 
 ```bash
-# Run the worker
-svc-infra jobs run
+# Run the worker with a registry from your app
+JOBS_REGISTRY_TARGET=myapp.jobs:registry svc-infra jobs run
 ```
 
-**Includes:** Visibility timeout, exponential backoff, dead letter queue, interval scheduler, CLI worker.
+**Includes:** Visibility timeout, exponential backoff, dead letter queue, interval and cron scheduling, durable scheduled job emission, Redis-backed scheduler leadership, CLI worker.
 
 ### Webhooks
 

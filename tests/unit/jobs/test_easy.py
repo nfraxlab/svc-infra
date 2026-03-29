@@ -5,6 +5,8 @@ from __future__ import annotations
 import os
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from svc_infra.jobs.easy import JobsConfig, easy_jobs
 from svc_infra.jobs.queue import InMemoryJobQueue
 from svc_infra.jobs.scheduler import InMemoryScheduler
@@ -97,6 +99,17 @@ class TestEasyJobs:
 
                 mock_redis.from_url.assert_called_once_with("redis://test:6379/1")
 
+    def test_redis_driver_enables_scheduler_coordination_by_default(self) -> None:
+        """Redis-backed jobs should auto-enable scheduler leadership."""
+        with patch.dict(os.environ, {"JOBS_DRIVER": "redis", "REDIS_URL": "redis://test:6379/1"}):
+            with patch("svc_infra.jobs.easy.Redis") as mock_redis:
+                mock_client = MagicMock()
+                mock_redis.from_url.return_value = mock_client
+
+                _queue, scheduler = easy_jobs(driver="redis")
+
+                assert scheduler._leader is not None
+
     def test_redis_driver_default_url(self) -> None:
         """Redis driver should use default URL if not set."""
         env = {"JOBS_DRIVER": "redis"}
@@ -109,6 +122,35 @@ class TestEasyJobs:
                 _queue, _scheduler = easy_jobs(driver="redis")
 
                 mock_redis.from_url.assert_called_once_with("redis://localhost:6379/0")
+
+    def test_scheduler_coordination_can_be_disabled(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "JOBS_DRIVER": "redis",
+                "REDIS_URL": "redis://test:6379/1",
+                "JOBS_SCHEDULER_COORDINATION": "off",
+            },
+        ):
+            with patch("svc_infra.jobs.easy.Redis") as mock_redis:
+                mock_client = MagicMock()
+                mock_redis.from_url.return_value = mock_client
+
+                _queue, scheduler = easy_jobs(driver="redis")
+
+                assert scheduler._leader is None
+
+    def test_redis_driver_rejects_rest_style_urls(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "JOBS_DRIVER": "redis",
+                "UPSTASH_REDIS_REST_URL": "https://example.upstash.io",
+            },
+            clear=True,
+        ):
+            with pytest.raises(ValueError, match="redis://, rediss://, or unix://"):
+                easy_jobs(driver="redis")
 
 
 class TestEasyJobsIntegration:

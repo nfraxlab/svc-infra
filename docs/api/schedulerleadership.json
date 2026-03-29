@@ -1,0 +1,53 @@
+{
+  "name": "SchedulerLeadership",
+  "module": "svc_infra.jobs.leadership",
+  "docstring": null,
+  "parameters": [],
+  "methods": [
+    {
+      "name": "ensure_leader",
+      "signature": "() -> bool",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "bool",
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    },
+    {
+      "name": "release",
+      "signature": "() -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    }
+  ],
+  "bases": [
+    "Protocol"
+  ],
+  "source_file": "src/svc_infra/jobs/leadership.py",
+  "source_line": 26
+}

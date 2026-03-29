@@ -162,7 +162,12 @@ cache_ttl = pick(
 |----------|---------|-------------|
 | `JOBS_DRIVER` | `memory` | Queue driver (`redis` or `memory`) |
 | `REDIS_URL` | `redis://localhost:6379/0` | Redis URL for jobs |
-| `JOBS_SCHEDULE_JSON` | — | JSON array of scheduled tasks |
+| `JOBS_SCHEDULE_JSON` | — | JSON array of interval/cron scheduled tasks |
+| `JOBS_SCHEDULER_COORDINATION` | `auto` | Scheduler coordination mode (`auto`, `redis`, `off`) |
+| `JOBS_SCHEDULER_LEASE_SECONDS` | `180` | Redis scheduler leadership TTL |
+| `JOBS_SCHEDULER_LEASE_KEY` | `jobs:scheduler:leader` | Redis key used for scheduler leadership |
+| `JOBS_HANDLER_TARGET` | — | `module:path` job handler callable for `svc-infra jobs run` |
+| `JOBS_REGISTRY_TARGET` | — | `module:path` `JobRegistry` instance or factory |
 
 ### Observability
 

@@ -1,7 +1,7 @@
 {
   "name": "InMemoryScheduler",
   "module": "svc_infra.jobs.scheduler",
-  "docstring": "Interval-based scheduler for simple periodic tasks (tests/local).\n\nNot a full cron parser. Tracks next_run_at per task.",
+  "docstring": "In-process scheduler for interval and cron jobs.\n\nThe scheduler keeps all task state in memory, which makes it a good default\nfor local development, tests, and simple service processes.",
   "parameters": [
     {
       "name": "tick_interval",
@@ -9,12 +9,33 @@
       "default": "60.0",
       "description": null,
       "required": false
+    },
+    {
+      "name": "timezone",
+      "type": "str",
+      "default": "'UTC'",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "now_provider",
+      "type": "Callable[[], datetime] | None",
+      "default": "None",
+      "description": null,
+      "required": false
+    },
+    {
+      "name": "leader",
+      "type": "SchedulerLeadership | None",
+      "default": "None",
+      "description": null,
+      "required": false
     }
   ],
   "methods": [
     {
       "name": "__init__",
-      "signature": "(tick_interval: float = 60.0)",
+      "signature": "(tick_interval: float = 60.0, timezone: str = 'UTC', now_provider: Callable[[], datetime] | None = None, leader: SchedulerLeadership | None = None)",
       "docstring": null,
       "parameters": [
         {
@@ -30,6 +51,27 @@
           "default": "60.0",
           "description": null,
           "required": false
+        },
+        {
+          "name": "timezone",
+          "type": "str",
+          "default": "'UTC'",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "now_provider",
+          "type": "Callable[[], datetime] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "leader",
+          "type": "SchedulerLeadership | None",
+          "default": "None",
+          "description": null,
+          "required": false
         }
       ],
       "returns": null,
@@ -40,8 +82,8 @@
       "raises": null
     },
     {
-      "name": "add_task",
-      "signature": "(name: str, interval_seconds: int, func: CronFunc) -> None",
+      "name": "add",
+      "signature": "(name: str, interval_seconds: int | float | None = None, cron: str | None = None, func: RawScheduledFunc | None = None, target: str | None = None, job_queue: JobQueue | None = None, job_name: str | None = None, payload: Mapping[str, Any] | None = None, payload_factory: Callable[[], Mapping[str, Any]] | None = None, delay_seconds: int = 0, timezone: str | None = None) -> None",
       "docstring": null,
       "parameters": [
         {
@@ -60,14 +102,242 @@
         },
         {
           "name": "interval_seconds",
+          "type": "int | float | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "cron",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "func",
+          "type": "RawScheduledFunc | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "target",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "job_queue",
+          "type": "JobQueue | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "job_name",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "payload",
+          "type": "Mapping[str, Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "payload_factory",
+          "type": "Callable[[], Mapping[str, Any]] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "delay_seconds",
           "type": "int",
+          "default": "0",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "timezone",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    },
+    {
+      "name": "add_cron",
+      "signature": "(name: str, cron: str, func: RawScheduledFunc, timezone: str | None = None) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "cron",
+          "type": "str",
           "default": null,
           "description": null,
           "required": true
         },
         {
           "name": "func",
-          "type": "CronFunc",
+          "type": "RawScheduledFunc",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "timezone",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    },
+    {
+      "name": "add_job",
+      "signature": "(name: str, job_queue: JobQueue, job_name: str, interval_seconds: int | float | None = None, cron: str | None = None, payload: Mapping[str, Any] | None = None, payload_factory: Callable[[], Mapping[str, Any]] | None = None, delay_seconds: int = 0, timezone: str | None = None) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "job_queue",
+          "type": "JobQueue",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "job_name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "interval_seconds",
+          "type": "int | float | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "cron",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "payload",
+          "type": "Mapping[str, Any] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "payload_factory",
+          "type": "Callable[[], Mapping[str, Any]] | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "delay_seconds",
+          "type": "int",
+          "default": "0",
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "timezone",
+          "type": "str | None",
+          "default": "None",
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    },
+    {
+      "name": "add_task",
+      "signature": "(name: str, interval_seconds: int | float, func: RawScheduledFunc) -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "interval_seconds",
+          "type": "int | float",
+          "default": null,
+          "description": null,
+          "required": true
+        },
+        {
+          "name": "func",
+          "type": "RawScheduledFunc",
           "default": null,
           "description": null,
           "required": true
@@ -81,9 +351,29 @@
       "raises": null
     },
     {
+      "name": "close",
+      "signature": "() -> None",
+      "docstring": null,
+      "parameters": [
+        {
+          "name": "self",
+          "type": null,
+          "default": null,
+          "description": null,
+          "required": false
+        }
+      ],
+      "returns": "None",
+      "is_async": false,
+      "is_classmethod": false,
+      "is_staticmethod": false,
+      "is_property": false,
+      "raises": null
+    },
+    {
       "name": "run",
       "signature": "() -> None",
-      "docstring": "Run the scheduler loop indefinitely.\n\nCalls tick() at regular intervals to check and execute due tasks.\nThis method runs forever until cancelled.",
+      "docstring": "Run the scheduler loop indefinitely.",
       "parameters": [
         {
           "name": "self",
@@ -102,13 +392,20 @@
     },
     {
       "name": "tick",
-      "signature": "() -> None",
+      "signature": "(now: datetime | None = None) -> None",
       "docstring": null,
       "parameters": [
         {
           "name": "self",
           "type": null,
           "default": null,
+          "description": null,
+          "required": false
+        },
+        {
+          "name": "now",
+          "type": "datetime | None",
+          "default": "None",
           "description": null,
           "required": false
         }
@@ -123,5 +420,5 @@
   ],
   "bases": [],
   "source_file": "src/svc_infra/jobs/scheduler.py",
-  "source_line": 19
+  "source_line": 314
 }

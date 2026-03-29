@@ -103,6 +103,26 @@ def test_a1002_jobs_runner_consumes_task(tmp_path: Path):
     assert sentinel.exists() and sentinel.read_text().strip() == "ok"
 
 
+def test_a1004_jobs_runner_schedules_and_processes_queued_jobs(tmp_path: Path):
+    sentinel = tmp_path / "jobs-queued.ok"
+    schedule = [
+        {
+            "name": "queued-sentinel",
+            "interval_seconds": 0,
+            "job_name": "write_sentinel_job",
+            "payload": {"path": str(sentinel)},
+        }
+    ]
+    env = {
+        "JOBS_SCHEDULE_JSON": json.dumps(schedule),
+        "JOBS_DRIVER": "memory",
+        "JOBS_REGISTRY_TARGET": "tests.acceptance._seed:registry",
+        "PROJECT_ROOT": str(tmp_path),
+    }
+    _py(["jobs", "run", "--poll-interval", "0.1", "--max-loops", "3"], env=env)
+    assert sentinel.exists() and sentinel.read_text().strip() == "ok"
+
+
 def test_a1003_sdk_cli_dry_run(tmp_path: Path, client: httpx.Client):
     # Fetch OpenAPI and write to disk
     schema_path = tmp_path / "openapi.json"

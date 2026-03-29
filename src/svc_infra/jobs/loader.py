@@ -1,33 +1,20 @@
 from __future__ import annotations
 
-import asyncio
-import importlib
 import json
 import logging
 import os
-from collections.abc import Awaitable, Callable
-from typing import cast
 
+from .queue import JobQueue
 from .scheduler import InMemoryScheduler
 
 logger = logging.getLogger(__name__)
 
 
-def _resolve_target(path: str) -> Callable[[], Awaitable[None]]:
-    mod_name, func_name = path.split(":", 1)
-    mod = importlib.import_module(mod_name)
-    fn = getattr(mod, func_name)
-    if asyncio.iscoroutinefunction(fn):
-        return cast("Callable[[], Awaitable[None]]", fn)
-
-    # wrap sync into async
-    async def _wrapped():
-        fn()
-
-    return _wrapped
-
-
-def schedule_from_env(scheduler: InMemoryScheduler, env_var: str = "JOBS_SCHEDULE_JSON") -> None:
+def schedule_from_env(
+    scheduler: InMemoryScheduler,
+    queue: JobQueue | None = None,
+    env_var: str = "JOBS_SCHEDULE_JSON",
+) -> None:
     data = os.getenv(env_var)
     if not data:
         return
@@ -40,10 +27,29 @@ def schedule_from_env(scheduler: InMemoryScheduler, env_var: str = "JOBS_SCHEDUL
     for t in tasks:
         try:
             name = t["name"]
-            interval = int(t.get("interval_seconds", 60))
-            target = t["target"]
-            fn = _resolve_target(target)
-            scheduler.add_task(name, interval, fn)
+            interval_seconds = t.get("interval_seconds")
+            if interval_seconds is None and "cron" not in t:
+                interval_seconds = 60
+            kwargs = {
+                "interval_seconds": interval_seconds,
+                "cron": t.get("cron"),
+                "timezone": t.get("timezone"),
+            }
+            if "job_name" in t:
+                scheduler.add(
+                    name,
+                    job_queue=queue,
+                    job_name=t["job_name"],
+                    payload=t.get("payload"),
+                    delay_seconds=int(t.get("delay_seconds", 0)),
+                    **kwargs,
+                )
+            else:
+                scheduler.add(
+                    name,
+                    target=t["target"],
+                    **kwargs,
+                )
         except Exception as e:
             logger.warning("Failed to load scheduled job entry %s: %s", t, e)
             continue
