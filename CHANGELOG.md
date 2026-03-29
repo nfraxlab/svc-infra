@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.19.1 (2026-03-29)
+
+### Bug Fixes
+
+- Refine docs chip theme and refresh timeout
+  ([#112](https://github.com/nfraxlab/svc-infra/pull/112),
+  [`83b1d7e`](https://github.com/nfraxlab/svc-infra/commit/83b1d7e97f6e6aa43c8309c42c57390d4335f29d))
+
+
 ## v1.19.0 (2026-03-29)
 
 ### Features
