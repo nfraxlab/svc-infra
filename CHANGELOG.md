@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.19.0 (2026-03-29)
+
+### Features
+
+- **jobs**: Add cloud-ready scheduling primitives
+  ([#111](https://github.com/nfraxlab/svc-infra/pull/111),
+  [`85f143d`](https://github.com/nfraxlab/svc-infra/commit/85f143d5aecf155cf6ec81b767492ced21881bd4))
+
+
 ## v1.18.0 (2026-03-18)
 
 ### Features
