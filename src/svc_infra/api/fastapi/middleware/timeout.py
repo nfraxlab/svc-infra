@@ -21,14 +21,29 @@ def _env_int(name: str, default: int) -> int:
         return default
 
 
-REQUEST_BODY_TIMEOUT_SECONDS: int = pick(
-    prod=_env_int("REQUEST_BODY_TIMEOUT_SECONDS", 15),
-    nonprod=_env_int("REQUEST_BODY_TIMEOUT_SECONDS", 30),
-)
-REQUEST_TIMEOUT_SECONDS: int = pick(
-    prod=_env_int("REQUEST_TIMEOUT_SECONDS", 30),
-    nonprod=_env_int("REQUEST_TIMEOUT_SECONDS", 15),
-)
+def _pick_timeout_seconds(*, prod: int, nonprod: int) -> int:
+    timeout_seconds = pick(prod=prod, nonprod=nonprod)
+    if not isinstance(timeout_seconds, int):
+        raise TypeError("Timeout selection must resolve to an int")
+    return timeout_seconds
+
+
+def _default_request_body_timeout_seconds() -> int:
+    return _pick_timeout_seconds(
+        prod=_env_int("REQUEST_BODY_TIMEOUT_SECONDS", 15),
+        nonprod=_env_int("REQUEST_BODY_TIMEOUT_SECONDS", 30),
+    )
+
+
+def _default_request_timeout_seconds() -> int:
+    return _pick_timeout_seconds(
+        prod=_env_int("REQUEST_TIMEOUT_SECONDS", 30),
+        nonprod=_env_int("REQUEST_TIMEOUT_SECONDS", 15),
+    )
+
+
+REQUEST_BODY_TIMEOUT_SECONDS: int = _default_request_body_timeout_seconds()
+REQUEST_TIMEOUT_SECONDS: int = _default_request_timeout_seconds()
 
 
 class HandlerTimeoutMiddleware:
@@ -50,7 +65,7 @@ class HandlerTimeoutMiddleware:
     ) -> None:
         self.app = app
         self.timeout_seconds = (
-            timeout_seconds if timeout_seconds is not None else REQUEST_TIMEOUT_SECONDS
+            timeout_seconds if timeout_seconds is not None else _default_request_timeout_seconds()
         )
         self.skip_paths = skip_paths or []
 
@@ -101,7 +116,9 @@ class BodyReadTimeoutMiddleware:
     def __init__(self, app: ASGIApp, timeout_seconds: int | None = None) -> None:
         self.app = app
         self.timeout_seconds = (
-            timeout_seconds if timeout_seconds is not None else REQUEST_BODY_TIMEOUT_SECONDS
+            timeout_seconds
+            if timeout_seconds is not None
+            else _default_request_body_timeout_seconds()
         )
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:

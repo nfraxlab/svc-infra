@@ -4,7 +4,7 @@ import hashlib
 from datetime import UTC, datetime
 from typing import Any
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
+from fastapi import APIRouter, Body, Depends, Form, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from fastapi_users import FastAPIUsers
 from fastapi_users.authentication import AuthenticationBackend, Strategy
@@ -13,6 +13,11 @@ from starlette.datastructures import FormData
 
 from svc_infra.api.fastapi.auth._cookies import compute_cookie_params
 from svc_infra.api.fastapi.auth.policy import AuthPolicy, DefaultAuthPolicy
+from svc_infra.api.fastapi.auth.session_tokens import (
+    build_session_token_response,
+    refresh_token_from_request,
+    rotate_refresh_session,
+)
 from svc_infra.api.fastapi.auth.settings import get_auth_settings
 from svc_infra.api.fastapi.db.sql.session import SqlSessionDep
 from svc_infra.api.fastapi.dual.public import public_router
@@ -211,7 +216,7 @@ def auth_session_router(
             # Look up location from IP (best-effort, async)
             location = await lookup_ip_location(client_ip) if client_ip else None
 
-            await issue_session_and_refresh(
+            raw_refresh, _ = await issue_session_and_refresh(
                 session,
                 user_id=user.id,
                 tenant_id=getattr(user, "tenant_id", None),
@@ -222,15 +227,42 @@ def auth_session_router(
             await session.commit()
         except Exception:
             # Don't block login if session tracking fails
-            pass
+            raw_refresh = None
 
         # 6) mint token and set cookie
         token = await strategy.write_token(user)
-        st = get_auth_settings()
-        resp = JSONResponse({"access_token": token, "token_type": "bearer"})
-        cp = compute_cookie_params(request, name=st.auth_cookie_name)
-        resp.set_cookie(**cp, value=token)
-        return resp
+        return build_session_token_response(
+            request,
+            access_token=token,
+            refresh_token=raw_refresh,
+        )
+
+    @router.post("/refresh", name="auth:jwt.refresh")
+    async def refresh(
+        request: Request,
+        session: SqlSessionDep,
+        payload: dict[str, Any] | None = Body(default=None),
+        strategy: Strategy[Any, Any] = Depends(auth_backend.get_strategy),
+    ):
+        raw_refresh = refresh_token_from_request(request, payload)
+        if not raw_refresh:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="missing_refresh_token"
+            )
+
+        user, response = await rotate_refresh_session(
+            request=request,
+            session=session,
+            user_model=user_model,
+            strategy=strategy,
+            refresh_token=raw_refresh,
+        )
+        if hasattr(policy, "on_token_refresh"):
+            try:
+                await policy.on_token_refresh(user)
+            except Exception:
+                pass
+        return response
 
     @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT, name="auth:logout")
     async def logout(request: Request):
