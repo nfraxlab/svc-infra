@@ -21,15 +21,22 @@ def _env_int(name: str, default: int) -> int:
         return default
 
 
+def _pick_timeout_seconds(*, prod: int, nonprod: int) -> int:
+    timeout_seconds = pick(prod=prod, nonprod=nonprod)
+    if not isinstance(timeout_seconds, int):
+        raise TypeError("Timeout selection must resolve to an int")
+    return timeout_seconds
+
+
 def _default_request_body_timeout_seconds() -> int:
-    return pick(
+    return _pick_timeout_seconds(
         prod=_env_int("REQUEST_BODY_TIMEOUT_SECONDS", 15),
         nonprod=_env_int("REQUEST_BODY_TIMEOUT_SECONDS", 30),
     )
 
 
 def _default_request_timeout_seconds() -> int:
-    return pick(
+    return _pick_timeout_seconds(
         prod=_env_int("REQUEST_TIMEOUT_SECONDS", 30),
         nonprod=_env_int("REQUEST_TIMEOUT_SECONDS", 15),
     )
