@@ -96,7 +96,7 @@ def get_fastapi_users(
         jwt_block = getattr(st, "jwt", None)
         lifetime = getattr(jwt_block, "lifetime_seconds", None) if jwt_block else None
         if not isinstance(lifetime, int) or lifetime <= 0:
-            lifetime = 3600
+            lifetime = 60 * 60 * 24 * 7
         old = []
         if jwt_block and getattr(jwt_block, "old_secrets", None):
             old = [s.get_secret_value() for s in jwt_block.old_secrets or []]

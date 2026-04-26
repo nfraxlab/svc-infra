@@ -9,9 +9,9 @@ from fastapi_users import FastAPIUsers
 from sqlalchemy import select
 from starlette.responses import JSONResponse
 
-from svc_infra.api.fastapi.auth._cookies import compute_cookie_params
 from svc_infra.api.fastapi.auth.mfa.pre_auth import get_mfa_pre_jwt_writer
 from svc_infra.api.fastapi.auth.sender import get_sender
+from svc_infra.api.fastapi.auth.session_tokens import build_session_token_response
 from svc_infra.api.fastapi.auth.settings import get_auth_settings
 from svc_infra.api.fastapi.db.sql.session import SqlSessionDep
 from svc_infra.api.fastapi.dual.protected import user_router
@@ -186,7 +186,6 @@ def mfa_router(
         session: SqlSessionDep,
         payload: VerifyMFAIn = Body(...),
     ):
-        st = get_auth_settings()
         strategy = get_strategy()
 
         # 1) read/verify pre-auth token (aud = mfa)
@@ -244,14 +243,35 @@ def mfa_router(
 
         # NEW: set last_login on successful MFA
         user.last_login = datetime.now(UTC)
+        raw_refresh: str | None = None
+
+        from svc_infra.security.session import issue_session_and_refresh, lookup_ip_location
+
+        try:
+            client_ip = getattr(request.client, "host", None)
+            ip_hash = _hash(client_ip) if client_ip else None
+            location = await lookup_ip_location(client_ip) if client_ip else None
+
+            raw_refresh, _ = await issue_session_and_refresh(
+                session,
+                user_id=user.id,
+                tenant_id=getattr(user, "tenant_id", None),
+                user_agent=str(request.headers.get("user-agent", ""))[:512],
+                ip_hash=ip_hash,
+                location=location,
+            )
+        except Exception:
+            raw_refresh = None
+
         await session.commit()
 
         # 4) mint normal JWT and set cookie
         token = await strategy.write_token(user)
-        resp = JSONResponse({"access_token": token, "token_type": "bearer"})
-        cp = compute_cookie_params(request, name=st.auth_cookie_name)  # <-- pass Request here
-        resp.set_cookie(**cp, value=token)
-        return resp
+        return build_session_token_response(
+            request,
+            access_token=token,
+            refresh_token=raw_refresh,
+        )
 
     @p.post(
         MFA_SEND_CODE_PATH,
