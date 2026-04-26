@@ -1,6 +1,16 @@
 # CHANGELOG
 
 
+## v1.20.0 (2026-04-26)
+
+### Features
+
+- **auth**: Add refresh token session flow ([#113](https://github.com/nfraxlab/svc-infra/pull/113),
+  [`4b060cf`](https://github.com/nfraxlab/svc-infra/commit/4b060cfa1276a9cb9abab9f9b4c879d56ead5c78))
+
+Co-authored-by: Ali Khatami <aliikhatami94@gmail.com>
+
+
 ## v1.19.1 (2026-03-29)
 
 ### Bug Fixes
