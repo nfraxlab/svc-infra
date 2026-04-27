@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{% block title %}{{ subject | default(app_name) }}{% endblock %}</title>
+    <style>
+        body, table, td, p, a, li {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            background: #efe6dc;
+            color: #2d2a26;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        a {
+            color: #bf5a3d;
+        }
+        .canvas {
+            width: 100%;
+            padding: 32px 12px;
+            background: linear-gradient(180deg, #173042 0%, #224659 38%, #efe6dc 38%, #efe6dc 100%);
+        }
+        .shell {
+            max-width: 640px;
+            margin: 0 auto;
+            background: #fffaf4;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 22px 60px rgba(18, 31, 42, 0.18);
+        }
+        .hero {
+            padding: 28px 40px 24px;
+            background: #173042;
+            color: #f7efe5;
+        }
+        .mark {
+            display: inline-block;
+            padding: 6px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 999px;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+        .hero h1 {
+            margin: 16px 0 8px;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 32px;
+            line-height: 1.15;
+            font-weight: 700;
+            color: #fff6eb;
+        }
+        .hero p {
+            margin: 0;
+            font-size: 15px;
+            line-height: 1.6;
+            color: rgba(247, 239, 229, 0.82);
+        }
+        .content {
+            padding: 36px 40px 24px;
+        }
+        .content h2 {
+            margin: 0 0 14px;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 26px;
+            line-height: 1.2;
+            color: #1e2b33;
+        }
+        .content p {
+            margin: 0 0 16px;
+            font-size: 16px;
+            line-height: 1.7;
+            color: #4e4842;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 28px;
+            margin: 18px 0;
+            border-radius: 999px;
+            background: #bf5a3d;
+            color: #fff8f1 !important;
+            font-weight: 700;
+            font-size: 15px;
+            text-decoration: none;
+        }
+        .panel {
+            margin: 24px 0;
+            padding: 18px 20px;
+            border-radius: 18px;
+            background: #f7efe5;
+            border: 1px solid #e7d4c0;
+        }
+        .panel p:last-child {
+            margin-bottom: 0;
+        }
+        .signal {
+            margin: 26px 0;
+            padding: 18px 20px;
+            border-left: 4px solid #bf5a3d;
+            background: #fff2e7;
+            border-radius: 0 16px 16px 0;
+        }
+        .signal p {
+            margin: 0;
+        }
+        .code-block {
+            display: inline-block;
+            margin: 12px 0;
+            padding: 14px 22px;
+            border-radius: 16px;
+            background: #173042;
+            color: #fff6eb;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 28px;
+            letter-spacing: 0.2em;
+            font-weight: 700;
+        }
+        .link-block {
+            word-break: break-word;
+            font-size: 14px;
+        }
+        .list {
+            margin: 18px 0;
+            padding-left: 20px;
+            color: #4e4842;
+        }
+        .list li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        .footer {
+            padding: 24px 40px 36px;
+            border-top: 1px solid #ead8c5;
+            background: #fcf6ef;
+        }
+        .footer p {
+            margin: 0 0 10px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #756d65;
+        }
+        @media only screen and (max-width: 620px) {
+            .canvas {
+                padding: 0;
+            }
+            .shell {
+                border-radius: 0;
+            }
+            .hero, .content, .footer {
+                padding-left: 22px !important;
+                padding-right: 22px !important;
+            }
+            .hero h1 {
+                font-size: 28px;
+            }
+            .code-block {
+                font-size: 22px;
+                letter-spacing: 0.12em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="canvas">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+            <tr>
+                <td align="center">
+                    <div class="shell">
+                        <div class="hero">
+                            <span class="mark">Secure account flow</span>
+                            <h1>{% block hero_title %}{{ app_name }}{% endblock %}</h1>
+                            <p>{% block hero_copy %}Account emails that match your brand, not generic boilerplate.{% endblock %}</p>
+                        </div>
+                        <div class="content">
+                            {% block content %}{% endblock %}
+                        </div>
+                        <div class="footer">
+                            {% block footer %}
+                            <p>
+                                {% if support_email %}
+                                Need help? Contact <a href="mailto:{{ support_email }}">{{ support_email }}</a>.
+                                {% else %}
+                                This message was sent by {{ app_name }}.
+                                {% endif %}
+                            </p>
+                            {% if unsubscribe_url %}
+                            <p><a href="{{ unsubscribe_url }}">Unsubscribe</a> from non-essential emails.</p>
+                            {% endif %}
+                            <p>&copy; {{ current_year | default(2026) }} {{ app_name }}</p>
+                            {% endblock %}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>
