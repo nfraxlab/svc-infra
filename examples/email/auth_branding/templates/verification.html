@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Verify your email - {{ app_name }}{% endblock %}
+{% block hero_title %}Confirm your access{% endblock %}
+{% block hero_copy %}One quick verification step and your account is ready to go.{% endblock %}
+
+{% block content %}
+<h2>Verify your email address</h2>
+
+<p>Hi{{ " " + user_name if user_name else "" }},</p>
+
+<p>
+    Welcome to {{ app_name }}. Use the secure verification link below to activate your account and continue into the product.
+</p>
+
+{% if verification_url %}
+<p style="text-align: center;">
+    <a href="{{ verification_url }}" class="button">Verify email</a>
+</p>
+<div class="panel">
+    <p style="margin-bottom: 8px;"><strong>Manual fallback</strong></p>
+    <p class="link-block"><a href="{{ verification_url }}">{{ verification_url }}</a></p>
+</div>
+{% endif %}
+
+{% if code %}
+<div class="signal">
+    <p>Enter this verification code in the app:</p>
+</div>
+<p style="text-align: center;">
+    <span class="code-block">{{ code }}</span>
+</p>
+{% endif %}
+
+<div class="panel">
+    <p><strong>What happens next</strong></p>
+    <ul class="list">
+        <li>Your email address is confirmed.</li>
+        <li>Your first session is unlocked.</li>
+        <li>You can return to {{ app_name }} and sign in immediately.</li>
+    </ul>
+</div>
+
+<div class="signal">
+    <p>This {{ "link" if verification_url else "code" }} expires in {{ expires_in | default("24 hours") }}.</p>
+</div>
+
+<p style="font-size: 14px; color: #756d65;">
+    If you did not create an account with {{ app_name }}, you can ignore this email.
+</p>
+{% endblock %}

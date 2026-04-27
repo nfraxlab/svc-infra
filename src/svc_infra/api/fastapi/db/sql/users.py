@@ -13,6 +13,7 @@ from fastapi_users.authentication import (
 )
 from fastapi_users.manager import BaseUserManager, UUIDIDMixin
 
+from svc_infra.api.fastapi.auth.email import AuthEmailConfig, _send_auth_email
 from svc_infra.api.fastapi.auth.settings import get_auth_settings, resolve_jwt_secret
 from svc_infra.api.fastapi.dual.dualize import dualize_public, dualize_user
 from svc_infra.api.fastapi.dual.router import DualAPIRouter
@@ -20,7 +21,6 @@ from svc_infra.app.env import CURRENT_ENVIRONMENT, DEV_ENV, LOCAL_ENV
 from svc_infra.security.jwt_rotation import RotatingJWTStrategy
 
 from ...auth.security import auth_login_path
-from ...auth.sender import get_sender
 from .session import SqlSessionDep
 
 
@@ -31,6 +31,7 @@ def get_fastapi_users(
     user_schema_update: Any,
     *,
     public_auth_prefix: str = "/auth",
+    auth_email_config: AuthEmailConfig | None = None,
 ) -> tuple[
     FastAPIUsers,
     AuthenticationBackend,
@@ -58,29 +59,23 @@ def get_fastapi_users(
             await self.request_verify(user, request)
 
         async def on_after_request_verify(self, user: Any, token: str, request=None):
-            verify_url = f"{public_auth_prefix}/verify?token={token}"
-            sender = get_sender()
-            sender.send(
-                to=user.email,
-                subject="Verify your account",
-                html_body=f"""
-                    <p>Hi {getattr(user, "full_name", "") or "there"},</p>
-                    <p>Click to verify your account:</p>
-                    <p><a href="{verify_url}">{verify_url}</a></p>
-                """,
+            _send_auth_email(
+                kind="verification",
+                user=user,
+                token=token,
+                request=request,
+                config=auth_email_config,
+                unavailable_message="Verification email is temporarily unavailable.",
             )
 
         async def on_after_forgot_password(self, user: Any, token: str, request=None):
-            reset_url = f"{public_auth_prefix}/reset-password?token={token}"
-            sender = get_sender()
-            sender.send(
-                to=user.email,
-                subject="Reset your password",
-                html_body=f"""
-                    <p>We received a request to reset your password.</p>
-                    <p><a href="{reset_url}">{reset_url}</a></p>
-                    <p>If you didn’t request this, you can ignore this email.</p>
-                """,
+            _send_auth_email(
+                kind="password_reset",
+                user=user,
+                token=token,
+                request=request,
+                config=auth_email_config,
+                unavailable_message="Password reset email is temporarily unavailable.",
             )
 
         async def on_after_reset_password(self, user: Any, request=None):

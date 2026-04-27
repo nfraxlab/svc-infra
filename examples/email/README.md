@@ -24,6 +24,18 @@ Template-based emails for common use cases:
 EMAIL_FROM=noreply@example.com python with_templates.py
 ```
 
+### auth_branding/
+
+Ready-to-copy branded auth email templates for verification and password reset.
+
+Contents:
+- `templates/base.html` for full UI control
+- `templates/verification.html` for signup verification
+- `templates/password_reset.html` for reset flows
+- `README.md` with `AuthEmailConfig` setup instructions
+
+Use this when you want a company-specific look and copy instead of the built-in defaults.
+
 ### fastapi_integration.py
 
 Full FastAPI application with email integration:

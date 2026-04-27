@@ -5,6 +5,7 @@ from typing import Literal, cast
 from fastapi import Depends, FastAPI
 from starlette.middleware.sessions import SessionMiddleware
 
+from svc_infra.api.fastapi.auth.email import AuthEmailConfig
 from svc_infra.api.fastapi.auth.gaurd import auth_session_router, login_client_gaurd
 from svc_infra.api.fastapi.auth.mfa.pre_auth import get_mfa_pre_jwt_writer
 from svc_infra.api.fastapi.auth.mfa.router import mfa_router
@@ -247,6 +248,7 @@ def add_auth_users(
     apikey_table_name: str = "api_keys",
     provider_account_model=None,
     auth_policy: AuthPolicy | None = None,
+    auth_email_config: AuthEmailConfig | None = None,
 ) -> None:
     (
         fapi,
@@ -263,6 +265,7 @@ def add_auth_users(
         user_schema_create=schema_create,
         user_schema_update=schema_update,
         public_auth_prefix=auth_prefix,
+        auth_email_config=auth_email_config,
     )
 
     # Make the boot-time strategy and model available to resolvers

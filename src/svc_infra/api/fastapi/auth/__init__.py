@@ -4,6 +4,7 @@ Provides user authentication, authorization, and security primitives.
 
 Key exports:
 - add_auth_users: Add authentication routes to FastAPI app
+- AuthEmailConfig: Configure verification/reset email URLs, templates, and renderers
 - Identity, OptionalIdentity: Annotated dependencies for auth
 - RequireUser, RequireRoles, RequireScopes: Authorization guards
 - Principal: Unified identity (user via JWT/cookie or service via API key)
@@ -15,6 +16,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 # These imports are safe (no circular dependency)
+from .email import AuthEmailConfig, AuthEmailContext, AuthEmailMessage, AuthEmailTemplateConfig
 from .policy import AuthPolicy, DefaultAuthPolicy
 from .security import (
     Identity,
@@ -35,6 +37,10 @@ if TYPE_CHECKING:
 __all__ = [
     # Main setup
     "add_auth_users",
+    "AuthEmailConfig",
+    "AuthEmailContext",
+    "AuthEmailMessage",
+    "AuthEmailTemplateConfig",
     # Identity/Auth guards
     "Identity",
     "OptionalIdentity",

@@ -60,6 +60,7 @@ nav:
   - Core Features:
       - API Framework: api.md
       - Authentication: auth.md
+      - Email: email.md
       - Connect (OAuth): connect.md
       - MCP OAuth Discovery: connect-mcp-oauth.md
       - Database: database.md
