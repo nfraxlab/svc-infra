@@ -1,6 +1,16 @@
 # CHANGELOG
 
 
+## v1.21.0 (2026-04-27)
+
+### Features
+
+- Add configurable auth email customization ([#114](https://github.com/nfraxlab/svc-infra/pull/114),
+  [`6c12e97`](https://github.com/nfraxlab/svc-infra/commit/6c12e973ad76c469d19dcea0bf07a9ea845c86d8))
+
+Co-authored-by: nfraxlab <246413163+nfraxlab@users.noreply.github.com>
+
+
 ## v1.20.0 (2026-04-26)
 
 ### Features
