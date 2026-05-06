@@ -58,7 +58,14 @@ def _validate_public_hostname(hostname: str | None) -> None:
             f"Could not resolve host for public URL fetch: {hostname}"
         ) from exc
 
-    addresses = {info[4][0] for info in infos if info[4]}
+    addresses: set[str] = set()
+    for info in infos:
+        if not info[4]:
+            continue
+        address = info[4][0]
+        if isinstance(address, str):
+            addresses.add(address)
+
     if not addresses:
         raise PublicURLPolicyError(f"Could not resolve host for public URL fetch: {hostname}")
 
