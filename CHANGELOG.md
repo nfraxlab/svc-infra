@@ -1,6 +1,16 @@
 # CHANGELOG
 
 
+## v1.22.0 (2026-05-06)
+
+### Features
+
+- Add safe public URL loader ([#115](https://github.com/nfraxlab/svc-infra/pull/115),
+  [`98c6734`](https://github.com/nfraxlab/svc-infra/commit/98c67343c0b853651cd27db0fee3baae9ec5df31))
+
+Co-authored-by: nfraxlab <246413163+nfraxlab@users.noreply.github.com>
+
+
 ## v1.21.0 (2026-04-27)
 
 ### Features
