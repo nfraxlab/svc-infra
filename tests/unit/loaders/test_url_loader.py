@@ -47,6 +47,9 @@ class TestURLLoaderInit:
             follow_redirects=False,
             timeout=60.0,
             extra_metadata={"source": "test"},
+            public_only=True,
+            max_bytes=4096,
+            max_redirects=2,
         )
 
         assert loader.urls == ["https://example.com"]
@@ -55,6 +58,9 @@ class TestURLLoaderInit:
         assert loader.follow_redirects is False
         assert loader.timeout == 60.0
         assert loader.extra_metadata == {"source": "test"}
+        assert loader.public_only is True
+        assert loader.max_bytes == 4096
+        assert loader.max_redirects == 2
 
     def test_invalid_url_no_scheme(self):
         """Test that URL without scheme raises ValueError."""
@@ -404,6 +410,90 @@ class TestURLLoaderLoad:
             # Content type should be parsed (charset removed)
             assert contents[0].content_type == "text/html"
 
+    @pytest.mark.asyncio
+    async def test_load_public_only_rejects_private_resolution(self):
+        """Test that public-only mode blocks private network targets."""
+        loader = URLLoader("https://example.com", public_only=True, on_error="raise")
+
+        with patch(
+            "svc_infra.loaders.url.socket.getaddrinfo",
+            return_value=[(0, 0, 0, "", ("127.0.0.1", 0))],
+        ):
+            with pytest.raises(RuntimeError, match="non-public"):
+                await loader.load()
+
+    @pytest.mark.asyncio
+    async def test_load_public_only_tracks_redirect_count(self):
+        """Test that public-only mode validates redirects and records final URL."""
+        loader = URLLoader("https://example.com/start", public_only=True)
+
+        redirect_response = AsyncMock()
+        redirect_response.__aenter__.return_value = redirect_response
+        redirect_response.__aexit__.return_value = False
+        redirect_response.status_code = 302
+        redirect_response.headers = {"location": "https://example.com/final"}
+        redirect_response.url = "https://example.com/start"
+
+        final_response = AsyncMock()
+        final_response.__aenter__.return_value = final_response
+        final_response.__aexit__.return_value = False
+        final_response.status_code = 200
+        final_response.headers = {"content-type": "text/plain"}
+        final_response.url = "https://example.com/final"
+        final_response.encoding = "utf-8"
+        final_response.raise_for_status = MagicMock()
+        final_response.aiter_bytes = MagicMock(return_value=_aiter_bytes([b"hello world"]))
+
+        mock_client = MagicMock()
+        mock_client.__aenter__.return_value = mock_client
+        mock_client.__aexit__.return_value = False
+        mock_client.stream.side_effect = [redirect_response, final_response]
+
+        with patch(
+            "svc_infra.loaders.url.socket.getaddrinfo",
+            return_value=[(0, 0, 0, "", ("93.184.216.34", 0))],
+        ):
+            with patch("svc_infra.loaders.url.new_async_httpx_client", return_value=mock_client):
+                contents = await loader.load()
+
+        assert len(contents) == 1
+        assert contents[0].content == "hello world"
+        assert contents[0].metadata["final_url"] == "https://example.com/final"
+        assert contents[0].metadata["redirect_count"] == 1
+
+    @pytest.mark.asyncio
+    async def test_load_public_only_enforces_byte_cap(self):
+        """Test that public-only mode rejects oversized responses."""
+        loader = URLLoader(
+            "https://example.com/file",
+            public_only=True,
+            max_bytes=4,
+            on_error="raise",
+        )
+
+        final_response = AsyncMock()
+        final_response.__aenter__.return_value = final_response
+        final_response.__aexit__.return_value = False
+        final_response.status_code = 200
+        final_response.headers = {"content-type": "text/plain"}
+        final_response.url = "https://example.com/file"
+        final_response.encoding = "utf-8"
+        final_response.raise_for_status = MagicMock()
+        final_response.aiter_bytes = MagicMock(return_value=_aiter_bytes([b"hello", b" world"]))
+
+        mock_client = MagicMock()
+        mock_client.__aenter__.return_value = mock_client
+        mock_client.__aexit__.return_value = False
+        mock_client.stream.return_value = final_response
+
+        with patch(
+            "svc_infra.loaders.url.socket.getaddrinfo",
+            return_value=[(0, 0, 0, "", ("93.184.216.34", 0))],
+        ):
+            with patch("svc_infra.loaders.url.new_async_httpx_client", return_value=mock_client):
+                with pytest.raises(RuntimeError, match="size limit"):
+                    await loader.load()
+
 
 class TestURLLoaderSync:
     """Tests for synchronous loading."""
@@ -419,3 +509,8 @@ class TestURLLoaderSync:
             assert "svc-infra" in contents[0].content.lower()
         except Exception:
             pytest.skip("Network unavailable")
+
+
+async def _aiter_bytes(chunks: list[bytes]):
+    for chunk in chunks:
+        yield chunk

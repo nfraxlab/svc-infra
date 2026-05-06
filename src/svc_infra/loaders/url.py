@@ -5,16 +5,190 @@ Load content from URLs with automatic HTML text extraction.
 
 from __future__ import annotations
 
+import ipaddress
 import logging
 import re
+import socket
 from typing import Any
+from urllib.parse import urljoin, urlparse
 
 import httpx
+
+from svc_infra.http import new_async_httpx_client
 
 from .base import BaseLoader, ErrorStrategy
 from .models import LoadedContent
 
 logger = logging.getLogger(__name__)
+
+_DEFAULT_PUBLIC_FETCH_MAX_BYTES = 1_048_576
+_DEFAULT_PUBLIC_FETCH_MAX_REDIRECTS = 5
+_DEFAULT_PUBLIC_FETCH_USER_AGENT = "svc-infra-url-loader/1.0"
+
+
+class PublicURLPolicyError(RuntimeError):
+    """Raised when a public URL fetch violates network access policy."""
+
+
+class URLContentTooLargeError(RuntimeError):
+    """Raised when a fetched URL response exceeds the configured byte cap."""
+
+
+def _validate_http_url(url: str) -> None:
+    if not url.startswith(("http://", "https://")):
+        raise ValueError(f"Invalid URL: {url!r}. URLs must start with http:// or https://")
+
+
+def _is_public_ip(address: str) -> bool:
+    try:
+        ip = ipaddress.ip_address(address)
+    except ValueError:
+        return False
+    return ip.is_global
+
+
+def _validate_public_hostname(hostname: str | None) -> None:
+    if not hostname:
+        raise PublicURLPolicyError("Public URL fetch requires a resolvable hostname.")
+
+    try:
+        infos = socket.getaddrinfo(hostname, None, proto=socket.IPPROTO_TCP)
+    except socket.gaierror as exc:
+        raise PublicURLPolicyError(
+            f"Could not resolve host for public URL fetch: {hostname}"
+        ) from exc
+
+    addresses: set[str] = set()
+    for info in infos:
+        if not info[4]:
+            continue
+        address = info[4][0]
+        if isinstance(address, str):
+            addresses.add(address)
+
+    if not addresses:
+        raise PublicURLPolicyError(f"Could not resolve host for public URL fetch: {hostname}")
+
+    non_public = sorted(address for address in addresses if not _is_public_ip(address))
+    if non_public:
+        raise PublicURLPolicyError(
+            f"URL host resolves to non-public IP addresses and is not allowed: {hostname}"
+        )
+
+
+async def _read_response_bytes(response: httpx.Response, max_bytes: int | None) -> bytes:
+    if max_bytes is not None:
+        content_length = response.headers.get("content-length", "").strip()
+        if content_length:
+            try:
+                if int(content_length) > max_bytes:
+                    raise URLContentTooLargeError(
+                        "URL response exceeds the configured size limit before download completed."
+                    )
+            except ValueError:
+                pass
+
+    chunks: list[bytes] = []
+    total_bytes = 0
+    async for chunk in response.aiter_bytes():
+        total_bytes += len(chunk)
+        if max_bytes is not None and total_bytes > max_bytes:
+            raise URLContentTooLargeError("URL response exceeds the configured size limit.")
+        chunks.append(chunk)
+    return b"".join(chunks)
+
+
+def _decode_response_text(response: httpx.Response, raw_content: bytes) -> str:
+    encoding = response.encoding or "utf-8"
+    return raw_content.decode(encoding, errors="replace")
+
+
+def _build_loaded_content(
+    *,
+    requested_url: str,
+    final_url: str,
+    response: httpx.Response,
+    raw_content: bytes,
+    extract_text: bool,
+    extra_metadata: dict[str, Any] | None = None,
+    redirect_count: int = 0,
+) -> LoadedContent:
+    content_type = response.headers.get("content-type", "")
+    raw_text = _decode_response_text(response, raw_content)
+    if extract_text and "text/html" in content_type:
+        content = URLLoader._extract_text_from_html(raw_text)
+    else:
+        content = raw_text
+
+    mime_type = content_type.split(";")[0].strip() if content_type else None
+    return LoadedContent(
+        content=content,
+        source=requested_url,
+        content_type=mime_type,
+        metadata={
+            "loader": "url",
+            "url": requested_url,
+            "status_code": response.status_code,
+            "final_url": final_url,
+            "redirect_count": redirect_count,
+            **(extra_metadata or {}),
+        },
+    )
+
+
+async def fetch_public_url(
+    url: str,
+    *,
+    headers: dict[str, str] | None = None,
+    extract_text: bool = True,
+    timeout: float = 30.0,
+    extra_metadata: dict[str, Any] | None = None,
+    max_bytes: int = _DEFAULT_PUBLIC_FETCH_MAX_BYTES,
+    max_redirects: int = _DEFAULT_PUBLIC_FETCH_MAX_REDIRECTS,
+    user_agent: str = _DEFAULT_PUBLIC_FETCH_USER_AGENT,
+) -> LoadedContent:
+    """Fetch a public HTTP(S) URL with SSRF protections and byte caps."""
+    _validate_http_url(url)
+
+    request_headers = dict(headers or {})
+    request_headers.setdefault("User-Agent", user_agent)
+
+    current_url = url
+    redirect_count = 0
+
+    async with new_async_httpx_client(
+        timeout_seconds=timeout,
+        follow_redirects=False,
+    ) as client:
+        while True:
+            parsed = urlparse(current_url)
+            _validate_http_url(current_url)
+            _validate_public_hostname(parsed.hostname)
+
+            async with client.stream("GET", current_url, headers=request_headers) as response:
+                if 300 <= response.status_code < 400:
+                    location = response.headers.get("location", "").strip()
+                    if not location:
+                        raise PublicURLPolicyError(
+                            "Redirect response did not include a location header."
+                        )
+                    if redirect_count >= max_redirects:
+                        raise PublicURLPolicyError("Too many redirects while fetching public URL.")
+                    current_url = urljoin(current_url, location)
+                    redirect_count += 1
+                    continue
+
+                response.raise_for_status()
+                raw_content = await _read_response_bytes(response, max_bytes=max_bytes)
+                return _build_loaded_content(
+                    requested_url=url,
+                    final_url=str(response.url),
+                    response=response,
+                    raw_content=raw_content,
+                    extract_text=extract_text,
+                    extra_metadata=extra_metadata,
+                    redirect_count=redirect_count,
+                )
 
 
 class URLLoader(BaseLoader):
@@ -31,6 +205,10 @@ class URLLoader(BaseLoader):
         follow_redirects: Follow HTTP redirects (default: True).
         timeout: Request timeout in seconds (default: 30).
         extra_metadata: Additional metadata to attach to all loaded content.
+        public_only: If True, only allow publicly routable HTTP(S) targets and
+            validate every redirect hop.
+        max_bytes: Optional response byte limit.
+        max_redirects: Maximum redirect hops when public_only=True.
         on_error: How to handle errors ("skip" or "raise"). Default: "skip"
 
     Example:
@@ -71,6 +249,9 @@ class URLLoader(BaseLoader):
         follow_redirects: bool = True,
         timeout: float = 30.0,
         extra_metadata: dict[str, Any] | None = None,
+        public_only: bool = False,
+        max_bytes: int | None = None,
+        max_redirects: int = _DEFAULT_PUBLIC_FETCH_MAX_REDIRECTS,
         on_error: ErrorStrategy = "skip",
     ) -> None:
         """Initialize the URL loader.
@@ -93,11 +274,13 @@ class URLLoader(BaseLoader):
         self.follow_redirects = follow_redirects
         self.timeout = timeout
         self.extra_metadata = extra_metadata or {}
+        self.public_only = public_only
+        self.max_bytes = max_bytes
+        self.max_redirects = max_redirects
 
         # Validate URLs
         for url in self.urls:
-            if not url.startswith(("http://", "https://")):
-                raise ValueError(f"Invalid URL: {url!r}. URLs must start with http:// or https://")
+            _validate_http_url(url)
 
     async def load(self) -> list[LoadedContent]:
         """Load content from all URLs.
@@ -109,6 +292,27 @@ class URLLoader(BaseLoader):
             httpx.HTTPError: If request fails and on_error="raise".
         """
         contents: list[LoadedContent] = []
+
+        if self.public_only:
+            for url in self.urls:
+                try:
+                    contents.append(
+                        await fetch_public_url(
+                            url,
+                            headers=self.headers,
+                            extract_text=self.extract_text,
+                            timeout=self.timeout,
+                            extra_metadata=self.extra_metadata,
+                            max_bytes=self.max_bytes or _DEFAULT_PUBLIC_FETCH_MAX_BYTES,
+                            max_redirects=self.max_redirects,
+                        )
+                    )
+                except (PublicURLPolicyError, URLContentTooLargeError, httpx.HTTPError) as e:
+                    msg = f"Request failed for {url}: {e}"
+                    if self.on_error == "raise":
+                        raise RuntimeError(msg) from e
+                    logger.warning(msg)
+            return contents
 
         async with httpx.AsyncClient(
             timeout=self.timeout,
