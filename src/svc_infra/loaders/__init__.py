@@ -39,6 +39,7 @@ Convenience Functions:
 Available Loaders:
     - GitHubLoader: Load files from GitHub repositories
     - URLLoader: Load content from URLs (with HTML text extraction)
+    - fetch_public_url: Safe public HTTP(S) fetch for hosted user-supplied URLs
 
 Future Loaders (planned):
     - S3Loader: Load files from S3-compatible storage
@@ -49,7 +50,7 @@ Future Loaders (planned):
 from .base import BaseLoader
 from .github import GitHubLoader
 from .models import LoadedContent, LoadedDocument, to_loaded_documents
-from .url import URLLoader
+from .url import PublicURLPolicyError, URLContentTooLargeError, URLLoader, fetch_public_url
 
 
 async def load_github(
@@ -177,6 +178,9 @@ __all__ = [
     # Loaders
     "GitHubLoader",
     "URLLoader",
+    "fetch_public_url",
+    "PublicURLPolicyError",
+    "URLContentTooLargeError",
     # Async convenience functions
     "load_github",
     "load_url",
