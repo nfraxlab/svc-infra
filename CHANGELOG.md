@@ -1,6 +1,16 @@
 # CHANGELOG
 
 
+## v1.22.1 (2026-05-08)
+
+### Bug Fixes
+
+- Support Stripe SDK objects in adapter ([#116](https://github.com/nfraxlab/svc-infra/pull/116),
+  [`5d6bfdc`](https://github.com/nfraxlab/svc-infra/commit/5d6bfdc59862acf4927f4a074599e2bde550a86f))
+
+Co-authored-by: nfraxlab <246413163+nfraxlab@users.noreply.github.com>
+
+
 ## v1.22.0 (2026-05-06)
 
 ### Features
