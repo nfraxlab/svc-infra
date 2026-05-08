@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -118,6 +119,42 @@ class TestStripeCustomers:
 
         assert result.provider_customer_id == "cus_existing123"
 
+    @pytest.mark.asyncio
+    async def test_ensure_customer_reads_attribute_backed_customer_fields(
+        self,
+        monkeypatch,
+        mocker,
+    ) -> None:
+        """Should support Stripe customer objects that expose attributes instead of .get."""
+        monkeypatch.setenv("STRIPE_SECRET", "sk_test_123")
+        from svc_infra.apf_payments.provider.stripe import StripeAdapter
+        from svc_infra.apf_payments.provider.stripe import stripe as stripe_sdk
+
+        if stripe_sdk is None:
+            pytest.skip("stripe SDK not installed (optional dependency)")
+
+        with patch("svc_infra.apf_payments.provider.stripe.get_payments_settings") as mock_settings:
+            mock_stripe = MagicMock()
+            mock_stripe.secret_key.get_secret_value.return_value = "sk_test_123"
+            mock_stripe.webhook_secret = None
+            mock_settings.return_value.stripe = mock_stripe
+
+            adapter = StripeAdapter()
+
+        mock_customer = SimpleNamespace(
+            id="cus_attr123",
+            email="attr@example.com",
+            name="Attr User",
+        )
+
+        monkeypatch.setattr(stripe_sdk.Customer, "retrieve", lambda cid: mock_customer)
+
+        result = await adapter.get_customer("cus_attr123")
+
+        assert result.provider_customer_id == "cus_attr123"
+        assert result.email == "attr@example.com"
+        assert result.name == "Attr User"
+
 
 class TestStripePaymentMethods:
     """Tests for Stripe payment method operations."""
@@ -203,6 +240,61 @@ class TestStripePaymentMethods:
 
         assert len(result) == 1
         assert result[0].brand == "mastercard"
+
+    @pytest.mark.asyncio
+    async def test_attach_payment_method_reads_attribute_backed_card_fields(
+        self,
+        monkeypatch,
+        mocker,
+    ) -> None:
+        """Should support Stripe card objects that expose attributes instead of .get."""
+        monkeypatch.setenv("STRIPE_SECRET", "sk_test_123")
+        from svc_infra.apf_payments.provider.stripe import StripeAdapter
+        from svc_infra.apf_payments.provider.stripe import stripe as stripe_sdk
+
+        if stripe_sdk is None:
+            pytest.skip("stripe SDK not installed (optional dependency)")
+
+        with patch("svc_infra.apf_payments.provider.stripe.get_payments_settings") as mock_settings:
+            mock_stripe = MagicMock()
+            mock_stripe.secret_key.get_secret_value.return_value = "sk_test_123"
+            mock_stripe.webhook_secret = None
+            mock_settings.return_value.stripe = mock_stripe
+
+            adapter = StripeAdapter()
+
+        mock_pm = mocker.Mock()
+        mock_pm.id = "pm_attr123"
+        mock_pm.customer = "cus_123"
+        mock_pm.card = SimpleNamespace(
+            brand="visa",
+            last4="4242",
+            exp_month=12,
+            exp_year=2030,
+        )
+
+        mock_customer = mocker.Mock()
+        mock_customer.invoice_settings = mocker.Mock()
+        mock_customer.invoice_settings.default_payment_method = "pm_attr123"
+
+        monkeypatch.setattr(stripe_sdk.PaymentMethod, "attach", lambda pm_id, **kw: mock_pm)
+        monkeypatch.setattr(stripe_sdk.Customer, "modify", lambda cust_id, **kw: mock_customer)
+
+        from svc_infra.apf_payments.schemas import PaymentMethodAttachIn
+
+        result = await adapter.attach_payment_method(
+            PaymentMethodAttachIn(
+                customer_provider_id="cus_123",
+                payment_method_token="pm_attr123",
+                make_default=True,
+            )
+        )
+
+        assert result.provider_method_id == "pm_attr123"
+        assert result.brand == "visa"
+        assert result.last4 == "4242"
+        assert result.exp_month == 12
+        assert result.exp_year == 2030
 
 
 class TestStripeIntents:
