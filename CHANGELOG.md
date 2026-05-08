@@ -1,6 +1,16 @@
 # CHANGELOG
 
 
+## v1.22.2 (2026-05-08)
+
+### Bug Fixes
+
+- Make acceptance sbom signing best effort ([#117](https://github.com/nfraxlab/svc-infra/pull/117),
+  [`a9280bb`](https://github.com/nfraxlab/svc-infra/commit/a9280bbe1dbaf80768544f611ffb2875d6fa1995))
+
+Co-authored-by: nfraxlab <246413163+nfraxlab@users.noreply.github.com>
+
+
 ## v1.22.1 (2026-05-08)
 
 ### Bug Fixes
