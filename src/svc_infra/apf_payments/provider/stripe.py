@@ -51,6 +51,21 @@ async def _acall(fn, /, *args, **kwargs):
     return await anyio.to_thread.run_sync(partial(fn, *args, **kwargs))
 
 
+def _obj_get(obj: Any, key: str, default: Any = None) -> Any:
+    if obj is None:
+        return default
+    if isinstance(obj, dict):
+        return obj.get(key, default)
+    try:
+        return getattr(obj, key)
+    except Exception:
+        pass
+    try:
+        return obj[key]
+    except Exception:
+        return default
+
+
 def _pi_to_out(pi) -> IntentOut:
     return IntentOut(
         id=pi.id,
@@ -85,10 +100,10 @@ def _pm_to_out(pm, *, is_default: bool = False) -> PaymentMethodOut:
         provider="stripe",
         provider_customer_id=getattr(pm, "customer", None) or "",
         provider_method_id=pm.id,
-        brand=card.get("brand"),
-        last4=card.get("last4"),
-        exp_month=card.get("exp_month"),
-        exp_year=card.get("exp_year"),
+        brand=_obj_get(card, "brand"),
+        last4=_obj_get(card, "last4"),
+        exp_month=_obj_get(card, "exp_month"),
+        exp_year=_obj_get(card, "exp_year"),
         is_default=bool(is_default),
     )
 
@@ -114,7 +129,7 @@ def _price_to_out(pr) -> PriceOut:
         ),
         currency=str(pr.currency).upper(),
         unit_amount=int(pr.unit_amount),
-        interval=rec.get("interval"),
+        interval=_obj_get(rec, "interval"),
         trial_days=getattr(pr, "trial_period_days", None),
         active=bool(pr.active),
     )
@@ -220,8 +235,8 @@ class StripeAdapter(ProviderAdapter):
             id=c.id,
             provider="stripe",
             provider_customer_id=c.id,
-            email=c.get("email"),
-            name=c.get("name"),
+            email=_obj_get(c, "email"),
+            name=_obj_get(c, "name"),
         )
 
     async def get_customer(self, provider_customer_id: str) -> CustomerOut | None:
@@ -230,8 +245,8 @@ class StripeAdapter(ProviderAdapter):
             id=c.id,
             provider="stripe",
             provider_customer_id=c.id,
-            email=c.get("email"),
-            name=c.get("name"),
+            email=_obj_get(c, "email"),
+            name=_obj_get(c, "name"),
         )
 
     async def list_customers(
@@ -253,8 +268,8 @@ class StripeAdapter(ProviderAdapter):
                 id=c.id,
                 provider="stripe",
                 provider_customer_id=c.id,
-                email=c.get("email"),
-                name=c.get("name"),
+                email=_obj_get(c, "email"),
+                name=_obj_get(c, "name"),
             )
             for c in res.data
         ]
